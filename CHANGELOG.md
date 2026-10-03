@@ -13,6 +13,21 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+
+- `Tools/Tool-Test Thermostatgruppe schalten.hsc` (neu): schreibt eine Solltemperatur
+  direkt auf eine Homematic-Heizgruppe (`HmIP-HEATING`) und liest den Datenpunkt
+  `SET_POINT_TEMPERATURE` vorher und nachher aus.
+- `Tools/Tool-Test Thermostatgruppe auslesen.hsc` (neu): liest alle relevanten
+  Datenpunkte einer Heizgruppe aus (`SET_POINT_TEMPERATURE`, `ACTUAL_TEMPERATURE`,
+  `CONTROL_MODE`, `LEVEL`, `SET_POINT_MODE`).
+
+### Behoben
+
+- `Skripte/HK-Test-Skript.hsc`: Modus `HS` (Heizen+Schalten) wurde als
+  `UNBEKANNT!!! FEHLER!!!` ausgegeben. Fix: `HS` wird jetzt korrekt als
+  `Heizen+Schalten` angezeigt.
+
 ## [2026-10-03]
 
 ### Geändert

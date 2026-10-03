@@ -1,6 +1,6 @@
 !// Skript zum Testen der Einstellungen für den Heizkalender.
 !//================================================================================================
-!// Stand:    18.09.2026
+!// Stand:    03.10.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -10,6 +10,7 @@
 !// Es besteht keinerlei Garantie oder Haftung. Nutzung auf eigene Verantwortung.
 !//================================================================================================
 !//
+!// TT:  2026-10-03 Modus HS (Heizen+Schalten) erkannt und korrekt ausgegeben.
 !// TT:  2026-09-18 Syntaxfehler behoben (fehlende Klammern/Semikolon), + auf # umgestellt.
 
 !//------------------------------------------------------------------------------------------
@@ -220,6 +221,8 @@ foreach(RName,ListeRaumVariablen.Split(";")){
       stext = stext # " Heizen";
   }elseif(stemp=="S"){
       stext = stext # " Schalten";
+  }elseif(stemp=="HS"){
+      stext = stext # " Heizen+Schalten";
   }else{
       stext = stext # " UNBEKANNT!!! FEHLER!!!";
   }

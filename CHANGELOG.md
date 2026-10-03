@@ -13,6 +13,58 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+
+- `Dokumentation/Anwenderhandbuch.md`: Neuer Unterabschnitt „Räume mit mehreren
+  Heizkörperthermostaten (Homematic-Heizgruppe)" unter den unterstützten Geräten:
+  Einrichtung einer CCU-Heizgruppe (`HmIP-HEATING`), manueller Modus via
+  `Tool-Heizgruppen Modus zurücksetzen`, Konfiguration im Heizkalender (Heiztyp IP,
+  Kanal 1 der Gruppenadresse), Empfehlung zum separaten Schaltaktor-CCU-Programm.
+- `Dokumentation/Anwenderhandbuch.md`: Neuer Abschnitt „Wie der Heizkalender
+  funktioniert" mit detailliertem Mermaid-Architekturdiagramm (alle Systemvariablen
+  als Boxen) und Einsparpotential-Erklärung.
+- `Dokumentation/Anwenderhandbuch.md`: Einleitung um Zielgruppe und Kurzbeschreibung
+  des Projekts erweitert (sporadisch genutzte Gebäude: Gemeindegebäude, Hotels,
+  Ferienwohnungen).
+- `Dokumentation/Anwenderhandbuch.md`: Neuer Abschnitt „Voraussetzungen" mit
+  Kalender-Zugangsarten (API vs. iCal), Homematic-Hardware, CCU-Optionen und
+  optionalen Apps.
+- `Dokumentation/Anwenderhandbuch.md`: Neuer Abschnitt „Unterstützte
+  Homematic-Geräte" mit Tabelle der Kennungen (IP/RT/TC/IT/SW), Kanäle und
+  Datenpunkte.
+- `Dokumentation/Anwenderhandbuch.md`: Neuer Abschnitt „Format der
+  Übergabevariablen HK1-Schaltliste" mit Feldbeschreibung und Beispielen.
+- `Dokumentation/Anwenderhandbuch.md`: Neuer Abschnitt „Warum Homematic?" mit
+  den 7 Argumenten für das System.
+- `Dokumentation/Anwenderhandbuch.md`: Neuer Abschnitt „Namenskonvention" (Verbot
+  doppelter Namen in der CCU, eindeutige Raumbezeichnung je Kalenderquelle).
+- `Dokumentation/Anwenderhandbuch.md`: Neuer Abschnitt „Rückstellung am Terminende"
+  mit Erklärung von `HK2-Hand-Temp` und `HK2-Hand-Grundtemp`.
+- `Dokumentation/Anwenderhandbuch.md`: Hinweis zum gleitenden 36h-Mittelwert der
+  Außentemperatur im Abschnitt Vorheizzeit.
+- Link auf die Projekt-Homepage <https://heizkalender.de/> in `Readme.md`
+  (Abschnitt „Allgemeines") und `Dokumentation/Anwenderhandbuch.md` (Einleitung).
+
+### Geändert
+
+- `Dokumentation/Anwenderhandbuch.md`: Systemarchitektur-Diagramm durch die
+  verallgemeinerte Fassung aus `Readme.md` ersetzt (Kalenderquelle generisch statt
+  nur ChurchTools).
+- `Dokumentation/Anwenderhandbuch.md`: Gültige Grenzen des Raumvariablen-`*Faktor`
+  von „0.25 bis 3" auf die tatsächlichen Code-Werte „0.20 bis 5.0" korrigiert.
+- `Dokumentation/Anwenderhandbuch.md`: Gerätetabelle mit Hinweis ergänzt, dass der
+  Admin die Aktor-Zuordnung inklusive Kanal selbst festlegt (Kanäle RT=4, TC=2, IT=2
+  gemäß Olafs Handbuch und den PDF-Vorlagen).
+- `Dokumentation/Anwenderhandbuch.md`: Neuer Abschnitt „Die richtige Grundtemperatur:
+  Heizversuch" (aus Olafs Handbuch v0.4 übernommen).
+- `Dokumentation/Anwenderhandbuch.md`: Neuer Abschnitt „Globale Einstellungen
+  (Systemvariablen für Skript 2)" mit Empfehlwerten (aus Olafs Handbuch v0.4).
+- `Dokumentation/Planung.md` (neu): Planung der Struktur und Nomenklatur
+  (Aktorengruppen/Heizgruppen mit Beispieltabelle), aus Olafs Handbuch v0.4.
+- `Dokumentation/Kalender-einrichten.md` (neu): Ermittlung der Kalender-Zugangsdaten
+  (ChurchTools, ChurchDesk; Google/iCal als Platzhalter), aus Olafs Handbuch v0.4.
+  Beide neuen Dokumente in `Readme.md` und `Anwenderhandbuch.md` referenziert.
+
 ## [2026-10-03]
 
 ### Geändert

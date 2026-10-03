@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-10-03 Luftfeuchte (HUMIDITY) optional in der Heizen-Logzeile ausgeben (nur wenn Datenpunkt vorhanden)
 !// TT:  2026-10-03 Nachtschaltung: Log-Meldungen ueberarbeitet (Raumname-Praefix, Multi-Raum-Zusatz)
 !// TT:  2026-10-02 Log-Text bei fehlendem Sensor/Aktor verstaendlicher formuliert (kein HomeMatic-Code mehr)
 !// TT:  2026-10-01 Log-Text bei fehlendem Sensor/Aktor korrigiert: zeigt jetzt GT.Max(AT)-Wert
@@ -478,6 +479,15 @@ foreach(SLEintrag,SListe){
           if(DEBUG) {WriteLine(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " existiert nicht!");}
         }
 
+        !// Luftfeuchte optional auslesen (nur wenn Datenpunkt vorhanden)
+        string HUMText = "";
+        if (AktAktor && objAktor){
+          objDP = objAktor.DPByHssDP("HUMIDITY");
+          if (objDP){
+            HUMText = " / HUM " # objDP.State().ToInteger().ToString() # "%";
+          }
+        }
+
         !// faktor2 wird nach unten auf 0.2 begrenzt. Besonders wenn wir bereits in der Heizphase sind.
         !// Sonst verschiebt sich die EIN Zeit immer weiter auf die AUS-Zeit zu. Was dazu führen könnte,
         !// dass die Heizung ausgeschaltet wird. faktor2 ist also ein Wert >=0.2
@@ -491,7 +501,7 @@ foreach(SLEintrag,SListe){
         !//if(log) {logObj.State("faktor2=" # faktor2.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
 
         !// Reale Schaltzeiten berechnen
-        string logText = RaumLogName # " Heizen - AT " # AT.ToString(1) # "°C / GT " # GT.ToString(1) # "°C / IST " # ISTTemperatur.ToString(1) # "°C - " # EIN.ToTime().Format("%X").Substr(0,5) # " ";
+        string logText = RaumLogName # " Heizen - AT " # AT.ToString(1) # "°C / GT " # GT.ToString(1) # "°C / IST " # ISTTemperatur.ToString(1) # "°C" # HUMText # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
         logText = logText # (offsetRaumAn/60) #"min ";
         if (offsetTempAn==0){ logText=logText#" - "; }

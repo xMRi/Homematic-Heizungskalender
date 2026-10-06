@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-10-05 Luftfeuchte: Wert 0 wird ignoriert (kein Sensor vorhanden, z.B. IP-Thermostat)
 !// TT:  2026-10-05 Luftfeuchte: ACTUAL_HUMIDITY (IP) zuerst pruefen, HUMIDITY (Classic) als Fallback
 !// TT:  2026-10-03 Luftfeuchte (HUMIDITY) optional in der Heizen-Logzeile ausgeben (nur wenn Datenpunkt vorhanden)
 !// TT:  2026-10-03 Nachtschaltung: Log-Meldungen ueberarbeitet (Raumname-Praefix, Multi-Raum-Zusatz)
@@ -480,7 +481,8 @@ foreach(SLEintrag,SListe){
           if(DEBUG) {WriteLine(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " existiert nicht!");}
         }
 
-        !// Luftfeuchte optional auslesen (nur wenn Datenpunkt vorhanden)
+        !// Luftfeuchte optional auslesen (nur wenn Datenpunkt vorhanden und Wert > 0).
+        !// Wert 0 bedeutet: kein Sensor vorhanden (z.B. IP-Thermostat ohne Feuchtigkeitssensor).
         string HUMText = "";
         if (AktAktor && objAktor){
           objDP = objAktor.DPByHssDP("ACTUAL_HUMIDITY");
@@ -488,7 +490,10 @@ foreach(SLEintrag,SListe){
             objDP = objAktor.DPByHssDP("HUMIDITY");
           }
           if (objDP){
-            HUMText = " / HUM " # objDP.State().ToInteger().ToString() # "%";
+            integer humVal = objDP.State().ToInteger();
+            if (humVal > 0){
+              HUMText = " / HUM " # humVal.ToString() # "%";
+            }
           }
         }
 

@@ -1,4 +1,4 @@
-# Tools
+# Tools/Debug+Test
 
 Dieser Ordner enthält optionale Zusatz-Skripte rund um den Heizkalender. Sie sind
 für den Betrieb nicht zwingend nötig, erleichtern aber Diagnose, Wartung und
@@ -49,4 +49,5 @@ Test-Skripten:<br>
 > Die Skripte `Tool-Alle Systemvariablen löschen` und
 > `Tool-Alle Systemvariablen und Programme löschen` entfernen unwiderruflich
 > Daten aus der CCU.<br>Diese Skripte sollten nur mit Bedacht und nach einem Backup verwenden werden. Sie dienen dazu Testmaschinen zu säubern oder zu bereinigen, ohne die Gerätezuordnungen zu beeinflussen.<br>
-> **Diese Programme sind wirklich nur mit äußerster Vorsicht und Expertenwissen zu benutzen.**
+> **Diese Programme sind wirklich nur mit äußerster Vorsicht und Expertenwissen zu benutzen.**<br>
+> Um eine versehentliche Nutzung zu verhindern wurden `quit` 

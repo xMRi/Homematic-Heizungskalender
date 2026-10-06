@@ -1,6 +1,6 @@
 !// Gestörte Kommunikation beheben
 !//================================================================================================
-!// Stand:    04.10.2026
+!// Stand:    06.10.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -10,6 +10,10 @@
 !// Es besteht keinerlei Garantie oder Haftung. Nutzung auf eigene Verantwortung.
 !//================================================================================================
 !//
+!// Best practice: 
+!//   Das Programm sollte stündlich einmal laufen.
+
+!// MRi: 2026-10-06 Best practive ergänzt.
 !// TT:  2026-10-04 Block fuer "Konfigurationsdaten stehen zur Uebertragung an" ergaenzt
 !//
 !//Eingabe eines Namens Präfix

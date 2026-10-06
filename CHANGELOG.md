@@ -13,6 +13,18 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-10-06]
+
+### Geändert
+
+- Aufteilung der Skripte im Tools Ordner in Programme und Debug+Test Code
+- `Best practice` ergänzt in einigen Skripten
+- Sicherheits Code quit in gefährlichen Skripten eingebaut um versehentliche Nutzung zu 
+  verhindern.
+- Anpassung der Dokumentation
+
+## [2026-10-05]
+
 ### Behoben
 
 - `HK-Skript 2`: Luftfeuchte-Auslesen unterstützt jetzt auch klassische Thermostate
@@ -105,7 +117,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
   `Tool-Test Thermostatgruppe auslesen` und `Tool-Test Thermostatgruppe schalten` ergänzt.
 - `Tools/Tool-Gestörte Kommunikation beheben.hsc`: Neuer Block für ausstehende
   Konfigurationsdaten (CONFIG_PENDING): Geräte mit gesetztem Flag werden ebenfalls
-  angestossen. Log-Eintrag und Debug-Ausgabe ergänzt. Beschreibung in `Tools/Readme.md`
+  angestoßen. Log-Eintrag und Debug-Ausgabe ergänzt. Beschreibung in `Tools/Readme.md`
   aktualisiert.
 - `Skripte/HK-Außentemperatur-Open-Meteo.hsc`: Log-Eintrag erweitert: zeigt jetzt
   aktuellen Messwert, gleitenden Durchschnitt mit °C und das verwendete Zeitfenster

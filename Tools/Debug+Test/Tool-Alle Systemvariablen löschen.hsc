@@ -1,6 +1,6 @@
 !// Skript zum Erstellen der Systemvariablen des Heizkalender für das Logging
 !//================================================================================================
-!// Stand:    04.03.2026
+!// Stand:    06.10.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -15,7 +15,10 @@
 !// ES KÖNTEN  WICHTIGE DATEN GELÖSCHT WERDEN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!// MRi:  2026-01-01  Test auf Namen war nicht caseless
+!//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!//Sicherheitsfunktion die entfernt werden muss für die Ausführung!
+quit;
+!//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !// Leerer Prefix mit einem Blank " ", löscht alle Variablen mit "HK" oder "Tool-".
 !// Andere Prefixe ChurchDesk cd_, Prefix ChurchTools ct_

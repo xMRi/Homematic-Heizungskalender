@@ -1,6 +1,6 @@
 !// Servicemeldungen automatisch bestätigen
 !//================================================================================================
-!// Stand:    04.03.2026
+!// Stand:    06.10.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -10,6 +10,12 @@
 !// Es besteht keinerlei Garantie oder Haftung. Nutzung auf eigene Verantwortung.
 !//================================================================================================
 !//
+!// Best practice: 
+!//   Für die Installation des Programmes sollte folgender Trigger verwendet werden
+!//     Wenn "Systemzustand" "Servicemeldungen" im Wertebereich "größer als" 0 bei Aktualisierung auslösen
+!//  
+
+!// MRi: 2026-10-06 Best practive ergänzt.
 
 !//Eingabe eines Namens Präfix
 !//Dies ist nur erforderlich wenn die Namensvorgabe beim erstellen den Systemvariablen geändert wurde.

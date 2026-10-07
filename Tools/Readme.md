@@ -2,55 +2,35 @@
 
 Dieser Ordner enthält optionale Zusatz-Skripte rund um den Heizkalender. Sie sind
 für den Betrieb nicht zwingend nötig, erleichtern aber Diagnose, Wartung und
-Auswertung. Die Skripte werden auf der CCU manuell per „Skript testen" ausgeführt.
+Auswertung. 
 
-## Logging und Auswertung
-
-| Skript | Zweck |
-| :--- | :--- |
-| `Tool-Log des Heizkalenders ausgeben` | Gibt das Systemprotokoll des Heizkalenders (HK-Log/HK1-Log/HK2-Log) aus. |
-| `Tool-Log der Heizkurvenkontrolle ausgeben` | Gibt die Protokolleinträge der Heizkurvenkontrolle aus (Start/Ziel/Ende der Heizphasen). |
-| `Tool-Raumvariablen als Tabelle` | Listet alle `HKG-Raum-*`-Variablen als Markdown-Tabelle auf. |
-
-## Diagnose
-
-| Skript | Zweck |
-| :--- | :--- |
-| `Tool-Diagnose Raumzuordnung ChurchTools` | Prüft die Zuordnung von ChurchTools-Ressourcen zu Raumvariablen. |
-| `Tool-Diagnose Geraetereferenzen` | Prüft die in den Raumvariablen referenzierten Aktoren/Geräte. |
+Diese Skripte können als eigenes Programm in der CCU installiert werden.
 
 ## Wartung und Betrieb
 
 | Skript | Zweck |
 | :--- | :--- |
-| `Tool-Heizgruppen Modus zurücksetzen` | Setzt den Modus aller `HmIP-HEATING`-Heizgruppen auf Manuell oder Auto. Die Heizgruppe überträgt den Modus automatisch auf die zugehörigen Thermostate. Eignet sich für den nächtlichen Betrieb als Absicherung gegen Modusverlust nach CCU-Neustarts. |
-| `Tool-Heizgruppen eTRV Modus setzen` | Sonderfall: setzt `CONTROL_MODE` direkt auf allen `HmIP-eTRV`-Einzelthermostaten, nicht auf der Gruppenadresse. Nur nötig wenn ein Thermostat nach einem Firmware-Update den Gruppenmodus nicht übernommen hat. |
-| `Tool-Gestörte Kommunikation beheben` | Behebt Kommunikationsstörungen (UNREACH) und überträgt ausstehende Konfigurationsdaten (CONFIG_PENDING) an Geräte. Eignet sich als nächtliches Wartungsprogramm. |
-| `Tool-Servicemeldungen automatisch bestätigen` | Bestätigt Servicemeldungen der CCU automatisch. |
-| `Tool-Uptime loggen` | Protokolliert die Laufzeit der CCU. |
-| `Tool-Reboot` | Startet die CCU neu. |
+| `Tool-CloudMatic Diagramm Daten sichern` | Mit diesem Skript lassen sich aufgezeichnete CloudMatic Daten in entsprechenden Textdateien für eine spätere Auswertung archivieren.<br>Nutzung macht nur Sinn, wenn CloudMatic Diagramm Daten über einen längeren Zeitpunkt ausgewertet werden sollen. |
+| `Tool-Heizgruppen Modus zurücksetzen` | Setzt den Modus aller `HmIP-HEATING`-Heizgruppen auf Manuell oder Auto. Die Heizgruppe überträgt den Modus automatisch auf die zugehörigen Thermostate. Dieses Programm dient speziell dazu das versehentliche Umschalten von Thermostaten in einen anderen Modus rückgängig zu machen. Hier können auch spezielle Ausnahmen definiert werden.<br>Das Programm sollte Nachts einmal laufen. |
+| `Tool-Gestörte Kommunikation beheben` | Behebt Kommunikationsstörungen (UNREACH) und überträgt ausstehende Konfigurationsdaten (CONFIG_PENDING) an Geräte. Eignet sich als nächtliches Wartungsprogramm.<br>Das Programm sollte stündlich einmal laufen. |
+| `Tool-Servicemeldungen automatisch bestätigen` | Bestätigt Servicemeldungen der CCU automatisch. Eignet sich als automatisches Wartungsprogramm.<br>Für die Installation des Programmes sollte folgender Trigger verwendet werden:<br>Wenn "Systemzustand" "Servicemeldungen" im Wertebereich "größer als" 0 bei Aktualisierung auslösen |
+| `Tool-Uptime loggen` | Protokolliert die Laufzeit der CCU.<br>Das Programm sollte alle 3h einmal laufen. |
 
-## CloudMatic-Diagramme
+Im Dateikopf der Programme finden sich weitere Informationen und Hinweise.
 
-Skripte zum Sichern, Dumpen und Wiederherstellen der CloudMatic-Diagrammdaten:
-`Tool-CloudMatic Diagramm Daten sichern`, `Tool-CloudMatic Diagramm-Dump`,
-`Tool-CloudMatic Diagramm-Load`.
+Die folgenden Programme sollten zusätzlich installiert werden, um einen vollkommen unbeaufsichtigten Betrieb zu ermöglichen:<br>
+`Tool-Heizgruppen Modus zurücksetzen`<br>
+`Tool-Gestörte Kommunikation beheben`<br>
+`Tool-Servicemeldungen automatisch bestätigen`
 
 ## Sonstige Hilfsmittel
 
 Weitere Werkzeuge für seltene oder umgebungsspezifische Aufgaben:
-`Tool-WakeOnLAN BeamerPC`, `Sammlung-Hilfs-Skripte` sowie eine Sammlung von
-Test-Skripten (`Tool-Test Raumvariable auslesen`,
-`Tool-Test Raumvariable setzen`, `Test-Temperatur Verschiebung berechnen`,
-`Tool-Test Thermostatgruppe auslesen`, `Tool-Test Thermostatgruppe schalten`).
+
+| Skript | Zweck |
+| :--- | :--- |
+| `Tool-WakeOnLAN BeamerPC` | Beispiel Programm mit dem man einen oder mehrere Rechner über ein Skript aufwecken kann. Dieses Programm könnte zum Beispiel über die CloudMatic angestoßen werden.|
 
 > [!WARNING]
-> Die Skripte `Tool-Alle Systemvariablen löschen` und
-> `Tool-Alle Systemvariablen und Programme löschen` entfernen unwiderruflich
-> Daten auf der CCU. Nur mit Bedacht und nach einem Backup verwenden.
-
-## Entwickler-Tests
-
-Reine Entwickler-Testfälle liegen im Ordner [`Tests/`](../Tests) (z.B.
-`Test-Duplikatcheck-Bug.hsc`, `churchtools.http`). Sie sind nicht für den
-Produktivbetrieb gedacht.
+`Tool-Reboot` startet die CCU neu. Das Skript muss unbedingt mit einem zeitlichen Trigger versehen werden. Geschieht dies nicht, dann kann dies zu einem endlosen Reboot der CCU führen.
+In Zeile 19 wurde aus Sicherheitsgründen auch ein zusätzlicher `quit` Befehl eingebaut um eine versehentliche Nutzung auszuschließen. Der `quit` Befehl muss entfernt werden um diese Skripte zu benutzen.

@@ -210,19 +210,22 @@ BEGIN
     PUSHBUTTON      "Löschen...",IDC_BT_DELETE,321,69,50,14
 END
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 271, 180
+IDD_ABOUTBOX DIALOGEX 0, 0, 271, 199
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Informationen zur Heizkalender Installation"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,21,20
+    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
     LTEXT           "Heizkalender Installation",IDC_STATIC,41,14,214,8,SS_NOPREFIX
     LTEXT           "Version %1 - Softwarestand vom: %2",IDC_ST_VERSION,41,28,214,8,SS_NOPREFIX
     LTEXT           "Copyright © 2026 Martin Richter (xMRi-Software)",IDC_ST_COPYRIGHT,42,42,214,8
     LTEXT           "Dieses Programm ist freie Software im Sinne der\nGNU General Public License (GPL) Version 3 oder neuer.\n\nSie dürfen dieses Programm verwenden, verändern und weiterverbreiten, sofern die Bedingungen der GPL eingehalten werden.",IDC_STATIC,15,56,247,44
-    LTEXT           "Dieses Programm wird OHNE JEGLICHE GEWÄHRLEISTUNG bereitgestellt.\nDie Nutzung erfolgt auf eigene Verantwortung.\n\nWeitere Informationen zur Lizenz finden Sie unter:",IDC_STATIC,15,102,247,36
-    CONTROL         "https://www.gnu.org/licenses/",IDC_LINK,"MfcLink",0x0,14,139,105,12
-    DEFPUSHBUTTON   "OK",IDOK,110,159,50,14,WS_GROUP
+    LTEXT           "Dieses Programm wird OHNE JEGLICHE GEWÄHRLEISTUNG bereitgestellt.\nDie Nutzung erfolgt auf eigene Verantwortung.\n\nWeitere Informationen zur Lizenz finden Sie unter:",IDC_STATIC,15,102,247,34
+    CONTROL         "https://www.gnu.org/licenses/",IDC_LINK1,"MfcLink",0x0,15,136,247,12
+    LTEXT           "Link auf das aktuelle GitHub Projekt:",IDC_STATIC,15,151,116,8
+    CONTROL         "https://github.com/xMRi/Homematic-Heizungskalender",IDC_LINK2,
+                    "MfcLink",0x0,15,161,247,12
+    DEFPUSHBUTTON   "OK",IDOK,110,179,50,14,WS_GROUP
 END
 
 IDD_ROOM DIALOGEX 0, 0, 292, 189
@@ -310,8 +313,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,5,2,0
- PRODUCTVERSION 3,5,0,0
+ FILEVERSION 3,6,0,0
+ PRODUCTVERSION 3,6,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -328,12 +331,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "xMRi-Software"
             VALUE "FileDescription", "Heizkalender Installations- und Updateprogramm"
-            VALUE "FileVersion", "3.5.2.0"
+            VALUE "FileVersion", "3.6.0.0"
             VALUE "InternalName", "HeizkalenderInstallation.exe"
             VALUE "LegalCopyright", "Copyright 2026 by xMRi-Software (Martin Richter) "
             VALUE "OriginalFilename", "HeizkalenderInstallation.exe"
             VALUE "ProductName", "Heizkalender"
-            VALUE "ProductVersion", "3.5.0.0"
+            VALUE "ProductVersion", "3.6.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -400,7 +403,7 @@ BEGIN
 
     IDD_ABOUTBOX, DIALOG
     BEGIN
-        BOTTOMMARGIN, 73
+        BOTTOMMARGIN, 92
     END
 
     IDD_ROOM, DIALOG
@@ -511,6 +514,8 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
     0, 0, 0, 0
 END
 
@@ -542,7 +547,7 @@ END
 
 IDD_ABOUTBOX DLGINIT
 BEGIN
-    IDC_LINK, 0x37c, 186, 0
+    IDC_LINK1, 0x37c, 186, 0
 0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x683e, 0x7474, 0x7370, 
 0x2f3a, 0x772f, 0x7777, 0x672e, 0x756e, 0x6f2e, 0x6772, 0x6c2f, 0x6369, 
 0x6e65, 0x6573, 0x2f73, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7255, 
@@ -554,6 +559,19 @@ BEGIN
 0x7865, 0x5474, 0x6f6f, 0x746c, 0x7069, 0x463e, 0x4c41, 0x4553, 0x2f3c, 
 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7546, 0x6c6c, 0x6554, 0x7478, 0x6f54, 
 0x6c6f, 0x6974, 0x3e70, 
+    IDC_LINK2, 0x37c, 207, 0
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x683e, 0x7474, 0x7370, 
+0x2f3a, 0x672f, 0x7469, 0x7568, 0x2e62, 0x6f63, 0x2f6d, 0x4d78, 0x6952, 
+0x482f, 0x6d6f, 0x6d65, 0x7461, 0x6369, 0x482d, 0x6965, 0x757a, 0x676e, 
+0x6b73, 0x6c61, 0x6e65, 0x6564, 0x3c72, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 
+0x555f, 0x6c72, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7255, 0x506c, 
+0x6572, 0x6966, 0x3e78, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7255, 
+0x506c, 0x6572, 0x6966, 0x3e78, 0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x545f, 
+0x6f6f, 0x746c, 0x7069, 0x3c3e, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x545f, 
+0x6f6f, 0x746c, 0x7069, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7546, 
+0x6c6c, 0x6554, 0x7478, 0x6f54, 0x6c6f, 0x6974, 0x3e70, 0x4146, 0x534c, 
+0x3c45, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x465f, 0x6c75, 0x546c, 0x7865, 
+0x5474, 0x6f6f, 0x746c, 0x7069, "\076" 
     0
 END
 

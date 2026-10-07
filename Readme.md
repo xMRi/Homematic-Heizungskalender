@@ -178,3 +178,7 @@ Der Autor übernimmt keine Haftung für Schäden an:
 Die Nutzung erfolgt ausschließlich auf eigene Verantwortung.
 Vor jeder Änderung wird dringend empfohlen, ein vollständiges
 Backup der CCU-Konfiguration anzufertigen.
+
+## Änderungen am Projekt-Homepage
+
+Im [`CHANGELOG`](/CHANGELOG.md) werden alle nennenswerten Änderungen an diesem Projekt dokumentiert.

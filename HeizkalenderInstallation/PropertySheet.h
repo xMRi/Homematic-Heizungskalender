@@ -51,6 +51,7 @@ public:
 				m_edCTChurchName, m_edCTLoginToken, 
 				m_ediCalUrl, m_edGoogleApiKey, m_edGoogleKalId, m_edRaumListe,
 				m_edCDOrgaId, m_edCDApiToken;
+	CFont	m_fontBold;
 
 private:
 	bool m_bBlockFirstOnKillActive{ true };

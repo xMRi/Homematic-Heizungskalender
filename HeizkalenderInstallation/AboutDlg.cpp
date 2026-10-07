@@ -52,6 +52,26 @@ BOOL CAboutDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
+	// Set the text to be bold
+	LOGFONT logfont;
+	GetFont()->GetObject(sizeof(LOGFONT),&logfont);
+	logfont.lfWeight = FW_BOLD;
+	if (m_fontBold.CreateFontIndirect(&logfont))
+	{
+		// Set bold font
+		static const UINT uiBoldCtrls[] = 
+		{
+			IDC_ST_VERSION, IDC_ST_COPYRIGHT, 0
+		};
+		for (int i=0; uiBoldCtrls[i]; ++i)
+		{
+			CWnd *pWnd = GetDlgItem(uiBoldCtrls[i]);
+			if (pWnd)
+				pWnd->SetFont(&m_fontBold);
+		}
+	}
+
+	// Programmversion und Copyright laden und anzeigen
 	CFileVersionInfo fvi;
 	fvi.GetFileVersionInfo();
 	

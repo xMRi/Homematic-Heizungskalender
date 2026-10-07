@@ -162,10 +162,11 @@
 #define IDC_CB_AKTOR1                   1035
 #define IDC_ED_TEMP                     1036
 #define IDC_ED_NAME                     1037
-#define IDC_LINK                        1038
 #define IDC_ED_WERT_NEU                 1038
 #define IDC_CB_AKTOR2                   1038
+#define IDC_LINK1                       1038
 #define IDC_LC_DATA                     1039
+#define IDC_LINK2                       1039
 #define IDC_LB_DATA                     1040
 #define IDC_ED_STATUS                   1040
 #define IDC_BT_WINMERGE                 1041

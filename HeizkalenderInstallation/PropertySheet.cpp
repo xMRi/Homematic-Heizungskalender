@@ -29,6 +29,11 @@
 
 BOOL CPageBase::OnQueryCancel()
 {
+	// Daten ändern bei Bedarf, damit die nächste Prüfung auch auf dem Settings DIalog funktioniert
+	// wenn die Escape Taste gedrückt wird
+	if (!UpdateData())
+		return FALSE;
+
 	// Prüfe auf Datenänderungen
 	if (!theApp.IsDataModified())
 		return TRUE;
@@ -44,7 +49,7 @@ BOOL CPageBase::OnApply()
 	{
 		// Prüfe ob alle Seiten besucht wurden. Wenn es Änderngen gab, diese sollten nie unkontrolliert	bleiben.
 		auto *pParent = STATIC_DOWNCAST(CInstallationsWizard,GetParent());
-		if (theApp.IsRaumListeModified() && !pParent->m_pageRooms.m_bSeiteBesucht)
+		if (theApp.IsRaumListeModified() && !pParent->m_pageResources.m_bSeiteBesucht)
 		{
 			AfxMessageBox(IDP_RAUMLISTE_KONTROLLIEREN);
 			pParent->SetActivePage(&pParent->m_pageResources);
@@ -289,6 +294,24 @@ struct {
 BOOL CPageConnect::OnInitDialog()
 {
 	CPageBase::OnInitDialog();
+
+	LOGFONT logfont;
+	GetFont()->GetObject(sizeof(LOGFONT),&logfont);
+	logfont.lfWeight = FW_BOLD;
+	if (m_fontBold.CreateFontIndirect(&logfont))
+	{
+		// Set bold font
+		static const UINT uiBoldCtrls[] = 
+		{
+			IDC_ST_VERSION, 0
+		};
+		for (int i=0; uiBoldCtrls[i]; ++i)
+		{
+			CWnd *pWnd = GetDlgItem(uiBoldCtrls[i]);
+			if (pWnd)
+				pWnd->SetFont(&m_fontBold);
+		}
+	}
 
 	m_cbScript1Mode.EnableWindow(FALSE);
 

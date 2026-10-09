@@ -72,7 +72,7 @@ Diese Dateien befinden sich alle [in diesem Ordner](/Backup-Originale/3.2.1)
 
 ## Lizenz
 
-Der Heizkalender-Installer ist freie Software.
+Die `HeizkalenderInstallation.exe` ist freie Software.
 
 - Copyright (C) 2026 by Martin Richter (xMRi-Software)
 
@@ -103,7 +103,7 @@ Verwaltung von zeitbasierten Heizungssteuerungen entwickelt,
 insbesondere im Umfeld von Homematic-, CCU- und vergleichbaren
 IoT-Systemen.
 
-Der Heizkalender-Installer steht in keiner Verbindung zur
+Die `HeizkalenderInstallation.exe` steht in keiner Verbindung zur
 eQ-3 AG oder anderen Herstellern von Smart-Home-Komponenten.
 
 Die Software:

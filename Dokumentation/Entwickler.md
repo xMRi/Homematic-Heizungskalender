@@ -1,7 +1,7 @@
 # Entwickler-Dokumentation
 
 Diese Seite richtet sich an Mitwirkende, die am Code des Heizkalenders arbeiten:
-an den HomeMatic-Skripten oder am Windows-Installer.
+an den HomeMatic-Skripten oder am Windows-Installations-Programm.
 
 ## Architektur-Überblick
 
@@ -36,16 +36,16 @@ Release-Standes gehören zusammen und müssen gemeinsam eingespielt werden.
 Die Dateiendung `.hsc` ist eine bewusste Wahl (siehe
 [Skripte/Readme.md](../Skripte/Readme.md)); historisch wurde `.c` verwendet.
 
-## Build des Installers (Windows, Visual Studio)
+## Build der `HeizkalenderInstallation.exe` (Windows, Visual Studio)
 
-Das Installer-Projekt liegt in `HeizkalenderInstallation/`:
+Das Installations-Projekt liegt in `HeizkalenderInstallation/`:
 
 - Projektdatei: `HeizkalenderInstallation.vcxproj`
 - Solution: `HeizkalenderInstallation.slnx`
 - Zielplattform: Windows 10+, Win32/x64, MFC Unicode
 - Konfigurationen: Debug/Release × Win32/x64
 
-Es gibt keine Makefiles oder Build-Skripte für macOS/Linux; der Installer ist
+Es gibt keine Makefiles oder Build-Skripte für macOS/Linux; die `HeizkalenderInstallation.exe` ist
 rein Windows-seitig.
 
 Wichtige Klassen:
@@ -67,7 +67,7 @@ Die Änderungshistorie über alle Stände hinweg steht im zentralen
 
 ## Änderungs-Workflow
 
-Wird eine `.hsc`-Datei (oder Installer-Quelle) inhaltlich geändert, gehören dazu
+Wird eine `.hsc`-Datei (oder `HeizkalenderInstallation.exe`-Quelle) inhaltlich geändert, gehören dazu
 immer die folgenden Schritte:
 
 1. **Stand aktualisieren:** Datum in der `!// Stand:`-Zeile im Datei-Header auf das
@@ -80,13 +80,14 @@ immer die folgenden Schritte:
    Hinzugefügt/Geändert/Behoben/Entfernt).
 4. **Dokumentation prüfen:** Neue oder umbenannte Systemvariablen müssen in der
    [Skript-Referenz](../Skripte/Dokumentation/Readme.md) erscheinen.
-5. **Installer anpassen (nur bei neuen/geänderten Systemvariablen):** Der Installer
+5. **`HeizkalenderInstallation.exe` anpassen (nur bei neuen/geänderten Systemvariablen):** Die 
+   `HeizkalenderInstallation.exe`
    liest die Systemvariablen NICHT aus den `.hsc`-Dateien, sondern legt sie über
    eigene, fest einkompilierte Meta-Skripte an
    (`HeizkalenderInstallation/res/SYSVARS_Init_*.hsc` sowie `SYSVARS-Init.hsc` /
    `SYSVARS-InitValues.txt`). Wird eine neue Systemvariable eingeführt, umbenannt
    oder ihr Default geändert, muss sie dort von Hand ergänzt werden, sonst legt
-   der Installer sie nicht an.
+   die `HeizkalenderInstallation.exe` sie nicht an.
 
 **Konsistenz-Hinweis Systemvariablen:** Werden Variablen in den
 `HK-Init-Skript 1_*.hsc` über die parallelen Arrays (`nm`/`be`/`tp`/`vl`/`vu`/`wr`/`pr`)

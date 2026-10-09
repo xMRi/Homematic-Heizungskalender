@@ -1,7 +1,7 @@
 # Kalender-Zugangsdaten ermitteln
 
 Diese Anleitung beschreibt, wie die Zugangsdaten des jeweiligen Kalenders beschafft
-werden. Sie ist unabhängig von der Art der Installation (Windows-Installer oder
+werden. Sie ist unabhängig von der Art der Installation (`HeizkalenderInstallation.exe` oder
 manuell) und wird vor dem Eintragen der Daten benötigt.
 
 Notieren Sie die Daten (z.B. im Planungsdatenblatt); Token und API-Keys speichern Sie
@@ -42,4 +42,4 @@ Raumname mit vorangestelltem `#` eindeutig im Termintitel stehen.
 
 - Vorab die Struktur planen: [Planung](Planung.md)
 - Danach die eigentliche Einrichtung über den
-  [Installer](../HeizkalenderInstallation/Dokumentation/Readme.md).
+  [`HeizkalenderInstallation.exe`](../HeizkalenderInstallation/Dokumentation/Readme.md).

@@ -12,7 +12,7 @@ benennen, das Heizverhalten über die Vorheizzeit einstellen und einzelne Termin
 Sonderbefehlen steuern.
 
 Für die Erstinstallation siehe die
-[Installer-Anleitung](../HeizkalenderInstallation/Dokumentation/Readme.md). Davor
+[`HeizkalenderInstallation.exe`-Anleitung](../HeizkalenderInstallation/Dokumentation/Readme.md). Davor
 helfen die [Planung](Planung.md) (Struktur und Nomenklatur) und das Beschaffen der
 [Kalender-Zugangsdaten](Kalender-einrichten.md).
 Die vollständige Liste aller Systemvariablen steht in der
@@ -36,7 +36,7 @@ Der Ablauf im Überblick:
 
 ```mermaid
 flowchart TD
-    Installer["HeizkalenderInstallation.exe<br/>(einmalig)"] -->|"führt Init-Skripte aus"| SysVar[("Systemvariablen<br/>HK1-*, HK2-*, HKG-Raum-*")]
+    Installation["HeizkalenderInstallation.exe<br/>(einmalig)"] -->|"führt Init-Skripte aus"| SysVar[("Systemvariablen<br/>HK1-*, HK2-*, HKG-Raum-*")]
 
     OpenMeteo["HK-Außentemperatur-Open-Meteo<br/>(stündlich)"] -->|"schreibt Außentemperatur"| ATVar[("HK2-Aussentemperatur")]
 
@@ -52,7 +52,7 @@ flowchart TD
 
 Ablauf im Detail:
 
-1. **Einmalig:** Der Installer schreibt über die Init-Skripte die Systemvariablen.
+1. **Einmalig:** Die `HeizkalenderInstallation.exe` schreibt über die Init-Skripte die Systemvariablen.
 2. **Stündlich:** `HK-Außentemperatur-Open-Meteo` aktualisiert die Außentemperatur in `HK2-Aussentemperatur`.
 3. **Alle 30 Minuten:** Skript 1 liest den Kalender und schreibt die anstehenden Termine in `HK1-Schaltliste`.
 4. **Alle 5 Minuten:** Skript 2 berechnet aus der Schaltliste, der Außentemperatur und der aktuellen Raumtemperatur die Vorlaufzeiten und heizt bzw. schaltet die Räume entsprechend.
@@ -370,8 +370,8 @@ Kanal 1:
 ```
 
 Die Adresse der Heizgruppe (`INT0000001` o.ä.) lässt sich in der CCU-WebUI unter den
-Geräteeigenschaften der Heizgruppe ablesen. Der Installer übernimmt die Adresse, wenn
-der Raum dort entsprechend konfiguriert wird.
+Geräteeigenschaften der Heizgruppe ablesen. Die `HeizkalenderInstallation.exe` übernimmt die Adresse, 
+wenn der Raum dort entsprechend konfiguriert wird.
 
 **Schaltaktor (Therme):** Soll gleichzeitig ein Schaltaktor (z.B. für das Ventil an
 der Therme) gesteuert werden, empfiehlt sich ein separates CCU-Programm nach folgendem

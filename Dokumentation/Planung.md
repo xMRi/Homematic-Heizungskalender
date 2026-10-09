@@ -2,7 +2,7 @@
 
 Diese Anleitung beschreibt die konzeptionelle Vorarbeit, bevor Hardware und Software
 eingerichtet werden. Sie ist unabhängig vom Betriebssystem der Zentrale und von der
-Art der Installation (Windows-Installer oder manuell).
+Art der Installation (`HeizkalenderInstallation.exe` oder manuell).
 
 Der Heizkalender verbindet den Online-Kalender am einen Ende mit dem einzelnen
 Heizkörperthermostat am anderen Ende.
@@ -61,5 +61,5 @@ angehängt.
 ## Weiter geht es
 
 - Zugangsdaten des Kalenders beschaffen: [Kalender-Zugangsdaten ermitteln](Kalender-einrichten.md)
-- Danach die eigentliche Einrichtung über den
-  [Installer](../HeizkalenderInstallation/Dokumentation/Readme.md).
+- Danach die eigentliche Einrichtung über die
+  [`HeizkalenderInstallation.exe`](../HeizkalenderInstallation/Dokumentation/Readme.md).

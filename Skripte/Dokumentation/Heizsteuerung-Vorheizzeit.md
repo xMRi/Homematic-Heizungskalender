@@ -158,7 +158,7 @@ Dafür gibt es zwei Offsets in Minuten, die beide vom Terminende abgezogen werde
 
 | Offset | Konfiguration | Aktueller Wert |
 | :--- | :--- | :--- |
-| **Raum-individuell** | Im Installer pro Raum (Feld „Vorzeit Aus“) | 30 min (alle Räume) |
+| **Raum-individuell** | In der `HeizkalenderInstallation.exe` pro Raum (Feld „Vorzeit Aus“) | 30 min (alle Räume) |
 | **Global** | Systemvariable `HK2-VorzeitAus` | 0 min |
 
 ```txt

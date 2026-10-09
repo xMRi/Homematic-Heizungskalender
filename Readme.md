@@ -1,6 +1,6 @@
-# HomeMatic-Heizungskalender
-
 <img src="Logos\HK-Logo mit Titel (200px).png" align="right" alt="Heizkalender-Logo">
+
+# HomeMatic-Heizungskalender
 
 Der HomeMatic-Heizungskalender dient zur Steuerung der Homematic über ChurchTool, ChurchDesk, iCal oder Google.
 Er umfasst Skripte, Tools und eine Installations- und Update-Software. Die Skripte werden intern über Systemvariablen gesteuert.

@@ -1,7 +1,14 @@
 # HomeMatic-Heizungskalender
 
-Der HomeMatic-Heizungskalender dient zur Steuerung der Homematic über ChurchTool, ChurchDesk, iCal oder Google.
-Er umfasst Skripte, Tools und eine Installations- und Update-Software. Die Skripte werden intern über Systemvariablen gesteuert.
+> [!NOTE]
+> Diese Datei ist im Markdown-Format geschrieben. Wenn sie in einem normalen Texteditor
+> geöffnet wird, sind darin Formatierungszeichen (z. B. `#`, `**`, `|`) sichtbar.
+> Mit allen Formatierungen lässt sie sich online ansehen unter:
+> <https://github.com/xMRi/Homematic-Heizungskalender/blob/main/Skripte/Readme.md>
+
+Der HomeMatic-Heizungskalender dient zur Steuerung der Homematic über ChurchTool, ChurchDesk, iCal oder
+Google. Er umfasst Skripte, Tools und eine Installations- und Update-Software. Die Skripte werden 
+intern über Systemvariablen gesteuert.
 
 ## Allgemeines
 

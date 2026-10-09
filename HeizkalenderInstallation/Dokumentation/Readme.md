@@ -1,26 +1,40 @@
 # Heizkalender-Installation
 
-Die Heizkalender-Installation ist ein Tool zur Erstellung von Heizkalendern für die HomeMatic, basierend auf Daten aus ChurchTools, ChurchDesk, iCal oder Google Kalender.
+Die Heizkalender-Installation ist ein Tool zur Erstellung von Heizkalendern für die HomeMatic, 
+basierend auf Daten aus ChurchTools, ChurchDesk, iCal oder Google Kalender.
 
-Sie ermöglicht die Neuinstallation sowie Updates bestehender Installationen. Sie bietet eine benutzerfreundliche Oberfläche zur Konfiguration der Heizkalender und unterstützt die Generierung von Skripten und notwendigen Systemvariablen, die in der HomeMatic CCU oder ähnlichen Systemen verwendet werden können.
+Sie ermöglicht die Neuinstallation sowie Updates bestehender Installationen. Sie bietet eine 
+benutzerfreundliche Oberfläche zur Konfiguration der Heizkalender und unterstützt die Generierung von 
+Skripten und notwendigen Systemvariablen, die in der HomeMatic CCU oder ähnlichen Systemen verwendet 
+werden können.
 
 ## Systemvoraussetzungen
 
 - Betriebssystem: Windows
-- Die CCU muss in den Sicherheitseinstellungen den Zugriff auf die Remote Homematic-Script API erlauben. Dabei muss entweder ein eingeschränkter Zugriff auf die benötigten Funktionen oder ein vollständiger Zugriff gewährt werden, damit die Heizkalender-Installation die notwendigen Skripte und Variablen erstellen kann.
+- Die CCU muss in den Sicherheitseinstellungen den Zugriff auf die Remote Homematic-Script API 
+erlauben. Dabei muss entweder ein eingeschränkter Zugriff auf die benötigten Funktionen oder ein 
+vollständiger Zugriff gewährt werden, damit die Heizkalender-Installation die notwendigen Skripte und 
+Variablen erstellen kann.
 - Ein Administrator-Benutzer und das zugehörige Kennwort müssen bekannt sein.
-- Alle Skripte, die installiert werden sollen, müssen im Programmverzeichnis der Heizkalender-Installation liegen. Die Namen sind vorgegeben und dürfen nicht verändert werden. Es können aber weitere Tool-Skripte hinzugefügt werden, die dann ebenfalls aktualisiert werden.
-- Wurden Tool-Skripte mit installiert, können diese auch aktualisiert werden, sofern die entsprechenden Dateien im Verzeichnis der Heizkalender-Installation liegen.
-- Um auf Ressourcen und externe Kalender zugreifen zu können, muss der Rechner mit dem Internet verbunden sein.
+- Alle Skripte, die installiert werden sollen, müssen im Programmverzeichnis der 
+Heizkalender-Installation liegen. Die Namen sind vorgegeben und dürfen nicht verändert werden. Es 
+können aber weitere Tool-Skripte hinzugefügt werden, die dann ebenfalls aktualisiert werden.
+- Wurden Tool-Skripte mit installiert, können diese auch aktualisiert werden, sofern die entsprechenden
+Dateien im Verzeichnis der Heizkalender-Installation liegen.
+- Um auf Ressourcen und externe Kalender zugreifen zu können, muss der Rechner mit dem Internet 
+verbunden sein.
 - Eine lauffähige Kopie der Heizkalender-Installation liegt im Skripte-Verzeichnis.
 
 ### Vorbereiten der CCU
 
-Damit die Heizkalender-Installation ausgeführt werden kann, muss der Zugriff auf die Homematic-Script-API freigeschaltet werden. Dies geschieht in der HomeMatic-WebUI unter *Einstellungen → Firewall konfigurieren → Remote Homematic-Script API*. Dort wird entweder *Vollzugriff* eingestellt:
+Damit die Heizkalender-Installation ausgeführt werden kann, muss der Zugriff auf die 
+Homematic-Script-API freigeschaltet werden. Dies geschieht in der HomeMatic-WebUI unter *Einstellungen 
+→ Firewall konfigurieren → Remote Homematic-Script API*. Dort wird entweder *Vollzugriff* eingestellt:
 
 ![CCU-Zugriff: Vollzugriff](Bilder/CCU-Zugriff-1.png)
 
-Oder es wird *Eingeschränkter Zugriff* erteilt und die IP-Adresse des Rechners, von dem aus zugegriffen wird, freigegeben:
+Oder es wird *Eingeschränkter Zugriff* erteilt und die IP-Adresse des Rechners, von dem aus zugegriffen
+wird, freigegeben:
 
 ![CCU-Zugriff: Eingeschränkter Zugriff](Bilder/CCU-Zugriff-2.png)
 
@@ -30,11 +44,14 @@ Freigegebene IP-Adresse für den Zugriff:
 
 ## Kurzanleitung
 
-Die Kurzanleitung zeigt, welche Schritte bei einer Neuinstallation, einem Update oder einer Korrektur der Einstellungen durchgeführt werden müssen.
+Die Kurzanleitung zeigt, welche Schritte bei einer Neuinstallation, einem Update oder einer Korrektur 
+der Einstellungen durchgeführt werden müssen.
 
 ### Neuinstallation
 
-Außer der Heizkalender-Installation sind keine weiteren Programme oder Skripte auszuführen. Sie wird direkt auf eine „leere“, frische CCU3 angewendet. Die entsprechenden Geräte sollten angelernt und in Heizgruppen zusammengefasst sein.
+Außer der Heizkalender-Installation sind keine weiteren Programme oder Skripte auszuführen. Sie wird 
+direkt auf eine „leere“, frische CCU3 angewendet. Die entsprechenden Geräte sollten angelernt und in 
+Heizgruppen zusammengefasst sein.
 
 1. CCU3 vorbereiten (es sollten keine HK-Skripte oder -Variablen vorhanden sein)
 2. Geräte und Heizgruppen einrichten
@@ -48,7 +65,9 @@ Außer der Heizkalender-Installation sind keine weiteren Programme oder Skripte 
 
 ### Parameter ändern oder Update installieren
 
-Für ein Update oder das Ändern der aktuellen Parameter wird die Heizkalender-Installation gestartet; anschließend können die gewünschten Änderungen vorgenommen werden. Sind neuere Skripte oder Module vorhanden, werden diese automatisch aktualisiert.
+Für ein Update oder das Ändern der aktuellen Parameter wird die Heizkalender-Installation gestartet; 
+anschließend können die gewünschten Änderungen vorgenommen werden. Sind neuere Skripte oder Module 
+vorhanden, werden diese automatisch aktualisiert.
 
 1. Heizkalender-Installation starten
 2. **Verbinden** anklicken
@@ -58,8 +77,9 @@ Für ein Update oder das Ändern der aktuellen Parameter wird die Heizkalender-I
 ### Anpassung der Raumliste
 
 > [!WARNING]
-> Die Raumliste sollte nur dann neu eingelesen werden, wenn sich die Raumliste oder die Anzahl der zu verwaltenden Ressourcen ändert.
-> Andernfalls kann es zu Datenverlust oder zum Verlust der aktuellen Einstellungen kommen.
+> Die Raumliste sollte nur dann neu eingelesen werden, wenn sich die Raumliste oder die Anzahl der zu 
+> verwaltenden Ressourcen ändert. Andernfalls kann es zu Datenverlust oder zum Verlust der aktuellen 
+> Einstellungen kommen.
 
 1. Heizkalender-Installation starten
 2. **Verbinden** anklicken
@@ -74,18 +94,21 @@ Im Folgenden werden die einzelnen Seiten der Heizkalender-Installation beschrieb
 ### Startbildschirm 
 
 Der Startbildschirm enthält wichtige Informationen über die Heizkalender-Installation.<br>
-Hier findet sich die aktuelle Version des Heizkalenders und der aktuelle Stand der Skripte, die installiert werden können.
+Hier findet sich die aktuelle Version des Heizkalenders und der aktuelle Stand der Skripte, die 
+installiert werden können.
 
 ![Mit CCU verbinden](Bilder/HKI-Verbinden.png)
 
-Über den Schalter **Info über...** kann der genaue Softwarestand und die Lizenz der Heizkalender-Installation angezeigt werden.
-Es ist auch möglich eine Browser Fenster auf das aktuelle GitHub Projekt zu öffnen um evtl. eine neue Programmversion zu laden.
+Über den Schalter **Info über...** kann der genaue Softwarestand und die Lizenz der 
+Heizkalender-Installation angezeigt werden. Es ist auch möglich eine Browser Fenster auf das aktuelle 
+GitHub Projekt zu öffnen um evtl. eine neue Programmversion zu laden.
 
 ![Info Über](Bilder/HKI-InfoÜber.png)
 
 ### Verbinden mit der CCU
 
-Im ersten Schritt muss eine Verbindung zur CCU aufgebaut werden, bevor weitere Einstellungen vorgenommen werden können.
+Im ersten Schritt muss eine Verbindung zur CCU aufgebaut werden, bevor weitere Einstellungen 
+vorgenommen werden können.
 
 1. Geben Sie die Ziel-IP der CCU an.
 2. Geben Sie einen Benutzernamen an, der administrativen Zugriff auf die CCU hat.
@@ -94,13 +117,20 @@ Im ersten Schritt muss eine Verbindung zur CCU aufgebaut werden, bevor weitere E
 5. Klicken Sie auf den Button `Verbinden mit der CCU`.
 
 > [!NOTE]
-> Das Feld **Prefix** bleibt im Allgemeinen leer. Es dient dazu, mehrere Installationen parallel zu testen oder eine Installation von bestehenden Systemvariablen abzugrenzen.
-> Wird ein Prefix angegeben, erhalten alle Variablen und Programme diesen Prefix im Namen vorangestellt.
-> Wird eine bestehende CCU ausgelesen, wird auch erwartet, dass alle genutzten Variablen und Programme diesen Prefix enthalten.
+> Das Feld **Prefix** bleibt im Allgemeinen leer. Wird ein Prefix angegeben, dann werden alle Skripte 
+> und Variablen des Heizkalenders mit diesem Prefix versehen.
+>
+> Es kann dazu dienen, mehrere Installationen parallel zu testen oder eine Installation von bestehenden 
+> bereits angelegten Systemvariablen oder Programmen abzugrenzen. Wird ein Prefix angegeben, erhalten 
+> alle Variablen und Programme diesen Prefix im Namen vorangestellt.<br>Wird die bestehende Installation
+> einer CCU ausgelesen, wird auch erwartet, dass alle bisher genutzten/angelegten Variablen und 
+> Programme diesen Prefix verwenden.
 >
 > **ACHTUNG**<br>
-> Wird die Funktion des Prefixes falsch verwendet, dann ist es möglich, das Skripte und Variablen mehrfach installiert werden.
-> Dies kann zu Fehlfunktionen und einer Überlastung der CCU3 führen.
+> Wird die Funktion des Prefixes falsch verwendet, dann ist es möglich, das Skripte und Variablen 
+> mehrfach installiert werden. Dies kann zu Fehlfunktionen und einer Überlastung der CCU3 führen.<br>
+> Sollten mehrere Installation parallel getestet werden, sollte darauf geachtet werden, dass nur ein 
+> Satz Programme jeweils aktiviert ist.
 >
 > **Nutzen Sie dieses Feld nur, wenn Sie sich über die Folgen im Klaren sind!**
 
@@ -111,8 +141,9 @@ Ist keine Verbindung zur CCU möglich, weil die Verbindungsinformationen nicht s
 ![Keine Verbindung](Bilder/HKI-Verbindungsfehler.png)
 
 > [!NOTE]
-> Konnte eine Verbindung hergestellt werden, werden die aktuellen Verbindungsinformationen in der Registry des aktuellen Benutzers gespeichert.
-> Beim Neustart der Heizkalender-Installation sind die Felder **IP-Adresse**, **Benutzername**, **Kennwort** und **Prefix** dann bereits ausgefüllt.
+> Konnte eine Verbindung hergestellt werden, werden die aktuellen Verbindungsinformationen in der 
+> Registry des aktuellen Benutzers gespeichert. Beim Neustart der Heizkalender-Installation sind die 
+> Felder **IP-Adresse**, **Benutzername**, **Kennwort** und **Prefix** dann bereits ausgefüllt.
 
 ### Einrichten einer neuen Heizkalender-Installation
 
@@ -126,9 +157,14 @@ Wählen Sie die gewünschte Quelle für Ihre Termine (ChurchTools, ChurchDesk, i
 
 ![Neue Installation: Ressourcenquelle](Bilder/HKI-NeueInstallation2.png)
 
-Beachten Sie, das auch nachträglich die Auswahl der Terminquelle geändert werden kann, die entsprechenden Skripte werden in dem Fall geändert und überschrieben. Die Verbindungsdaten müssen dann angepasst werden.
+Beachten Sie, das auch nachträglich die Auswahl der Terminquelle geändert werden kann, die 
+entsprechenden Skripte werden in dem Fall geändert und überschrieben. Die Verbindungsdaten müssen dann 
+angepasst werden.
 
-Für jede Heizkalender-Variante sind unterschiedliche Informationen zum Auslesen/Aktualisieren der Ressourcen und Kalender notwendig. Diese werden nachfolgend beschrieben.
+Für jede Heizkalender-Variante sind unterschiedliche Informationen zum Auslesen/Aktualisieren der 
+Ressourcen und Kalender notwendig. Diese werden nachfolgend beschrieben.
+
+![Snapshots](Bilder\HKI-NeueInstallation3.png)
 
 ##### Verbindungsdaten angeben – ChurchDesk
 
@@ -151,7 +187,8 @@ Die benötigten Zugangsdaten für ChurchDesk sind bei den Varianten API und iCal
 
 ### Nach dem Verbindungsaufbau mit der CCU
 
-Bei einer bestehenden, eingerichteten CCU erhalten Sie eine Anzeige über den Verbindungsstatus und die Art der genutzten Ressourcen, wie in der folgenden Abbildung zu sehen ist.
+Bei einer bestehenden, eingerichteten CCU erhalten Sie eine Anzeige über den Verbindungsstatus und die 
+Art der genutzten Ressourcen, wie in der folgenden Abbildung zu sehen ist.
 
 ![Verbunden mit der CCU](Bilder/HKI-Verbunden.png)
 
@@ -161,7 +198,31 @@ Bei einer bestehenden, eingerichteten CCU erhalten Sie eine Anzeige über den Ve
 
 ### Programme / Skripte
 
+Über diesen Seite der Heizkalender-Installation werden alle installierten Programme angezeigt. Liegt 
+für das entsprechende Programm ein Update vor, so wird dies in der Informationsspalte angezeigt. 
+Gleichfalls werden der aktuelle Programmstand und Stand des Updates angezeigt, sofern vorhanden.
+
+Die Programme mit den folgenden Namen sind reserviert und werden automatisch durch die 
+Heizkalender-Installation berücksichtigt. Diese Programme müssen mit im Programmverzeichnis der 
+Heizkalender-Installation liegen:
+- HK-Außentemperatur-Open-Meteo.hsc
+- HK-Heizkurvenkontrolle.hsc
+- HK-Skript 1.hsc
+- HK-Skript 2.hsc
+- HK-Systemprotokoll sichern.hsc
+
+
+Sind im Installationsverzeichnis des der Heizkalender-Installation auch Dateien mit dem Namen 
+*Tool-\*.hsc* vorhanden, dann werden auch gleichnamige Programme in der CCU bei Bedarf aktualisiert. Zu
+ beachten ist, dass das normale Installationspaket keine  Tools enthält, diese befinden sich in dem 
+separaten Ordner [Tools](../../Tools).
+
 ![Übersicht der Programme](Bilder/HKI-Programme.png)
+
+Wenn das optionale Programm [WinMerge.Exe](https://winmerge.org) installiert wurde kann einen Klick auf
+den Schalter **Änderungen...** oder einen Doppelklick auf eines der Programme das Vergleichsprogramm 
+WinMerge gestartet werden. Dadurch können  die Änderungen zwischen alten und neuem Programmstand 
+angezeigt und verglichen werden.
 
 #### Änderungen in Skripten anzeigen
 
@@ -171,7 +232,10 @@ Bei einer bestehenden, eingerichteten CCU erhalten Sie eine Anzeige über den Ve
 
 Bei der Heizkurve werden die Vorlaufzeiten in Minuten zu den Außentemperaturen eingegeben.
 
-Über die Option **Rückstellverhalten** wird die Nachtschaltungslogik aktiviert (Systemvariable `HK2-Hand-Grundtemp`). Ist diese Option aktiv, setzt HK-Skript 2 täglich zwischen 00:57 und 01:03 Uhr alle Räume ohne aktiven Termin auf Grundtemperatur zurück. Details zur Nachtschaltung finden sich im [Anwenderhandbuch](../../Dokumentation/Anwenderhandbuch.md).
+Über die Option **Rückstellverhalten** wird die Nachtschaltungslogik aktiviert (Systemvariable 
+`HK2-Hand-Grundtemp`). Ist diese Option aktiv, setzt HK-Skript 2 täglich zwischen 00:57 und 01:03 Uhr 
+alle Räume ohne aktiven Termin auf Grundtemperatur zurück. Details zur Nachtschaltung finden sich im 
+[Anwenderhandbuch](../../Dokumentation/Anwenderhandbuch.md).
 
 ![Allgemeine Einstellungen](Bilder/HKI-Einstellungen.png)
 
@@ -191,6 +255,17 @@ Bei der Heizkurve werden die Vorlaufzeiten in Minuten zu den Außentemperaturen 
 
 ![Raum-Eigenschaften](Bilder/HKI-Raum.png)
 
+![Snapshots](Bilder\HKI-Modus.png)
+
+![Snapshots](Bilder\HKI-GeräteTyp.png)
+
+![Snapshots](Bilder\HKI-HeizenAktoren.png)
+
+![Snapshots](Bilder\HKI-HeizenSchaltenAktoren.png)
+
+![Snapshots](Bilder\HKI-SchaltenAktoren.png)
+
+
 ### Systemvariablen
 
 ![Übersicht der Systemvariablen](Bilder/HKI-Systemvariablen.png)
@@ -206,6 +281,18 @@ Das Speichern der Einstellungen erfolgt durch das Anklicken des **OK**-Schalters
 
 Um weitere Änderungen vorzunehmen starten Sie die Heizkalender-Installation erneut.
 
+![Snapshots](Bilder\HKI-ProgrammeGeändert.png)
+![Snapshots](Bilder\HKI-RaumListeGeändert.png)
+![Snapshots](Bilder\HKI-SystemvariablenGeändert.png)
+
+![Snapshots](Bilder\HKI-ÄnderungenSpeichern2.png)
+
+![Snapshots](Bilder\HKI_Gespeichert.png)
+
 ### Abbrechen der Heizkalender-Installation
 
 Wenn Sie 
+
+
+![Snapshots](Bilder\HKI-ÄnderungenSpeichern.png)
+

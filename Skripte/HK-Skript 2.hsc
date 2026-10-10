@@ -1,6 +1,6 @@
 !// Skript 2 für das Schalten der Heizgruppen
 !//================================================================================================
-!// Stand:    05.10.2026
+!// Stand:    10.10.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -444,8 +444,8 @@ foreach(SLEintrag,SListe){
           offsetTempAn = 0;
         }
 
-        !// Bestimme den Verschiebungsfaktor zur Temperaturverschiebung. maximal 300%
-        !// minimal 25%. Andere Werte setzen den Faktor auf
+        !// Bestimme den Verschiebungsfaktor zur Temperaturverschiebung. maximal 500%
+        !// minimal 20%. Andere Werte setzen den Faktor auf
         real faktor1 = RVI.StrValueByIndex(";",4).StrValueByIndex("*",1).ToFloat();
         if (faktor1==0){
           faktor1 = 1.0;

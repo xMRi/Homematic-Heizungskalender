@@ -246,8 +246,8 @@ Der ausgelieferte Default ist:
 | Vorheizzeit (min) | 162 | 130 | 100 | 59 | 50 | 41 | 30 | 20 |
 
 Diese Werte sollten bei der Installation an das eigene Gebäude angepasst werden.
-Eine ausführliche Erklärung der Berechnung mit Beispielrechnungen findet sich in
-[Heizsteuerung-Vorheizzeit.md](../Skripte/Dokumentation/Heizsteuerung-Vorheizzeit.md).
+Eine ausführliche Erklärung der Berechnung mit Beispielrechnungen findet sich in dem Artikel
+[Heizsteuerung-Vorheizzeit](../Skripte/Dokumentation/Heizsteuerung-Vorheizzeit.md).
 
 Als Orientierungshilfe sind drei Beispielkurven bekannt:
 

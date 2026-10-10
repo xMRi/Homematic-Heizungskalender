@@ -9,3 +9,4 @@ logs/*
 .DS_Store
 CLAUDE.md
 .vscode/*
+/HeizkalenderInstallation/enc_temp_folder

@@ -152,7 +152,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,103,346,10
     CONTROL         "Am Ende eines Termines eine manuell eingestellte/abweichende Temperatur für den Raum beibehalten",IDC_CH_HANDTEMP,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,119,346,10
-    GROUPBOX        "Rückstellungsverhalten",IDC_STATIC,7,139,363,46
+    GROUPBOX        "Temperatureinstellungen",IDC_STATIC,7,139,363,46
     LTEXT           "Grundtemperatur für alle Räume, wenn kein Heizvorgang läuft:",IDC_STATIC,12,153,258,8
     EDITTEXT        IDC_ED_GRUNDTEMP,277,151,40,12,ES_AUTOHSCROLL
     LTEXT           "°C",IDC_STATIC,328,153,12,8
@@ -313,8 +313,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,6,0,0
- PRODUCTVERSION 3,6,0,0
+ FILEVERSION 3,7,0,0
+ PRODUCTVERSION 3,7,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -331,12 +331,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "xMRi-Software"
             VALUE "FileDescription", "Heizkalender Installations- und Updateprogramm"
-            VALUE "FileVersion", "3.6.0.0"
+            VALUE "FileVersion", "3.7.0.0"
             VALUE "InternalName", "HeizkalenderInstallation.exe"
             VALUE "LegalCopyright", "Copyright 2026 by xMRi-Software (Martin Richter) "
             VALUE "OriginalFilename", "HeizkalenderInstallation.exe"
             VALUE "ProductName", "Heizkalender"
-            VALUE "ProductVersion", "3.6.0.0"
+            VALUE "ProductVersion", "3.7.0.0"
         END
     END
     BLOCK "VarFileInfo"

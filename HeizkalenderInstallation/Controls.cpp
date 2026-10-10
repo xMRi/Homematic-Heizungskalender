@@ -777,7 +777,7 @@ void CEditInt::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			m_iValue = m_iMax;
 		break;
 	case SB_LINEDOWN:
-		m_iValue = (((m_iValue+m_iStep-1)/m_iStep)-1)*m_iStep;
+		m_iValue = ((m_iValue+(m_iStep-1)*((m_iValue>=0) ? 1 : -1))/m_iStep-1)*m_iStep;
 		if (m_iValue<m_iMin)
 			m_iValue = m_iMin;
 		break;

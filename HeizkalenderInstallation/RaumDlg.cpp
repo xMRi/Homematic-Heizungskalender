@@ -229,9 +229,11 @@ BOOL CRaumDlg::OnInitDialog()
 	m_edTempG.SetMinMax(0,30);
 	m_edTempG.SetPrecision(1);
 	m_edTempG.CreateSpinBtnCtrl();
-	m_edVBegin.SetMinMax(0,60*24);
+	m_edVBegin.SetMinMax(-60*8,60*8);
+	m_edVBegin.SetStepValue(5);
 	m_edVBegin.CreateSpinBtnCtrl();
-	m_edVEnde.SetMinMax(0,60*24);
+	m_edVEnde.SetMinMax(-60*8,60*8);
+	m_edVEnde.SetStepValue(5);
 	m_edVEnde.CreateSpinBtnCtrl();
 	m_edFaktor.SetMinMax(0.25,3.0);
 	m_edFaktor.SetPrecision(2);

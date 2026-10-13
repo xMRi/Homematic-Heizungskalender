@@ -11,9 +11,11 @@ zusammen und müssen gemeinsam eingespielt werden.
 Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` /
 `!// TT:`); diese bleiben erhalten und sind die feinste Änderungsebene.
 
-## [Unveröffentlicht]
+# <u>[Unveröffentlicht]</u>
 
-## [2026-10-12]
+# <u>[Veröffentlicht]</u>
+
+## [2026-10-12] Release
 
 ### Behoben
 
@@ -80,7 +82,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
   verhindern.
 - Anpassung der Dokumentation
 
-## [2026-10-05]
+## [2026-10-05] Release
 
 ### Behoben
 
@@ -233,7 +235,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - `TODO.md`: Offene-Punkte-Datei entfernt. Der HK2-Kurve-Punkt ist durch die
   Doku-Erweiterung adressiert; der Installer-Doku-Punkt bleibt vorerst offen.
 
-## [2026-10-01]
+## [2026-10-01] Release
 
 ### Hinzugefügt
 
@@ -272,7 +274,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
   Termin übersprungen — kein Heizen, kein Log. Fix: Semikolon-Präfix verankert
   die Suche an Eintraggrenzen. Betrifft alle fünf Skript-1-Varianten.
 
-## [2026-09-22]
+## [2026-09-22] Release
 
 ### Hinzugefügt
 

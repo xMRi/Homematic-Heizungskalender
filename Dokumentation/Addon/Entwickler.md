@@ -18,6 +18,8 @@
 
 Das Heizkalender Addon ist ein reines Weboberflächen-Addon ohne eigenen Daemon. Es liefert CGI-Scripte, die auf der CCU laufen und Daten über die HomeMatic ReGa-API sowie direkt aus dem Dateisystem lesen.
 
+Die Oberfläche ist grundlegend responsiv gestaltet (Navigation bricht um, Tabellen scrollen horizontal). Eine vollständige Optimierung für Mobilgeräte ist nicht angestrebt, da die breiten Datentabellen auf kleinen Displays immer eine horizontale Scrollmöglichkeit erfordern.
+
 Referenz für das allgemeine CCU-Addon-Format: [ccu-addon-howto](https://github.com/homematic-community/ccu-addon-howto)
 
 ---
@@ -33,12 +35,12 @@ Addon/
   heizkalender/
     www/
       index.cgi                    Raumübersicht
-      kurve.cgi                    Heizkurvenkontrolle
-      hklog.cgi                    HK-Log (USB-Stick-Archiv)
+      hkkurve.cgi                    Heizkurvenkontrolle
+      hksyslog.cgi                    HK-Log (USB-Stick-Archiv)
       hklogdownload.cgi            HK-Log-Datei-Download
-      log.cgi                      Systemlog (/var/log/messages)
+      syslog.cgi                      Systemlog (/var/log/messages)
       sysvars.cgi                  Systemvariablen-Übersicht
-      config.cgi                   Grundeinstellungen
+      hkconfig.cgi                   Grundeinstellungen
       update_check.cgi             Update-Check (GitHub Releases API)
       heizkalender.css             Eigenes Stylesheet
       hk-logo-300.png              Logo (Navigation)
@@ -51,15 +53,41 @@ Addon/
 
 ## Paketformat und Installation
 
-Das Installationspaket ist ein tar.gz-Archiv mit dem Namen `heizkalender-addon.tar.gz`.
+Das Installationspaket ist ein tar.gz-Archiv mit dem Namen `heizkalender-addon-<Version>.tar.gz` (z.B. `heizkalender-addon-0.3.0.tar.gz`).
 
-**Archiv erstellen:**
+**Paketstruktur:**
 
-```bash
-git archive --prefix=heizkalender/ HEAD:Addon | gzip > heizkalender-addon.tar.gz
+```txt
+heizkalender-addon-<Version>.tar.gz
+├── VERSION
+├── update_script
+├── heizkalender/
+│   └── www/
+│       ├── index.cgi
+│       ├── hkkurve.cgi
+│       ├── hklog.cgi
+│       ├── hklogdownload.cgi
+│       ├── syslog.cgi
+│       ├── sysvars.cgi
+│       ├── hkconfig.cgi
+│       ├── update_check.cgi
+│       ├── heizkalender.css
+│       ├── hk-logo-300.png
+│       ├── hk-logo-50.png
+│       └── (Favicons und App-Icons)
+└── rc.d/
+    └── heizkalender
 ```
 
-Das Archiv enthält im Root das `update_script` und das Verzeichnis `heizkalender/`.
+**Archiv erstellen** (aus dem Projektverzeichnis):
+
+```bash
+./build_addon.sh
+```
+
+Das Skript liest die Version aus `Addon/VERSION` und legt das Archiv unter `build/heizkalender-addon-<Version>.tar.gz` ab. Das `build/`-Verzeichnis ist per `.gitignore` vom Repository ausgeschlossen.
+
+Das Archiv enthält im Root `VERSION`, `update_script` und die Verzeichnisse `heizkalender/` und `rc.d/`.
 
 **Ablauf bei Installation/Update durch die CCU:**
 
@@ -126,7 +154,7 @@ Liest über die ReGa-API:
 
 Schaltlisten-Zeitstempel (`JJJJ-MM-TT HH:MM:SS`) werden mit einer eigenen `parse_ts`-Prozedur in Unix-Timestamps umgewandelt, da `clock scan` in Tcl 8.2 kein ISO-Datumsformat versteht (nur US-Format `MM/DD/JJJJ HH:MM:SS`).
 
-### kurve.cgi: Heizkurvenkontrolle
+### hkkurve.cgi: Heizkurvenkontrolle
 
 Liest Logdateien vom USB-Stick (`/media/usb1/HK-Log_*.log`) per `grep`. Die Ereignisse werden nach Zeitstempel aufsteigend sortiert (`lsort -index 1`).
 
@@ -161,9 +189,9 @@ Name(ID): Temperatur-Sensor <Kanalname> existiert nicht - ...
 | `<at>` | Außentemperatur (nur bei Heizbeginn) |
 | `<max>` | Maximale gemessene Temperatur in dieser Heizphase (alle außer Heizbeginn) |
 
-Fehler-Zeilen (kein Sensor) haben statt Leerzeichen vor dem Ereignis einen Doppelpunkt: `Name(ID): ...`. Der Parser in `kurve.cgi` erkennt dieses Muster und ordnet sie als Ereignistyp `Fehler` ein.
+Fehler-Zeilen (kein Sensor) haben statt Leerzeichen vor dem Ereignis einen Doppelpunkt: `Name(ID): ...`. Der Parser in `hkkurve.cgi` erkennt dieses Muster und ordnet sie als Ereignistyp `Fehler` ein.
 
-### hklog.cgi: HK-Log
+### hksyslog.cgi: HK-Log
 
 Liest direkt aus Logdateien auf dem USB-Stick. Kein ReGa-Aufruf. Die Seite zeigt die letzten N Zeilen der gewählten Datei (tail-Prinzip).
 
@@ -171,19 +199,19 @@ Zeitstempel im Log haben das Format `JJJJ-MM-TT HH:MM:SS` (aus der CCU-Historien
 
 ### hklogdownload.cgi: HK-Log-Download
 
-Liefert eine Logdatei vom USB-Stick als Download (`Content-Disposition: attachment`). Wird von `hklog.cgi` über den **Download**-Link aufgerufen. Der Dateiname wird als Query-Parameter übergeben; das Script prüft, dass der Pfad innerhalb des Log-Verzeichnisses bleibt (kein Directory Traversal).
+Liefert eine Logdatei vom USB-Stick als Download (`Content-Disposition: attachment`). Wird von `hksyslog.cgi` über den **Download**-Link aufgerufen. Der Dateiname wird als Query-Parameter übergeben; das Script prüft, dass der Pfad innerhalb des Log-Verzeichnisses bleibt (kein Directory Traversal).
 
-### log.cgi: Systemlog
+### syslog.cgi: Systemlog
 
 Liest `/var/log/messages` direkt. Kein ReGa-Aufruf. Zeitstempel im Linux-Syslog-Format (`Mmm DD HH:MM:SS`). Zeigt die letzten N Zeilen (tail-Prinzip, älteste oben).
 
-**Abgrenzung zum CCU-Systemprotokoll:** Die CCU-Weboberfläche unter *Startseite > Status und Bedienung > Systemprotokoll* zeigt eine andere Datenquelle: das ReGa-interne Ereignisprotokoll (Programmausführungen, Gerätekommunikation, Alarme). Diese Daten liegen in der ReGaHss-Datenbank und sind über die ReGa-API abfragbar (z.B. `dom.GetObject(ID_SYSTEMLOG)`), nicht über `/var/log/messages`. Eine Einbindung dieses Protokolls in `log.cgi` wäre möglich, wurde aber bisher nicht umgesetzt.
+**Abgrenzung zum CCU-Systemprotokoll:** Die CCU-Weboberfläche unter *Startseite > Status und Bedienung > Systemprotokoll* zeigt eine andere Datenquelle: das ReGa-interne Ereignisprotokoll (Programmausführungen, Gerätekommunikation, Alarme). Diese Daten liegen in der ReGaHss-Datenbank und sind über die ReGa-API abfragbar (z.B. `dom.GetObject(ID_SYSTEMLOG)`), nicht über `/var/log/messages`. Eine Einbindung dieses Protokolls in `syslog.cgi` wäre möglich, wurde aber bisher nicht umgesetzt.
 
 ### sysvars.cgi: Systemvariablen
 
 Liest alle `HK-*`-, `HK1-*`-, `HK2-*`- und `HKG-Raum-*`-Variablen über die ReGa-API. Rein lesend.
 
-### config.cgi: Grundeinstellungen
+### hkconfig.cgi: Grundeinstellungen
 
 Zeigt Logging-Flags, Kurveneinstellungen und eine Raumübersicht in aufbereiteter Form. Rein lesend.
 
@@ -223,9 +251,13 @@ Klassen-Übersicht (Auswahl):
 
 ## Update-Check
 
-`update_check.cgi` prüft auf neue Releases unter `https://api.github.com/repos/tatzel/Homematic-Heizungskalender/releases/latest`. Die aktuelle Version liest es aus `/usr/local/addons/heizkalender/VERSION`.
+`update_check.cgi` prüft auf neue Releases, indem es die `VERSION`-Datei direkt aus dem GitHub-Repository liest:
 
-Das Release-Asset muss den Namen `heizkalender-addon.tar.gz` tragen, damit die CCU es direkt installieren kann.
+```txt
+https://raw.githubusercontent.com/xMRi/Homematic-Heizungskalender/main/Addon/VERSION
+```
+
+Das entspricht dem Vorbild von `hm-watchdog`. Kein JSON-Parsing, kein fester Asset-Name. Beim Download-Befehl leitet das Script auf die GitHub-Releases-Seite weiter; der Nutzer lädt das passende Asset dort selbst herunter.
 
 ---
 
@@ -240,29 +272,25 @@ scp Addon/heizkalender/www/index.cgi root@<CCU-IP>:/usr/local/addons/heizkalende
 Vollständiges Paket bauen (aus dem Projektverzeichnis):
 
 ```bash
-cd Addon && tar -czf ../Skripte/heizkalender-addon.tar.gz \
-  --owner=0 --group=0 \
-  VERSION update_script heizkalender/www/ rc.d/
+./build_addon.sh
 ```
 
-Das Paket landet in `Skripte/heizkalender-addon.tar.gz` (analog zu `HeizkalenderInstallation.exe`).
+Das Paket landet in `build/heizkalender-addon-<Version>.tar.gz`.
 
-### Versionierung und Git-Tags
+### Versionierung und Release-Prozess
 
 Das Addon verwendet ein eigenes Versionierungsschema, unabhängig von den Datums-Tags der Skripte:
 
-- Die Versionsnummer steht in `Addon/VERSION` (z.B. `0.1.1`).
-- Git-Tags für Addon-Releases haben das Format `addon-v<Version>` (z.B. `addon-v0.1.1`).
-- Skript-Releases verwenden weiterhin Datums-Tags (`v2026-10-11`).
+- Die Versionsnummer steht in `Addon/VERSION` (z.B. `0.3.0`).
+- Git-Tags für Addon-Releases haben das Format `<Version>` ohne Prefix (z.B. `0.3.0`).
+- Skript-Releases verwenden weiterhin Datums-Tags (`v2026-10-12`).
 
-Tag setzen und pushen:
+Release-Prozess:
 
-```bash
-git tag addon-v0.1.1
-git push fork addon-v0.1.1
-```
-
-`update_check.cgi` sucht auf GitHub nach dem neuesten Release mit einem `addon-v*`-Tag.
+1. `Addon/VERSION` auf die neue Version setzen.
+2. `./build_addon.sh` ausführen.
+3. Änderungen committen und pushen.
+4. GitHub-Release mit dem Versions-Tag anlegen und `build/heizkalender-addon-<Version>.tar.gz` als Asset anhängen.
 
 ---
 

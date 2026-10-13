@@ -20,14 +20,68 @@ Content-Type: application/json
 GET https://{{name}}.church.tools/api/bookings?login_token={{loginToken}}&resource_ids[]=1&resource_ids[]=2&resource_ids[]=3&resource_ids[]=4&resource_ids[]=6&resource_ids[]=11&from=2026-10-04&to=2026-10-04
 Content-Type: application/json
 
-?? status == 20
-
+?? status == 200
 
 ###
-# @name getBookings2
+# @name getBookingsRoom11
 # @title Get Bookings for Kinderraum(1), Raum 1(6), Eltern-Kind-Raum(11)
-# @description
 GET https://{{name}}.church.tools/api/bookings?login_token={{loginToken}}&resource_ids[]=1&resource_ids[]=6&resource_ids[]=11&from=2026-10-04&to=2026-10-04
 Content-Type: application/json
 
-?? status == 20
+?? status == 200
+
+###
+# @name getEventMasterData
+# @title Fetch MasterData for Module "Event"
+GET https://{{name}}.church.tools/api/event/masterdata?login_token={{loginToken}}
+Content-Type: application/json
+
+?? status == 200
+
+###
+# @name getServiceGroups
+# @title Get Service Groups
+GET https://{{name}}.church.tools/api/servicegroups?login_token={{loginToken}}
+Content-Type: application/json
+
+?? status == 200
+
+###
+# @name getServiceGroupById
+# @title Get Service Group by Id
+GET https://{{name}}.church.tools/api/servicegroups/4?login_token={{loginToken}}
+Content-Type: application/json
+
+?? status == 200
+
+###
+# @name getAllServices
+# @title Returns all services across all service groups
+GET https://{{name}}.church.tools/api/services?login_token={{loginToken}}
+Content-Type: application/json
+
+?? status == 200
+
+###
+# @name getServiceById
+# @title Returns the specified service.
+GET https://{{name}}.church.tools/api/services/10?login_token={{loginToken}}
+Content-Type: application/json
+
+?? status == 200
+
+###
+# @name getDynamicGroups
+# @title Get all dynamic groups
+GET https://{{name}}.church.tools/api/dynamicgroups?login_token={{loginToken}}
+Content-Type: application/json
+
+?? status == 200
+
+###
+# @name getEventTemplates
+# @title Get all event templates
+GET https://{{name}}.church.tools/api/eventtemplates?login_token={{loginToken}}
+Content-Type: application/json
+
+?? status == 200

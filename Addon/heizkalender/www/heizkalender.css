@@ -114,6 +114,9 @@ fieldset {
   border-radius: 4px;
   margin-bottom: 1.5em;
   padding: 0.8em 1em;
+  overflow-x: auto;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 fieldset fieldset {
@@ -159,7 +162,6 @@ legend {
 }
 
 .hk-log-table {
-  font-family: monospace;
   width: 100%;
   table-layout: auto;
 }
@@ -261,3 +263,88 @@ legend {
 
 .hk-ind-ok  { color: #1a7a1a; margin-left: 4px; }
 .hk-ind-err { color: #c0392b; margin-left: 4px; }
+
+/* Einstellungen-Seite (hkconfig.cgi) */
+.hk-config-table-auto { border-collapse: collapse; width: auto; }
+.hk-config-table-auto th,
+.hk-config-table-auto td { padding: 0.35em 0.7em; border: 1px solid #ddd; vertical-align: top; }
+.hk-config-table-auto th { background: #f4f4f4; text-align: left; font-weight: normal; white-space: nowrap; }
+.hk-config-table-auto td.hk-val { word-break: break-all; max-width: 30em; }
+.hk-config-table-auto td.hk-code { font-family: monospace; word-break: break-all; max-width: 30em; }
+.hk-config-table-auto td.hk-id { text-align: right; color: #666; }
+
+.hk-kurve-grid { display: flex; gap: 0.5em; flex-wrap: wrap; margin: 0.5em 0; }
+.hk-kurve-cell { text-align: center; min-width: 5.5em; border: 1px solid #bbb; padding: 0.5em 0.7em; border-radius: 4px; }
+.hk-kurve-cell .hk-at { font-size: 1em; font-weight: bold; }
+.hk-kurve-cell .hk-min { font-weight: bold; font-size: 1.6em; line-height: 1.3; }
+
+/* Scroll-Wrapper für breite Tabellen */
+.hk-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1.5em;
+}
+
+/* Seite scrollt nie horizontal — fieldsets und Tabellen-Wrapper scrollen intern */
+body {
+  overflow-x: hidden;
+}
+
+#content {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.hk-table-scroll .hk-table,
+.hk-table-scroll .hk-kurve-table,
+.hk-table-scroll .hk-log-table,
+.hk-table-scroll .hk-schaltliste-table {
+  margin-bottom: 0;
+}
+
+/* -----------------------------------------------------------------------
+   Responsive: Mobile (max 640px)
+   ----------------------------------------------------------------------- */
+@media (max-width: 640px) {
+
+  /* Header: Logo kleiner */
+  .hk-header-logo { height: 44px; }
+  .hk-header h1   { font-size: 1.2em; }
+
+  /* Navigation: umbrechend, kompakter */
+  .hk-nav {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px 6px;
+  }
+  .hk-nav a {
+    padding: 5px 10px;
+    font-size: 0.95em;
+  }
+
+  /* Filter-Fieldsets: jedes Label in eigener Zeile */
+  .hk-log-controls fieldset label {
+    display: block;
+    margin-bottom: 0.5em;
+  }
+  .hk-log-controls fieldset select {
+    width: 100%;
+    max-width: 320px;
+    box-sizing: border-box;
+  }
+  .hk-log-controls fieldset button[type="submit"] {
+    display: block;
+    margin-top: 0.5em;
+  }
+
+  /* Schaltliste und Log-Tabelle: horizontal scrollbar, kleinere Schrift */
+  .hk-schaltliste-table th,
+  .hk-schaltliste-table td { font-size: 0.88em; }
+  .hk-log-table th,
+  .hk-log-table td { font-size: 0.88em; }
+
+  /* Legende: umbrechen */
+  .hk-legende-fieldset { display: block; }
+
+  /* Hint-Box: kleinere Schrift */
+  .hk-hint { font-size: 0.88em; }
+}

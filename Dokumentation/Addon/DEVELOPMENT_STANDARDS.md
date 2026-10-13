@@ -38,7 +38,7 @@ Folgende Sprachfeatures sind in Tcl 8.2 nicht verfügbar und dürfen nicht verwe
 | `file tempfile` | Temporäre Dateien vermeiden |
 | `string equal -nocase` | `string tolower` + `string equal` |
 
-Geschweifte Klammern in ReGa-Rückgaben erfordern eine manuelle Tiefenzählung, da reguläre Ausdrücke dafür ungeeignet sind. Die Prozedur `extract_stdout` (in `index.cgi`, `kurve.cgi`) implementiert dieses Muster.
+Geschweifte Klammern in ReGa-Rückgaben erfordern eine manuelle Tiefenzählung, da reguläre Ausdrücke dafür ungeeignet sind. Die Prozedur `extract_stdout` (in `index.cgi`, `hkkurve.cgi`) implementiert dieses Muster.
 
 ---
 
@@ -47,6 +47,10 @@ Geschweifte Klammern in ReGa-Rückgaben erfordern eine manuelle Tiefenzählung, 
 **Grundregel:** Alle CGI-Dateien senden `Content-Type: text/html; charset=iso-8859-1` und deklarieren dasselbe im `<meta charset>`-Tag.
 
 **Warum ISO-8859-1:** Tcl 8.2 unterstützt kein UTF-8-Encoding. Die verfügbaren Encodings beschränken sich auf `utf-8`, `identity` und `unicode`; `encoding convertfrom iso8859-1` schlägt fehl. Die CCU liefert Systemvariablen, Logdateien und alle ReGa-Daten in ISO-8859-1. Tcl gibt diese Bytes unverändert aus. Der Browser interpretiert sie korrekt, wenn `charset=iso-8859-1` deklariert ist.
+
+**lighttpd und W3C-Validator:** Der CCU-Webserver (lighttpd) leitet den `charset`-Parameter aus dem CGI-`Content-Type`-Header nicht weiter und schickt nur `Content-Type: text/html` ohne Charset. Damit fehlt dem Browser und dem W3C-Validator der Charset-Hinweis im HTTP-Header; sie verlassen sich allein auf den `<meta charset>`-Tag. Das ist kein Fehler in den CGI-Skripten, sondern ein lighttpd-Konfigurationsdetail der CCU. Browsers werten den `<meta charset>`-Tag korrekt aus. Der W3C-Validator meldet einen Widerspruch, wenn er die Seite über die CCU-URL validiert; bei direkter HTML-Eingabe im Validator tritt der Fehler nicht auf.
+
+**RaspberryMatic/openCCU:** Auch unter RaspberryMatic bleibt die Situation dieselbe. Tcl 8.2.3 mit denselben eingeschränkten Encodings ist fest eingebaut, weil `tclrega.so` gegen diese Version gebunden ist. Eine Umstellung auf UTF-8 wäre erst möglich, wenn eine neue `tclrega.so` mit Tcl 8.6 verfügbar ist.
 
 **Sonderzeichen im Quellcode:** Die CGI-Dateien sind als UTF-8 auf dem Entwicklungsrechner gespeichert. Sonderzeichen, die direkt im Tcl-Quellcode stehen (z.B. `°`, `ü`, `ä`), liegen als UTF-8-Mehrbyte-Sequenzen vor und werden von Tcl 8.2 nicht korrekt verarbeitet. Regel:
 
@@ -62,7 +66,7 @@ Geschweifte Klammern in ReGa-Rückgaben erfordern eine manuelle Tiefenzählung, 
 
 **Temperaturanzeige:** Die Prozedur `format_temp` in `sysvars.cgi` gibt fertige HTML-Strings zurück (`"$t &deg;C"`). Diese nicht durch `htmlquote` leiten.
 
-**Keine Inline-Styles in CGI-Dateien** (Ausnahme: `config.cgi` enthält einen `<style>`-Block für die Heizkurven-Kacheln, da diese Stile nur auf dieser einen Seite benötigt werden).
+**Keine Inline-Styles in CGI-Dateien.** Alle Stile gehören in `heizkalender.css`.
 
 ---
 

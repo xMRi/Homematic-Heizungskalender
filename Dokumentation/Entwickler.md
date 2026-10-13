@@ -8,7 +8,7 @@ an den HomeMatic-Skripten oder am Windows-Installations-Programm.
 - [Architektur-Überblick](#architektur-überblick)
 - [Systemvariablen-Formate](#systemvariablen-formate)
 - [Skript-Syntax (HomeMatic HSC)](#skript-syntax-homematic-hsc)
-- [Build des Installers (Windows, Visual Studio)](#build-des-installers-windows-visual-studio)
+- [Build des Installers (Windows, Visual Studio)](#build-der-heizkalenderinstallationexe-windows-visual-studio)
 - [Versionierung](#versionierung)
 - [Änderungs-Workflow](#änderungs-workflow)
 - [Heizkalender Addon](#heizkalender-addon)
@@ -261,7 +261,7 @@ immer die folgenden Schritte:
    Hinzugefügt/Geändert/Behoben/Entfernt).
 4. **Dokumentation prüfen:** Neue oder umbenannte Systemvariablen müssen in der
    [Skript-Referenz](../Skripte/Dokumentation/Readme.md) erscheinen.
-5. **`HeizkalenderInstallation.exe` anpassen (nur bei neuen/geänderten Systemvariablen):** Die 
+5. **`HeizkalenderInstallation.exe` anpassen (nur bei neuen/geänderten Systemvariablen):** Die
    `HeizkalenderInstallation.exe`
    liest die Systemvariablen NICHT aus den `.hsc`-Dateien, sondern legt sie über
    eigene, fest einkompilierte Meta-Skripte an

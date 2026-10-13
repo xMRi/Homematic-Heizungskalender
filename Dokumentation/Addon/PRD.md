@@ -70,12 +70,12 @@ Das Addon:
 | Seite | Datei | Datenquelle |
 | ----- | ----- | ----------- |
 | Raumübersicht | `index.cgi` | ReGa-API: `HK1-Schaltliste`, `HK1-R-Liste`, `HK2-Aussentemperatur`, `HKG-Raum-*`, Thermostat-Kanäle |
-| Heizkurvenkontrolle | `kurve.cgi` | USB-Stick: `HK-Log_*.log` (via `grep`) |
+| Heizkurvenkontrolle | `hkkurve.cgi` | USB-Stick: `HK-Log_*.log` (via `grep`) |
 | HK-Log | `hklog.cgi` | USB-Stick: `HK-Log_*.log` |
 | HK-Log-Download | `hklogdownload.cgi` | USB-Stick: `HK-Log_*.log` |
 | Systemlog | `log.cgi` | `/var/log/messages` |
 | Systemvariablen | `sysvars.cgi` | ReGa-API: alle `HK-*`-, `HK1-*`-, `HK2-*`-, `HKG-Raum-*`-Variablen |
-| Grundeinstellungen | `config.cgi` | ReGa-API: Systemvariablen, Programme, Raumvariablen |
+| Grundeinstellungen | `hkconfig.cgi` | ReGa-API: Systemvariablen, Programme, Raumvariablen |
 | Update-Check | `update_check.cgi` | GitHub Releases API + lokale `VERSION`-Datei |
 
 ---

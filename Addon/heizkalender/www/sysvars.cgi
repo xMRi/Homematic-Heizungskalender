@@ -266,7 +266,7 @@ proc render_table {varlist} {
     if {[llength $varlist] == 0} {
         return "<p class=\"hk-empty\">Keine Variablen gefunden.</p>"
     }
-    set html "<table class=\"hk-table\">\n"
+    set html "<div class=\"hk-table-scroll\"><table class=\"hk-table\">\n"
     append html "  <colgroup><col class=\"col-name\"><col class=\"col-val\"><col class=\"col-desc\"></colgroup>\n"
     append html "  <tr><th>Variable</th><th>Wert</th><th>Beschreibung</th></tr>\n"
     set i 0
@@ -295,7 +295,7 @@ proc render_table {varlist} {
         append html "  <tr><td>$name_cell</td><td>$cell</td><td>[htmlquote $desc]</td></tr>\n"
         set i [expr {$i+3}]
     }
-    append html "</table>\n"
+    append html "</table></div>\n"
     return $html
 }
 
@@ -304,7 +304,7 @@ proc render_room_table {varlist} {
     if {[llength $varlist] == 0} {
         return "<p class=\"hk-empty\">Keine Raum-Systemvariablen gefunden.</p>"
     }
-    set html "<table class=\"hk-table hk-table-rooms\">\n"
+    set html "<div class=\"hk-table-scroll\"><table class=\"hk-table hk-table-rooms\">\n"
     append html "  <colgroup>\n"
     append html "    <col class=\"col-room\"><col class=\"col-status\"><col class=\"col-modus\">\n"
     append html "    <col class=\"col-heiztyp\"><col class=\"col-wtemp\"><col class=\"col-gtemp\">\n"
@@ -399,7 +399,7 @@ proc render_room_table {varlist} {
 
         set i [expr {$i+3}]
     }
-    append html "</table>\n"
+    append html "</table></div>\n"
     return $html
 }
 
@@ -414,7 +414,10 @@ puts {<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Heizkalender: Systemvariablen</title>
   <link rel="stylesheet" href="heizkalender.css">
-  <link rel="icon" type="image/png" href="hk-logo-50.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="manifest" href="site.webmanifest">
 </head>
 <body>
 <div id="content">
@@ -424,11 +427,11 @@ puts {<!DOCTYPE html>
   </div>
   <nav class="hk-nav">
     <a href="index.cgi">Raum&uuml;bersicht</a>
-    <a href="kurve.cgi">Heizkurve</a>
+    <a href="hkkurve.cgi">Heizkurve</a>
     <a href="hklog.cgi">HK-Log</a>
-    <a href="log.cgi">Systemlog</a>
+    <a href="syslog.cgi">Systemlog</a>
     <a href="sysvars.cgi">Systemvariablen</a>
-    <a href="config.cgi">Grundeinstellungen</a>
+    <a href="hkconfig.cgi">Einstellungen</a>
   </nav>
 }
 

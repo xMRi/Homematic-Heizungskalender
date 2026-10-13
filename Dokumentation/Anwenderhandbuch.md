@@ -363,7 +363,7 @@ Kanal 1:
 ```
 
 Die Adresse der Heizgruppe (`INT0000001` o.ä.) lässt sich in der CCU-WebUI unter den
-Geräteeigenschaften der Heizgruppe ablesen. Die `HeizkalenderInstallation.exe` übernimmt die Adresse, 
+Geräteeigenschaften der Heizgruppe ablesen. Die `HeizkalenderInstallation.exe` übernimmt die Adresse,
 wenn der Raum dort entsprechend konfiguriert wird.
 
 **Schaltaktor (Therme):** Soll gleichzeitig ein Schaltaktor (z.B. für das Ventil an

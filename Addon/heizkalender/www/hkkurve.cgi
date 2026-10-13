@@ -59,6 +59,11 @@ proc ereignis_class {ereignis delta} {
     return ""
 }
 
+proc ascii_key {s} {
+    regsub -all {[^ -~]} $s {} r
+    return $r
+}
+
 # ---------------------------------------------------------------------------
 # Query-Parameter
 # ---------------------------------------------------------------------------
@@ -78,7 +83,7 @@ foreach param [split $query_string "&"] {
     set val [string map {+ { }} $val]
     regsub -all {%([0-9A-Fa-f]{2})} $val {[format %c 0x\1]} val
     set val [subst -nocommands -novariables $val]
-    if {[string equal $key "raum"]} { set filter_raum $val }
+    if {[string equal $key "raum"]} { set filter_raum [ascii_key $val] }
     if {[string equal $key "ereignis"]} { set filter_ereignis $val }
     if {[string equal $key "tage"]} {
         if {[string equal $val "1"] || [string equal $val "7"] || [string equal $val "30"] || [string equal $val "90"]} {
@@ -91,8 +96,13 @@ foreach param [split $query_string "&"] {
 # ---------------------------------------------------------------------------
 # Datums-Untergrenze
 # ---------------------------------------------------------------------------
-set tage_secs [expr {int($filter_tage) * 86400}]
-set datum_ab [clock format [expr {[clock seconds] - $tage_secs}] -format "%Y-%m-%d"]
+# Bei tage=1 ("Heute"): ab Mitternacht des heutigen Tages, nicht "jetzt minus 24h"
+if {[string equal $filter_tage "1"]} {
+    set datum_ab [clock format [clock seconds] -format "%Y-%m-%d"]
+} else {
+    set tage_secs [expr {int($filter_tage) * 86400}]
+    set datum_ab [clock format [expr {[clock seconds] - $tage_secs}] -format "%Y-%m-%d"]
+}
 
 # ---------------------------------------------------------------------------
 # USB-Stick: alle Log-Dateien im Zeitraum (neueste zuerst)
@@ -113,34 +123,42 @@ if {[file isdirectory $usb_dir]} {
     }
 }
 
+set hkk_src "HK-LogHeizkurvenkontrolle"
+
 # ---------------------------------------------------------------------------
 # Raumliste aus HK1-R-Liste via ReGa
+# value im Dropdown = ASCII-bereinigter Raumname (ohne Sonderzeichen, URL-sicher)
+# Anzeige im Dropdown = Originalname mit Umlauten aus HK1-R-Liste
 # ---------------------------------------------------------------------------
-set rega_raeume {
+set r_liste_raw [extract_stdout [rega_script {
     var sv = dom.GetObject("HK1-R-Liste");
     if (sv) { WriteLine(sv.Value()); } else { WriteLine(""); }
-}
-set hkg_raw [extract_stdout [rega_script $rega_raeume]]
+}]]
 
+# alle_raeume_komplett: Liste von {ascii_key anzeige_name}, nach Anzeigename sortiert
+# log_name_map: ASCII-Key -> Originalname mit Umlauten (für Tabellenanzeige)
 set alle_raeume_komplett {}
-foreach entry [split $hkg_raw ";"] {
+array set log_name_map {}
+foreach entry [split $r_liste_raw ";"] {
     set entry [string trim $entry]
     if {[string equal $entry ""]} { continue }
     set eqpos [string first "=" $entry]
     if {$eqpos >= 0} {
-        set rname [string range $entry [expr {$eqpos+1}] end]
+        set anzeige [string trim [string range $entry [expr {$eqpos+1}] end]]
     } else {
-        set rname $entry
+        set anzeige [string trim $entry]
     }
-    set rname [string trim $rname]
-    if {![string equal $rname ""]} { lappend alle_raeume_komplett $rname }
+    if {[string equal $anzeige ""]} { continue }
+    set akey [ascii_key $anzeige]
+    lappend alle_raeume_komplett [list $akey $anzeige]
+    set log_name_map($akey) $anzeige
 }
-set alle_raeume_komplett [unique_sorted $alle_raeume_komplett]
+set alle_raeume_komplett [lsort -index 1 $alle_raeume_komplett]
 
 # ---------------------------------------------------------------------------
 # Raumliste aus Log-Dateien ergänzen (Gruppenräume tauchen nur im Log auf)
 # ---------------------------------------------------------------------------
-set alle_raeume_log {}
+set alle_raeume_log_keys {}
 if {[llength $log_files] > 0} {
     set fpaths {}
     foreach lf $log_files { lappend fpaths "$usb_dir/$lf" }
@@ -162,16 +180,23 @@ if {[llength $log_files] > 0} {
             set pidx [string first "(" $rn]
             if {$pidx > 0} { set rn [string range $rn 0 [expr {$pidx-1}]] }
             set rn [string trim $rn]
-            if {![string equal $rn ""]} { lappend alle_raeume_log $rn }
+            if {![string equal $rn ""]} { lappend alle_raeume_log_keys [ascii_key $rn] }
         }
     }
 }
-set alle_raeume_komplett [unique_sorted [concat $alle_raeume_komplett $alle_raeume_log]]
+# Log-Räume ergänzen, die noch nicht in alle_raeume_komplett sind
+set vorhandene_keys {}
+foreach pair $alle_raeume_komplett { lappend vorhandene_keys [lindex $pair 0] }
+foreach rn [unique_sorted $alle_raeume_log_keys] {
+    if {[lsearch -exact $vorhandene_keys $rn] < 0} {
+        lappend alle_raeume_komplett [list $rn $rn]
+    }
+}
+set alle_raeume_komplett [lsort -index 1 $alle_raeume_komplett]
 
 # ---------------------------------------------------------------------------
 # Ereignisse einlesen (nur nach Submit, via grep)
 # ---------------------------------------------------------------------------
-set hkk_src "HK-LogHeizkurvenkontrolle"
 set alle_ereignisse {}
 
 if {$submitted && [llength $log_files] > 0} {
@@ -269,9 +294,11 @@ if {$submitted && [llength $log_files] > 0} {
         set raumname [string trim $raumname]
         if {[string equal $raumname ""]} { continue }
 
-        if {![string equal $filter_raum "alle"] && \
-            ![string equal $raumname $filter_raum] && \
-            ![string equal [string range $raumname 0 [expr {[string length $filter_raum]-1}]] $filter_raum]} { continue }
+        if {![string equal $filter_raum "alle"]} {
+            set rn_key [ascii_key $raumname]
+            if {![string equal $rn_key $filter_raum] && \
+                ![string equal [string range $rn_key 0 [expr {[string length $filter_raum]-1}]] $filter_raum]} { continue }
+        }
         if {![string equal $filter_ereignis "alle"] && ![string equal $ereignis $filter_ereignis]} { continue }
 
         lappend alle_ereignisse [list $raumname $ts $ereignis $delta $ist $ziel $at_max $at_max_typ]
@@ -291,7 +318,10 @@ puts {<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Heizkalender: Heizkurvenkontrolle</title>
   <link rel="stylesheet" href="heizkalender.css">
-  <link rel="icon" type="image/png" href="hk-logo-50.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="manifest" href="site.webmanifest">
 </head>
 <body>
 <div id="content">
@@ -301,15 +331,15 @@ puts {<!DOCTYPE html>
   </div>
   <nav class="hk-nav">
     <a href="index.cgi">Raum&uuml;bersicht</a>
-    <a href="kurve.cgi">Heizkurve</a>
+    <a href="hkkurve.cgi">Heizkurve</a>
     <a href="hklog.cgi">HK-Log</a>
-    <a href="log.cgi">Systemlog</a>
+    <a href="syslog.cgi">Systemlog</a>
     <a href="sysvars.cgi">Systemvariablen</a>
-    <a href="config.cgi">Grundeinstellungen</a>
+    <a href="hkconfig.cgi">Einstellungen</a>
   </nav>}
 
 puts {  <div class="hk-log-controls">}
-puts "    <form method=\"get\" action=\"kurve.cgi\">"
+puts "    <form method=\"get\" action=\"hkkurve.cgi\">"
 puts "      <input type=\"hidden\" name=\"submitted\" value=\"1\">"
 puts {      <fieldset>}
 puts {        <legend>Filter</legend>}
@@ -322,9 +352,11 @@ puts "        </select></label> &nbsp;"
 puts "        <label>Raum: <select name=\"raum\">"
 set sel [expr {[string equal $filter_raum "alle"] ? " selected" : ""}]
 puts "          <option value=\"alle\"${sel}>Alle R&auml;ume</option>"
-foreach r $alle_raeume_komplett {
-    set sel [expr {[string equal $r $filter_raum] ? " selected" : ""}]
-    puts "          <option value=\"[htmlquote $r]\"${sel}>[htmlquote $r]</option>"
+foreach pair $alle_raeume_komplett {
+    set logkey  [lindex $pair 0]
+    set anzeige [lindex $pair 1]
+    set sel [expr {[string equal $logkey $filter_raum] ? " selected" : ""}]
+    puts "          <option value=\"[htmlquote $logkey]\"${sel}>[htmlquote $anzeige]</option>"
 }
 puts "        </select></label> &nbsp;"
 puts "        <label>Ereignis: <select name=\"ereignis\">"
@@ -356,7 +388,7 @@ if {[llength $log_files] == 0} {
     set deg "&deg;"
     set n_dateien [llength $log_files]
     puts "  <p class=\"hk-log-info\">[llength $alle_ereignisse] Eintr&auml;ge aus $n_dateien Datei(en) im gew&auml;hlten Zeitraum</p>"
-    puts {  <table class="hk-table hk-kurve-table">}
+    puts {  <div class="hk-table-scroll"><table class="hk-table hk-kurve-table">}
     puts {    <colgroup>
       <col class="col-kurve-raum">
       <col class="col-kurve-ts">
@@ -414,7 +446,8 @@ if {[llength $log_files] == 0} {
         }
 
         puts "    <tr${rowcls}>"
-        puts "      <td>[htmlquote $raumname]</td>"
+        set raumanzeige [expr {[info exists log_name_map($raumname)] ? $log_name_map($raumname) : $raumname}]
+        puts "      <td>[htmlquote $raumanzeige]</td>"
         puts "      <td>[htmlquote $ts]</td>"
         puts "      <td>[htmlquote $ereignis]</td>"
         puts "      <td>[htmlquote $delta_str]</td>"
@@ -423,7 +456,7 @@ if {[llength $log_files] == 0} {
         puts "      <td>${at_str}</td>"
         puts "    </tr>"
     }
-    puts {  </table>}
+    puts {  </table></div>}
     puts {  <p class="hk-hint"><strong>&Delta; min (Terminbeginn):</strong> Minuten relativ zum Terminbeginn: negativ = vor Terminbeginn, positiv = nach Terminbeginn.<br>Beispiel: Heizende +90min bedeutet, die Heizung schaltete 90 Minuten nach Terminbeginn ab (nicht die Termindauer, da VorzeitAus abgezogen wird).</p>}
     puts {  <fieldset class="hk-legende-fieldset">}
     puts {    <legend>Legende</legend>}

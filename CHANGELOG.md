@@ -11,6 +11,19 @@ zusammen und müssen gemeinsam eingespielt werden.
 Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` /
 `!// TT:`); diese bleiben erhalten und sind die feinste Änderungsebene.
 
+## [Unveröffentlicht]
+
+## [2026-10-12]
+
+### Behoben
+
+- Addon `kurve.cgi`: Räume mit Umlauten im Namen (z.B. „UG-Büro") wurden im
+  Raumfilter-Dropdown nicht gefunden. Der Dropdown-Wert (`value`) enthält jetzt
+  einen ASCII-bereinigten Schlüssel; der Filtervergleich läuft ebenfalls auf ASCII-Ebene.
+- Addon `kurve.cgi`: Filter „Heute" zeigte auch Einträge vom Vortag, weil die
+  Untergrenze als „jetzt minus 24 Stunden" berechnet wurde. Jetzt wird der aktuelle
+  Kalendertag ab Mitternacht verwendet.
+
 ## [2026-10-11]
 
 ### Behoben

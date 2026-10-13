@@ -18,6 +18,8 @@
 
 Das Heizkalender Addon stellt eine Weboberfläche auf der CCU bereit, über die der laufende Betrieb des Heizkalenders beobachtet werden kann. Die Oberfläche ist über den Browser erreichbar und erfordert keine zusätzliche Software.
 
+Die Oberfläche ist grundlegend responsiv gestaltet (Navigation bricht um, Tabellen scrollen horizontal). Eine vollständige Optimierung für Mobilgeräte ist jedoch nicht möglich, da die Tabellen mit ihren vielen Spalten auch auf kleinen Displays eine gewisse Mindestbreite benötigen.
+
 Die Startseite des Addons ist über die CCU-Weboberfläche unter **Einstellungen > Zusatzsoftware > Heizkalender > Einstellungen** erreichbar, oder direkt unter:
 
 ```link
@@ -52,7 +54,7 @@ Nach dem Neustart erscheint der Heizkalender in der Liste der installierten Zusa
 
 Die Raumübersicht zeigt für jeden konfigurierten Raum den aktuellen Heizstatus auf einen Blick.
 
-![Raumübersicht mit aktiven Terminen für EG-Kinderraum, EG-Foyer und EG-Eltern-Kind-Raum sowie EG-Saal (Abendveranstaltung)](../../Dokumentation/Bilder/raumuebersicht.png "Heizkalender: Raumübersicht")
+![Raumübersicht mit aktiven Terminen für EG-Kinderraum, EG-Foyer und EG-Eltern-Kind-Raum sowie EG-Saal](../../Dokumentation/Bilder/raumuebersicht.png "Heizkalender: Raumübersicht")
 
 | Spalte | Bedeutung |
 | ------ | --------- |
@@ -76,11 +78,15 @@ Ganz oben wird, falls vorhanden, die aktuelle Außentemperatur (gleitender Mitte
 
 **Hinweis:** Die Seite zeigt ausschließlich Heizdaten. Der ursprüngliche Terminname aus dem Kalender ist in der Schaltliste nicht enthalten.
 
+Hier liegt ein Sonderfall vor: Der Raum *UG-Büro* wurde dem Raum *EG-Eltern-Kind-Raum* zugewiesen, sodass sie eine Raumgruppe bilden. Entsprechend wird der Raum *UG-Büro* mitgeheizt. Der Termin enthält allerdings nur den Raum *EG-Eltern-Kind-Raum*.
+
+![Raumübersicht mit aktiven Terminen für EG-Kinderraum, EG-Foyer, EG-Eltern-Kind-Raum und EG-Saal sowie UG-Büro](../../Dokumentation/Bilder/raumuebersicht-raumgruppe.png "Heizkalender: Raumübersicht mit Raumgruppe")
+
 ---
 
 ## Heizkurvenkontrolle
 
-**Erreichbar unter:** `/addons/heizkalender/kurve.cgi`
+**Erreichbar unter:** `/addons/heizkalender/hkkurve.cgi`
 
 Die Heizkurvenkontrolle wertet die aufgezeichneten Heizereignisse aus dem USB-Stick-Archiv aus und zeigt, wie gut die Heizung die gewünschte Temperatur zum Terminbeginn erreicht hat.
 
@@ -151,7 +157,7 @@ Die Anzeige entspricht einem `tail`: die letzten N Zeilen der Datei, älteste ob
 
 ## Systemlog
 
-**Erreichbar unter:** `/addons/heizkalender/log.cgi`
+**Erreichbar unter:** `/addons/heizkalender/syslog.cgi`
 
 Das Systemlog zeigt die letzten Einträge aus dem Linux-Systemprotokoll der CCU (`/var/log/messages`).
 
@@ -193,7 +199,7 @@ Die Seite ist rein lesend. Werte können nur direkt in der CCU-Weboberfläche ge
 
 ## Grundeinstellungen
 
-**Erreichbar unter:** `/addons/heizkalender/config.cgi`
+**Erreichbar unter:** `/addons/heizkalender/hkconfig.cgi`
 
 Die Seite zeigt die wichtigsten Einstellungen des Heizkalenders in aufbereiteter Form: Logging-Flags, Kurveneinstellungen und eine Übersicht aller Raumkonfigurationen. Die Abschnitte entsprechen 1:1 den Seiten des Windows-Installers und dienen als Nachschlagewerk, wenn man gerade nicht am passenden PC sitzt oder remote auf die CCU zugreift.
 

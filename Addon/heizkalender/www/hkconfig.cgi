@@ -240,20 +240,10 @@ puts {<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Heizkalender: Grundeinstellungen</title>
   <link rel="stylesheet" href="heizkalender.css">
-  <link rel="icon" type="image/png" href="hk-logo-50.png">
-  <style>
-    .hk-config-table-auto { border-collapse:collapse; width:auto; }
-    .hk-config-table-auto th, .hk-config-table-auto td { padding:0.35em 0.7em; border:1px solid #ddd; vertical-align:top; }
-    .hk-config-table-auto th { background:#f4f4f4; text-align:left; font-weight:normal; white-space:nowrap; }
-    .hk-config-table-auto td { white-space:nowrap; }
-    .hk-config-table-auto td.hk-val { white-space:normal; word-break:break-all; max-width:30em; }
-    .hk-config-table-auto td.hk-code { font-family:monospace; white-space:normal; word-break:break-all; max-width:30em; }
-    .hk-config-table-auto td.hk-id { text-align:right; color:#666; }
-    .hk-kurve-grid { display:flex; gap:0.5em; flex-wrap:wrap; margin:0.5em 0; }
-    .hk-kurve-cell { text-align:center; min-width:5.5em; border:1px solid #bbb; padding:0.5em 0.7em; border-radius:4px; }
-    .hk-kurve-cell .hk-at { font-size:1em; font-weight:bold; }
-    .hk-kurve-cell .hk-min { font-weight:bold; font-size:1.6em; line-height:1.3; }
-  </style>
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="manifest" href="site.webmanifest">
 </head>
 <body>
 <div id="content">
@@ -263,11 +253,11 @@ puts {<!DOCTYPE html>
   </div>
   <nav class="hk-nav">
     <a href="index.cgi">Raum&uuml;bersicht</a>
-    <a href="kurve.cgi">Heizkurve</a>
+    <a href="hkkurve.cgi">Heizkurve</a>
     <a href="hklog.cgi">HK-Log</a>
-    <a href="log.cgi">Systemlog</a>
+    <a href="syslog.cgi">Systemlog</a>
     <a href="sysvars.cgi">Systemvariablen</a>
-    <a href="config.cgi">Grundeinstellungen</a>
+    <a href="hkconfig.cgi">Einstellungen</a>
   </nav>}
 
 puts {<p class="hk-hint">Alle Werte werden direkt von der CCU gelesen und k&ouml;nnen hier nicht ge&auml;ndert werden.</p>}
@@ -290,7 +280,7 @@ if {[info exists kalval(HK1-CT-Gemeindename)] || [info exists kalval(HK1-CT-Toke
 
 puts {<fieldset><legend>Kalender</legend>}
 puts "  <p><strong>Erkannte Kalender-Integration:</strong> [htmlquote $kalvariante]</p>"
-puts {<table class="hk-config-table-auto">}
+puts {<div class="hk-table-scroll"><table class="hk-config-table-auto">}
 
 # ChurchTools
 foreach {var label} {
@@ -339,19 +329,19 @@ foreach {var label} {
     }
 }
 
-puts {</table>}
+puts {</table></div>}
 puts {</fieldset>}
 
 # ===========================================================================
 # Programme
 # ===========================================================================
 puts {<fieldset><legend>Programme</legend>}
-puts {<table class="hk-config-table-auto">}
+puts {<div class="hk-table-scroll"><table class="hk-config-table-auto">}
 puts {  <tr><th>Programm</th><th>Aktiv</th></tr>}
 foreach prog $programme {
     puts "  <tr><td>[htmlquote [lindex $prog 0]]</td><td>[bool_label [lindex $prog 1]]</td></tr>"
 }
-puts {</table>}
+puts {</table></div>}
 puts {</fieldset>}
 
 # ===========================================================================
@@ -360,7 +350,7 @@ puts {</fieldset>}
 puts {<fieldset><legend>Einstellungen</legend>}
 
 puts {<fieldset><legend>Protokollierung</legend>}
-puts {<table class="hk-config-table-auto">}
+puts {<div class="hk-table-scroll"><table class="hk-config-table-auto">}
 foreach {var label} {
     HK-Logging                    "Allgemeine Protokollierung"
     HK1-Logging                   "Skript 1 (Termindaten einlesen)"
@@ -371,11 +361,11 @@ foreach {var label} {
         puts "  <tr><th>[htmlquote $label]</th><td>[bool_label $einstval($var)]</td></tr>"
     }
 }
-puts {</table>}
+puts {</table></div>}
 puts {</fieldset>}
 
 puts {<fieldset><legend>R&uuml;ckstellungsverhalten</legend>}
-puts {<table class="hk-config-table-auto">}
+puts {<div class="hk-table-scroll"><table class="hk-config-table-auto">}
 foreach {var label} {
     HK2-Hand-Grundtemp "N&auml;chtliche R&uuml;ckstellung auf Grundtemperatur (01:00 Uhr)"
     HK2-Hand-Temp      "Manuell eingestellte Temperatur am Terminende beibehalten"
@@ -384,11 +374,11 @@ foreach {var label} {
         puts "  <tr><th>$label</th><td>[bool_label $einstval($var)]</td></tr>"
     }
 }
-puts {</table>}
+puts {</table></div>}
 puts {</fieldset>}
 
 puts {<fieldset><legend>Temperaturen und Zeitversatz</legend>}
-puts {<table class="hk-config-table-auto">}
+puts {<div class="hk-table-scroll"><table class="hk-config-table-auto">}
 foreach {var label unit} {
     HK2-Grundtemperatur "Grundtemperatur"              "&deg;C"
     HK2-A.Temp.Grenze   "Au&szlig;entemperatur-Grenze" "&deg;C"
@@ -400,7 +390,7 @@ foreach {var label unit} {
         puts "  <tr><th>$label</th><td>[format_num $einstval($var) $decimals]&nbsp;$unit</td></tr>"
     }
 }
-puts {</table>}
+puts {</table></div>}
 puts {</fieldset>}
 
 puts {<fieldset><legend>Heizkurve (HK2-Kurve)</legend>}
@@ -451,7 +441,7 @@ puts {</fieldset>}
 # Kalenderzuordnung
 # ===========================================================================
 puts {<fieldset><legend>Kalenderzuordnung</legend>}
-puts {<table class="hk-config-table-auto">}
+puts {<div class="hk-table-scroll"><table class="hk-config-table-auto">}
 puts {  <tr><th>Id</th><th>Ressource</th><th>Zugeordnete R&auml;ume</th></tr>}
 foreach z $zuordnungen {
     set rid     [htmlquote [lindex $z 0]]
@@ -459,7 +449,7 @@ foreach z $zuordnungen {
     set raumzuo [htmlquote [lindex $z 2]]
     puts "  <tr><td class=\"hk-id\">$rid</td><td>$rname</td><td class=\"hk-val\">$raumzuo</td></tr>"
 }
-puts {</table>}
+puts {</table></div>}
 puts {</fieldset>}
 
 # ===========================================================================
@@ -467,7 +457,7 @@ puts {</fieldset>}
 # ===========================================================================
 set deg "&deg;"
 puts {<fieldset><legend>R&auml;ume</legend>}
-puts {<table class="hk-config-table-auto">}
+puts {<div class="hk-table-scroll"><table class="hk-config-table-auto">}
 puts "  <tr><th>Raum</th><th>Modus</th><th>Wohlf&uuml;hltemp.</th><th>Abw. Grundtemp.</th><th>Vorzeitiger Heizbeginn</th><th>Vorzeitiges Heizende</th><th>Faktor Heizkurve</th><th>Thermostat / Sensor</th><th>Schaltaktor</th><th>Ger&auml;tetyp</th></tr>"
 foreach raum $raeume {
     set rname [string range [lindex $raum 0] 9 end]
@@ -497,7 +487,7 @@ foreach raum $raeume {
     }
     puts "  <tr><td>[htmlquote $rname]</td><td>[format_modus $modus]</td><td>[format_num $wtemp]&nbsp;${deg}C</td><td>$gtemp_str</td><td>[format_num $vorlauf 0]&nbsp;min</td><td>[format_num $vorzaus 0]&nbsp;min</td><td>[format_num $faktor]</td><td>[htmlquote $thermostat]</td><td>[htmlquote $schaltaktor]</td><td>[format_heiztyp $heiztyp]</td></tr>"
 }
-puts {</table>}
+puts {</table></div>}
 puts {</fieldset>}
 
 puts {</div>

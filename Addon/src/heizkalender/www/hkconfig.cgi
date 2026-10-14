@@ -296,8 +296,8 @@ foreach {var label} {
 } {
     if {[info exists kalval($var)]} {
         set val [htmlquote $kalval($var)]
-        if {[string match "*Token*" $var] && [string length $val] > 20} {
-            set val "[string range $val 0 19]&hellip;"
+        if {[string match "*Token*" $var] && ![string equal $val ""]} {
+            set val "***"
         }
         puts "  <tr><th>ChurchTools: $label</th><td class=\"hk-code\">$val</td></tr>"
     }
@@ -310,8 +310,8 @@ foreach {var label} {
 } {
     if {[info exists kalval($var)]} {
         set val [htmlquote $kalval($var)]
-        if {[string match "*Token*" $var] && [string length $val] > 20} {
-            set val "[string range $val 0 19]&hellip;"
+        if {[string match "*Token*" $var] && ![string equal $val ""]} {
+            set val "***"
         }
         puts "  <tr><th>ChurchDesk: $label</th><td class=\"hk-code\">$val</td></tr>"
     }
@@ -329,8 +329,8 @@ foreach {var label} {
 } {
     if {[info exists kalval($var)]} {
         set val [htmlquote $kalval($var)]
-        if {[string match "*Key*" $var] && [string length $val] > 20} {
-            set val "[string range $val 0 19]&hellip;"
+        if {[string match "*Key*" $var] && ![string equal $val ""]} {
+            set val "***"
         }
         puts "  <tr><th>Google Calendar: $label</th><td class=\"hk-code\">$val</td></tr>"
     }

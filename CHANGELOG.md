@@ -13,6 +13,21 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 # <u>[Unveröffentlicht]</u>
 
+## [2026-10-14]
+
+### Hinzugefügt
+
+- Tools: `Tool-HMIPServer Neustart.hsc` zum manuellen oder zeitgesteuerten Neustart des HMIPServer-Prozesses. Nötig nach dem Anlegen, Umbenennen oder Löschen von Diagrammen, um den internen Fehler `RRD already closed` zu vermeiden.
+
+### Geändert
+
+- Addon `index.cgi`: Mapping von HKG-Raum-Variablen auf ResIDs von namensbasiert auf positionsbasiert umgestellt (wie in Skript 1). `HK2-HKG-Liste` wird jetzt mitgeladen; Gruppenräume (`+`-Teil) erhalten die ResID des Hauptraums als Fallback, sofern sie nicht selbst als Hauptraum eingetragen sind.
+- Addon `sysvars.cgi`: Erste Spalte der Räume-Tabelle zeigt jetzt den vollständigen Systemvariablennamen (z.B. `HKG-Raum-EG-Saal`) statt des abgeschnittenen Suffixes.
+- Addon `hkkurve.cgi`: Raum-Dropdown wird jetzt aus `HKG-Raum-*`-Systemvariablen befüllt statt aus `HK1-R-Liste`. Dadurch stimmen die Einträge mit den tatsächlich konfigurierten Räumen überein.
+- Versionsnummer auf 0.6.0 angehoben.
+- Entwickler-Dokumentation: Positionsbasiertes Mapping zwischen `HK1-R-Liste` und `HK2-HKG-Liste` mit Erläuterung und Mermaid-Diagramm dokumentiert.
+- Dokumentation Vorheizzeit: Abschnitt zu festem/raum-individuellem Offset präzisiert (Raumtemperatur-Korrekturfaktor wirkt auch auf diesen Anteil).
+
 # <u>[Veröffentlicht]</u>
 
 ## [2026-10-14] Release

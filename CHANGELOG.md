@@ -28,6 +28,29 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Entwickler-Dokumentation: Positionsbasiertes Mapping zwischen `HK1-R-Liste` und `HK2-HKG-Liste` mit Erläuterung und Mermaid-Diagramm dokumentiert.
 - Dokumentation Vorheizzeit: Abschnitt zu festem/raum-individuellem Offset präzisiert (Raumtemperatur-Korrekturfaktor wirkt auch auf diesen Anteil).
 
+# <u>[Veröffentlicht]</u>
+
+## [2026-10-14] Release
+
+- **HeizkalenderInstaller.exe Version 3.7.0**
+- **Addon Version 0.5.0**
+
+## [2026-10-13] Release
+
+### Hinzugefügt
+
+Fehlende Beschreibung ergänzt
+
+- Gerätetyp
+- Gerätetest
+- Modus
+- Test
+
+### Geändert
+
+- Index aktualisiert
+- Buildprozess weiter automatisiert
+
 ## [2026-10-13]
 
 ### Hinzugefügt

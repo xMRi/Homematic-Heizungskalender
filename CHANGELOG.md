@@ -13,7 +13,26 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 # <u>[Unveröffentlicht]</u>
 
-# <u>[Unveröffentlicht]</u>
+# <u>[Veröffentlicht]</u>
+
+## [2026-10-14] Release
+
+- **HeizkalenderInstaller.exe Version 3.7.0**
+- **Addon Version 0.5.0**
+
+## [2026-10-13] Release
+
+## Hinzugefügt
+Fehlende Beschreibung ergänzt
+
+- Gerätetyp
+- Gerätetest
+- Modus
+- Test
+
+## Geändert
+- Index aktualisiert
+- Buildprozess weiter automatisiert
 
 ## [2026-10-13]
 

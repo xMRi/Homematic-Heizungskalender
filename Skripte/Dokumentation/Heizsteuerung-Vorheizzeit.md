@@ -94,12 +94,21 @@ berechnete Offsets, die beide vom Terminbeginn abgezogen werden:
 
 | Anteil | Herkunft | Verhalten |
 | :--- | :--- | :--- |
-| **Fester/raum-individueller Offset** | Feld „Vorheizzeit" der Raumvariablen (optional mit `*Faktor`) plus globaler `HK2-Kurvenversatz` | Fester Minutenwert, unabhängig von der Außentemperatur |
+| **Fester/raum-individueller Offset** | Feld „Vorheizzeit" der Raumvariablen (optional mit `*Faktor`) plus globaler `HK2-Kurvenversatz` | Unabhängig von der Außentemperatur, wird aber ebenfalls mit dem Raumtemperatur-Korrekturfaktor skaliert |
 | **Temperaturabhängiger Offset** | Kurvenwert aus `HK2-Kurve` (siehe oben), skaliert mit dem Raumtemperatur-Korrekturfaktor | Hängt von Außen- und Raumtemperatur ab |
 
-Beide Anteile werden addiert. Der globale `HK2-Kurvenversatz` wirkt dabei als
-Gegenstück zu `HK2-VorzeitAus` (Ausschalt-Offset) und wird **nur bei echten
-Heizvorgängen** berücksichtigt, nicht bei reinem Schalten (Modus `S`).
+Beide Anteile werden addiert. **Wichtig:** Der Raumtemperatur-Korrekturfaktor (siehe oben) wirkt auf
+beide Anteile gleichzeitig. Der raum-individuelle Offset ist also zwar unabhängig von der
+Außentemperatur, wird aber bei einem bereits warmen Raum genauso reduziert wie der Kurvenanteil.
+Wer die Vorheizzeit eines Raumes gezielt verlängern möchte, muss diesen Effekt einplanen:
+
+```txt
+Benötigter Offset-Wert = gewünschte Mindest-Vorheizzeit / Korrekturfaktor
+Beispiel: 120 min gewünscht, Korrekturfaktor 0,65 → Offset eintragen: 120 / 0,65 ≈ 185 min
+```
+
+Der globale `HK2-Kurvenversatz` wirkt dabei als Gegenstück zu `HK2-VorzeitAus` (Ausschalt-Offset)
+und wird **nur bei echten Heizvorgängen** berücksichtigt, nicht bei reinem Schalten (Modus `S`).
 
 ## Sonderfälle
 

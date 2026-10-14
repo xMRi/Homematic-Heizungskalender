@@ -120,6 +120,39 @@ HKG-Raum-A[+HKG-Raum-B];HKG-Raum-C;...
 
 Beispiel: `HKG-Raum-GrSaal+HKG-Raum-Foyer+HKG-Raum-GaesteWC;HKG-Raum-KlSaal`
 
+**Wichtig:** Die Verknüpfung zwischen `HK1-R-Liste` und `HK2-HKG-Liste` ist rein positionsbasiert.
+Skript 1 sucht die ResID in `HK1-R-Liste`, merkt sich den Index und liest an gleicher Position
+in `HK2-HKG-Liste` nach. Beide Listen müssen daher immer gleich viele Einträge haben und
+in identischer Reihenfolge gepflegt werden.
+
+```mermaid
+graph LR
+    subgraph HK1-R-Liste
+        R0["Pos 0: 3=GroßerSaal"]
+        R2["Pos 2: 4=Küche"]
+    end
+
+    subgraph HK2-HKG-Liste
+        H0["Pos 0: HKG-Raum-GrSaal\n+HKG-Raum-Foyer\n+HKG-Raum-WCs"]
+        H2["Pos 2: HKG-Raum-Küche"]
+    end
+
+    subgraph HKG-Raum-Variablen
+        V1["HKG-Raum-GrSaal"]
+        V3["HKG-Raum-Foyer"]
+        V4["HKG-Raum-WCs"]
+        V5["HKG-Raum-Küche"]
+    end
+
+    R0 -->|"gleiche Position"| H0
+    R2 -->|"gleiche Position"| H2
+
+    H0 --> V1
+    H0 --> V3
+    H0 --> V4
+    H2 --> V5
+```
+
 ### HKG-Raum-*
 
 Jeder Raum hat eine eigene Systemvariable `HKG-Raum-<Name>`. Der Wert ist

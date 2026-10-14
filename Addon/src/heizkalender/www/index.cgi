@@ -1,6 +1,23 @@
 #!/bin/tclsh
 # Heizkalender-Addon: Raumübersicht mit Schaltliste
 # Zielplattform: CCU3, Tcl 8.2.3
+#
+# Verwendete Systemvariablen:
+#   HK1-Schaltliste      - Alle Heiztermine (ResID;Ein;Aus;Kapazitaet;HSFlag;...)
+#   HK1-R-Liste          - Ressourcen-Namenszuordnung (ID=Name;...), positionsbasiert
+#   HK2-HKG-Liste        - Zuordnung Ressource -> HKG-Raum-Variablen, positionsbasiert
+#   HK2-Aussentemperatur - Gleitender Aussentemperatur-Durchschnitt fuer Vorheizzeit
+#   HKG-Raum-*           - Raumvariablen (Status;Modus;Heiztyp;Wohlfuehltemp[/Grundtemp];
+#                          Vorheizzeit[*Faktor];VorzeitAus[;Sensorkanal])
+#
+# Ablauf:
+# 1. HKG-Raum-* auslesen: Status, Modus, Wohlfuehltemperatur, opt. Sensor-Kanal.
+# 2. HK2-HKG-Liste + HK1-R-Liste: positionsbasiertes Mapping Variablenname -> ResID.
+#    Skript 1 verwendet ebenfalls dieses positionsbasierte Mapping (nicht Namensvergleich).
+# 3. HK1-Schaltliste: mit der ResID den besten Termin ermitteln
+#    (laufend > naechster zukuenftiger > letzter vergangener).
+# 4. Sensor-Kanal (Feld 6 der Raumvariable, optional): Ist-Temperatur und
+#    Luftfeuchtigkeit direkt aus dem HomeMatic-Geraet lesen.
 
 load tclrega.so
 
@@ -56,7 +73,7 @@ proc format_hsflag {flag} {
 }
 
 # ---------------------------------------------------------------------------
-# Daten via ReGa laden: Schaltliste + R-Liste + HKG-Raum-Variablen
+# Daten via ReGa laden: HK1-Schaltliste + HK1-R-Liste + HK2-HKG-Liste + HKG-Raum-Variablen
 # ---------------------------------------------------------------------------
 proc extract_stdout {rega_raw} {
     set raw ""
@@ -95,13 +112,16 @@ set rega_script {
     var sv1 = dom.GetObject("HK1-Schaltliste");
     var sv2 = dom.GetObject("HK1-R-Liste");
     var sv3 = dom.GetObject("HK2-Aussentemperatur");
+    var sv4 = dom.GetObject("HK2-HKG-Liste");
     string sl = "";
     string rl = "";
     string at = "";
+    string hkgl = "";
     if (sv1) { sl = sv1.Value(); }
     if (sv2) { rl = sv2.Value(); }
     if (sv3) { at = sv3.Value(); }
-    result = sl # "\n===SL===\n" # rl # "\n===RL===\n" # at # "\n===AT===\n";
+    if (sv4) { hkgl = sv4.Value(); }
+    result = sl # "\n===SL===\n" # rl # "\n===RL===\n" # at # "\n===AT===\n" # hkgl # "\n===HKG===\n";
     string id;
     foreach(id, dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs()) {
         var sv = dom.GetObject(id);
@@ -147,14 +167,16 @@ set rega_script {
 
 set raw [extract_stdout [rega_script $rega_script]]
 
-# Fünf Abschnitte trennen
+# Sechs Abschnitte trennen
 set sl_sep    "\n===SL===\n"
 set rl_sep    "\n===RL===\n"
 set at_sep    "\n===AT===\n"
+set hkg_sep   "\n===HKG===\n"
 set temp_sep  "\n===TEMPS===\n"
 set schaltliste_raw ""
 set rliste_raw ""
 set aussentemp_raw ""
+set hkgliste_raw ""
 set raumvars_raw ""
 set temps_raw ""
 
@@ -170,54 +192,103 @@ if {$p1 >= 0} {
         if {$p3 >= 0} {
             set aussentemp_raw [string trim [string range $rest2 0 [expr {$p3 - 1}]]]
             set rest3 [string range $rest2 [expr {$p3 + [string length $at_sep]}] end]
-            set p4 [string first $temp_sep $rest3]
+            set p4 [string first $hkg_sep $rest3]
             if {$p4 >= 0} {
-                set raumvars_raw [string range $rest3 0 [expr {$p4 - 1}]]
-                set temps_raw    [string range $rest3 [expr {$p4 + [string length $temp_sep]}] end]
+                set hkgliste_raw [string trim [string range $rest3 0 [expr {$p4 - 1}]]]
+                set rest4 [string range $rest3 [expr {$p4 + [string length $hkg_sep]}] end]
+                set p5 [string first $temp_sep $rest4]
+                if {$p5 >= 0} {
+                    set raumvars_raw [string range $rest4 0 [expr {$p5 - 1}]]
+                    set temps_raw    [string range $rest4 [expr {$p5 + [string length $temp_sep]}] end]
+                } else {
+                    set raumvars_raw $rest4
+                }
             } else {
-                set raumvars_raw $rest3
-            }
-        } else {
-            set p4 [string first $temp_sep $rest2]
-            if {$p4 >= 0} {
-                set raumvars_raw [string range $rest2 0 [expr {$p4 - 1}]]
-                set temps_raw    [string range $rest2 [expr {$p4 + [string length $temp_sep]}] end]
-            } else {
-                set raumvars_raw $rest2
+                set p5 [string first $temp_sep $rest3]
+                if {$p5 >= 0} {
+                    set raumvars_raw [string range $rest3 0 [expr {$p5 - 1}]]
+                    set temps_raw    [string range $rest3 [expr {$p5 + [string length $temp_sep]}] end]
+                } else {
+                    set raumvars_raw $rest3
+                }
             }
         }
     }
 }
 
 # ---------------------------------------------------------------------------
-# R-Liste parsen: Name -> ResID (und ResID -> Name)
+# Positionsbasiertes Mapping: HKG-Raum-Variablenname -> ResID
+#
+# HK2-HKG-Liste und HK1-R-Liste sind positionsbasiert gekoppelt (wie in Skript 1).
+# Erster Durchlauf: Hauptraeume (erster Variablenname vor "+") eintragen.
+# Zweiter Durchlauf: Gruppenraeume ("+"-Teil) nur eintragen, wenn sie noch
+# nicht als Hauptraum eingetragen sind -- so bekommt z.B. UG-Buero seinen
+# eigenen Termin (als Hauptraum), und zeigt zusaetzlich den Termin des
+# Hauptraums wenn er nur als Gruppenraum gebucht wird.
 # ---------------------------------------------------------------------------
 
-set name2rid {}
+# HK1-R-Liste -> geordnete Liste der ResIDs (ohne Namen)
+set rid_list {}
 foreach entry [split $rliste_raw ";"] {
     set entry [string trim $entry]
     if {[string equal $entry ""]} { continue }
     set eqpos [string first "=" $entry]
     if {$eqpos >= 0} {
-        set rid  [string range $entry 0 [expr {$eqpos-1}]]
-        set rnam [string range $entry [expr {$eqpos+1}] end]
-        lappend name2rid $rnam $rid
+        lappend rid_list [string range $entry 0 [expr {$eqpos-1}]]
+    } else {
+        lappend rid_list $entry
     }
 }
 
-proc lookup_rid {rnam name2rid_var} {
-    upvar $name2rid_var nr
-    set idx [lsearch $nr $rnam]
-    if {$idx >= 0 && ($idx % 2) == 0} { return [lindex $nr [expr {$idx + 1}]] }
+# Erster Durchlauf: nur Hauptraeume eintragen
+set varname2rid {}
+set pos 0
+foreach hkgeintrag [split $hkgliste_raw ";"] {
+    set hkgeintrag [string trim $hkgeintrag]
+    if {![string equal $hkgeintrag ""]} {
+        set rid [lindex $rid_list $pos]
+        if {![string equal $rid ""]} {
+            set hauptraum [string trim [lindex [split $hkgeintrag "+"] 0]]
+            if {![string equal $hauptraum ""]} {
+                lappend varname2rid $hauptraum $rid
+            }
+        }
+    }
+    incr pos
+}
+
+# Zweiter Durchlauf: Gruppenraeume eintragen, sofern noch nicht als Hauptraum vorhanden
+set pos 0
+foreach hkgeintrag [split $hkgliste_raw ";"] {
+    set hkgeintrag [string trim $hkgeintrag]
+    if {![string equal $hkgeintrag ""]} {
+        set rid [lindex $rid_list $pos]
+        if {![string equal $rid ""]} {
+            foreach gruppenraum [lrange [split $hkgeintrag "+"] 1 end] {
+                set gruppenraum [string trim $gruppenraum]
+                if {[string equal $gruppenraum ""]} { continue }
+                set already [lsearch $varname2rid $gruppenraum]
+                if {$already < 0} {
+                    lappend varname2rid $gruppenraum $rid
+                }
+            }
+        }
+    }
+    incr pos
+}
+
+proc lookup_rid_by_varname {varname varname2rid_var} {
+    upvar $varname2rid_var vr
+    set idx [lsearch $vr $varname]
+    if {$idx >= 0 && ($idx % 2) == 0} { return [lindex $vr [expr {$idx + 1}]] }
     return ""
 }
 
 # ---------------------------------------------------------------------------
 # Schaltliste parsen: ResID -> Liste von Eintraegen {ein aus cap aktiv}
+# Format: RId;Ein;Aus;cap;HSFlag; (Eintraege direkt aneinandergehaengt, 5 Felder)
 # ---------------------------------------------------------------------------
 set now [clock seconds]
-# Flat-Liste: rid -> Liste aller zugehoerigen Eintraege
-# Schaltliste-Format: RId;Ein;Aus;cap;HSFlag; (Eintraege direkt aneinandergehaengt, 5 Felder + abschliessendes Semikolon)
 set sl_by_rid {}
 
 set sl_fields [split $schaltliste_raw ";"]
@@ -294,9 +365,8 @@ foreach line [split $temps_raw "\n"] {
     set varname [lindex $parts 0]
     set typ     [lindex $parts 1]
     set tval    [lindex $parts 2]
-    set rname   [string range $varname 9 end]
-    if {[string equal $typ "T"]} { lappend ist_temps $rname $tval }
-    if {[string equal $typ "H"]} { lappend ist_humi  $rname $tval }
+    if {[string equal $typ "T"]} { lappend ist_temps $varname $tval }
+    if {[string equal $typ "H"]} { lappend ist_humi  $varname $tval }
 }
 
 proc lookup_isttemp {rname ist_temps_var} {
@@ -317,8 +387,6 @@ foreach line [split $raumvars_raw "\n"] {
     if {[llength $parts] < 2} { continue }
     set varname [lindex $parts 0]
     set val     [lindex $parts 1]
-    # Raumname: HKG-Raum-XYZ -> XYZ
-    set rname [string range $varname 9 end]
     set fields [split $val ";"]
     set status  [string trim [lindex $fields 0]]
     set modus   [string trim [lindex $fields 1]]
@@ -326,7 +394,7 @@ foreach line [split $raumvars_raw "\n"] {
     set wtemp $tempfeld
     set slashpos [string first "/" $tempfeld]
     if {$slashpos >= 0} { set wtemp [string range $tempfeld 0 [expr {$slashpos - 1}]] }
-    lappend raeume [list $rname $status $modus $wtemp]
+    lappend raeume [list $varname $status $modus $wtemp]
 }
 set raeume [lsort -index 0 $raeume]
 
@@ -397,12 +465,13 @@ if {[llength $raeume] == 0} {
     puts {    <tr><th>Status</th><th>Raum</th><th>Modus</th><th>Ist-Temp.</th><th>Luftfeuchte</th><th>Termin ab</th><th>Termin bis</th><th>Wohlf&uuml;hltemperatur</th></tr>}
 
     foreach r $raeume {
-        set rname  [lindex $r 0]
-        set status [lindex $r 1]
-        set modus  [lindex $r 2]
-        set wtemp  [lindex $r 3]
+        set varname [lindex $r 0]
+        set status  [lindex $r 1]
+        set modus   [lindex $r 2]
+        set wtemp   [lindex $r 3]
+        set rname   [string range $varname 9 end]
 
-        set rid [lookup_rid $rname name2rid]
+        set rid [lookup_rid_by_varname $varname varname2rid]
         set entry {}
         if {![string equal $rid ""]} {
             set entry [best_entry $rid sl_by_rid]
@@ -428,14 +497,14 @@ if {[llength $raeume] == 0} {
             set cap_str [format_cap $cap $wtemp]
         }
 
-        set isttemp_raw [lookup_isttemp $rname ist_temps]
+        set isttemp_raw [lookup_isttemp $varname ist_temps]
         set isttemp_str ""
         if {![string equal $isttemp_raw ""]} {
             set t 0.0
             catch {set t [expr {double($isttemp_raw)}]}
             set isttemp_str "[format "%.1f" $t] ${deg}C"
         }
-        set isttemp_raw2 [lookup_isttemp $rname ist_humi]
+        set isttemp_raw2 [lookup_isttemp $varname ist_humi]
         set humi_str ""
         if {![string equal $isttemp_raw2 ""]} {
             set h 0.0

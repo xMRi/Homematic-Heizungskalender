@@ -1,6 +1,13 @@
 #!/bin/tclsh
 # Heizkalender-Addon: Heizkurvenkontrolle-Auswertung
 # Zielplattform: CCU3, Tcl 8.2.3
+#
+# Verwendete Systemvariablen:
+#   HKG-Raum-* - Raumvariablen; Suffix (z.B. "UG-Büro") wird als Raumname im
+#                Dropdown verwendet und entspricht dem Raumname im Log-Format
+#
+# Ereignisdaten stammen NICHT aus Systemvariablen, sondern aus den HK-Log-Dateien
+# auf dem USB-Stick (/media/usb1/HK-Log_*.log), gefiltert nach "HK-LogHeizkurvenkontrolle".
 
 load tclrega.so
 
@@ -125,27 +132,31 @@ if {[file isdirectory $usb_dir]} {
 set hkk_src "HK-LogHeizkurvenkontrolle"
 
 # ---------------------------------------------------------------------------
-# Raumliste aus HK1-R-Liste via ReGa
-# value und Anzeige im Dropdown = Originalname (mit Umlauten, URL-kodiert übergeben)
+# Raumliste aus HKG-Raum-* Systemvariablen via ReGa
+# Der Raumname im Log entspricht dem Suffix der HKG-Raum-*-Variable (z.B. "UG-Büro").
 # ---------------------------------------------------------------------------
-set r_liste_raw [extract_stdout [rega_script {
-    var sv = dom.GetObject("HK1-R-Liste");
-    if (sv) { WriteLine(sv.Value()); } else { WriteLine(""); }
+set hkg_raw [extract_stdout [rega_script {
+    string result = "";
+    string id;
+    foreach(id, dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs()) {
+        var sv = dom.GetObject(id);
+        if (!sv) { continue; }
+        string name = sv.Name();
+        if (name.StartsWith("HKG-Raum-")) {
+            result = result # name # "\n";
+        }
+    }
+    WriteLine(result);
 }]]
 
-# alle_raeume: Liste von {name name} aus HK1-R-Liste, nach Name sortiert
+# alle_raeume: Suffix von HKG-Raum-* (= Raumname im Log), nach Name sortiert
 set alle_raeume {}
-foreach entry [split $r_liste_raw ";"] {
-    set entry [string trim $entry]
-    if {[string equal $entry ""]} { continue }
-    set eqpos [string first "=" $entry]
-    if {$eqpos >= 0} {
-        set anzeige [string trim [string range $entry [expr {$eqpos+1}] end]]
-    } else {
-        set anzeige [string trim $entry]
-    }
-    if {[string equal $anzeige ""]} { continue }
-    lappend alle_raeume [list $anzeige $anzeige]
+foreach line [split $hkg_raw "\n"] {
+    set line [string trim $line]
+    if {[string equal $line ""]} { continue }
+    set rname [string range $line 9 end]
+    if {[string equal $rname ""]} { continue }
+    lappend alle_raeume [list $rname $rname]
 }
 set alle_raeume [lsort -index 1 $alle_raeume]
 

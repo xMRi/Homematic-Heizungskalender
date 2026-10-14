@@ -312,7 +312,7 @@ proc render_room_table {varlist} {
     append html "    <col class=\"col-thermostat\"><col class=\"col-schaltaktor\">\n"
     append html "  </colgroup>\n"
     append html "  <tr>"
-    append html "<th>Raum</th>"
+    append html "<th>Systemvariable</th>"
     append html "<th>Status</th>"
     append html "<th>Modus</th>"
     append html "<th>Heiztyp</th>"
@@ -329,9 +329,6 @@ proc render_room_table {varlist} {
     while {$i < [llength $varlist]} {
         set name [lindex $varlist $i]
         set val  [lindex $varlist [expr {$i+1}]]
-        # Raumname: HKG-Raum-XYZ -> XYZ
-        set roomname [string range $name 9 end]
-
         set fields [split $val ";"]
         set status     [lindex $fields 0]
         set modus      [lindex $fields 1]
@@ -366,7 +363,7 @@ proc render_room_table {varlist} {
         set heiztyp_txt [translate $heiztyp heiztyp_map]
 
         append html "  <tr>"
-        append html "<td>[htmlquote $roomname]</td>"
+        append html "<td>[htmlquote $name]</td>"
         append html "<td>[htmlquote $status_txt]</td>"
         append html "<td>[htmlquote $modus_txt]</td>"
         append html "<td>[htmlquote $heiztyp_txt]</td>"

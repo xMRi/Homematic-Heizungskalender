@@ -58,6 +58,27 @@ Geschweifte Klammern in ReGa-Rückgaben erfordern eine manuelle Tiefenzählung, 
 - `format "%c" 176` erzeugt kein zuverlässiges ISO-8859-1-Byte auf der CCU; stattdessen `&deg;` verwenden.
 - Kommentare im Tcl-Quellcode dürfen Umlaute enthalten (sie werden nicht ausgegeben).
 
+**String-Vergleiche mit Nicht-ASCII-Zeichen (Tcl-8.2-Encoding-Bug):** `string first`, `string equal` und ähnliche String-Operationen liefern falsche Ergebnisse, wenn eine Seite des Vergleichs aus einem `exec`-Aufruf (z.B. `grep`) stammt und die andere aus einem Skript-Literal (`\xfc`) oder einer URL-dekodierten Zeichenkette. Obwohl `binary scan` für beide Quellen dasselbe Byte zeigt (z.B. `fc` für `ü`), unterscheiden sich die internen Repräsentationen in Tcl 8.2; der Vergleich schlägt dann fehl.
+
+Workaround: Beide Seiten vor dem Vergleich auf reines ASCII normalisieren. Die Prozedur `to_ascii` (in `hkkurve.cgi`) entfernt alle Non-ASCII-Bytes via `regsub`:
+
+```tcl
+proc to_ascii {s} {
+    regsub -all {[^\x00-\x7f]} $s {} r
+    return $r
+}
+```
+
+URL-Parameter mit Umlauten (z.B. `UG-B%FCro`) werden über `url_decode` dekodiert, wobei Umlaut-Percent-Sequences einfach entfernt statt in Bytes umgewandelt werden. Damit liefern sowohl `url_decode` als auch `to_ascii` reine ASCII-Strings, und `string first` funktioniert zuverlässig:
+
+```tcl
+# filter_raum kommt aus URL-Parameter (via url_decode, Umlaute entfernt)
+# raumname kommt aus exec/grep (ISO-8859-1-Bytes, via to_ascii normalisiert)
+if {[string first $filter_raum [to_ascii $raumname]] < 0} { continue }
+```
+
+Konsequenz: Sucht der Nutzer nach `UG-Büro`, wird der Filter intern zu `UG-Bro` (Umlaut entfernt). Der Log-Raumname `UG-Büro(22)` wird via `to_ascii` ebenfalls zu `UG-Bro(22)`. Der Substring-Match findet dann `UG-Bro` in `UG-Bro(22)` und gibt den Eintrag korrekt zurück. Namen mit Umlauten können dadurch theoretisch falsche Treffer erzeugen (z.B. `UG-Bro` würde auch `EG-Brose` treffen); in der Praxis sind die Raumnamen ausreichend eindeutig.
+
 ---
 
 ## HTML-Ausgabe
@@ -101,7 +122,7 @@ Enthält `<inhalt>` geschweifte Klammern, schlägt `array set` fehl. Deshalb wir
 **Einzelne Datei auf CCU übertragen:**
 
 ```bash
-scp Addon/heizkalender/www/<datei>.cgi root@<CCU-IP>:/usr/local/addons/heizkalender/www/
+scp Addon/src/heizkalender/www/<datei>.cgi root@<CCU-IP>:/usr/local/addons/heizkalender/www/
 ```
 
 Pfade immer relativ ab dem Projektverzeichnis angeben (nicht absolut).
@@ -109,17 +130,17 @@ Pfade immer relativ ab dem Projektverzeichnis angeben (nicht absolut).
 **Mehrere Dateien gleichzeitig:**
 
 ```bash
-scp Addon/heizkalender/www/index.cgi Addon/heizkalender/www/heizkalender.css \
+scp Addon/src/heizkalender/www/index.cgi Addon/src/heizkalender/www/heizkalender.css \
     root@<CCU-IP>:/usr/local/addons/heizkalender/www/
 ```
 
 **Vollständiges Paket für ein Release:**
 
 ```bash
-git archive --prefix=heizkalender/ HEAD:Addon | gzip > heizkalender-addon.tar.gz
+./Addon/build.sh
 ```
 
-Das Asset muss den Namen `heizkalender-addon.tar.gz` tragen, damit `update_check.cgi` es über die GitHub Releases API findet.
+Das Paket landet in `Addon/build/heizkalender-addon-<Version>.tar.gz` und wird als GitHub-Release-Asset angehängt.
 
 **CCU-IP:** siehe lokale Konfiguration, SSH-Benutzer: `root`.
 

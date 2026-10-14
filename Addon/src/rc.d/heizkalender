@@ -7,7 +7,7 @@ case "$1" in
     VERSION=$(cat "/usr/local/addons/heizkalender/VERSION" 2>/dev/null || echo "0.0.0")
     echo "Name: Heizkalender"
     echo "Version: ${VERSION}"
-    echo "Info: <center><img src=\"../addons/heizkalender/hk-logo-50.png\" height=\"50\"><br><b>HomeMatic-Heizungskalender</b><br><a href=\"https://github.com/xMRi/Homematic-Heizungskalender\" target=\"_blank\">Projektseite auf GitHub</a></center>"
+    echo "Info: <center><img src=\"../addons/heizkalender/hk-logo-50.png\" height=\"50\"><br><b>Heizkalender-Addon</b><br><a href=\"https://github.com/xMRi/Homematic-Heizungskalender\" target=\"_blank\">Projektseite auf GitHub</a></center>"
     echo "Config-Url: /addons/heizkalender/index.cgi"
     echo "Update: /addons/heizkalender/update_check.cgi"
     echo "Operations: uninstall"

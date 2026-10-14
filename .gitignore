@@ -12,3 +12,4 @@ CLAUDE.md
 .claude/*
 /HeizkalenderInstallation/enc_temp_folder
 /build/
+/Addon/build/

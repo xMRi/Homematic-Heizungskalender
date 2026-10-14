@@ -492,4 +492,4 @@ laufende Betrieb beobachtet und konfiguriert werden kann (Raumübersicht, HK-Log
 Systemlog, Heizkurvenkontrolle, Systemvariablen, Grundeinstellungen).
 
 Die vollständige Beschreibung aller Seiten findet sich im
-[Addon-Anwenderhandbuch](Addon/Anwenderhandbuch.md).
+[Addon-Anwenderhandbuch](../Addon/docs/Anwenderhandbuch.md).

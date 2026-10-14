@@ -333,14 +333,21 @@ set raeume [lsort -index 0 $raeume]
 # ---------------------------------------------------------------------------
 # HTML ausgeben
 # ---------------------------------------------------------------------------
+set hk_version "?"
+catch {
+    set vfh [open "/usr/local/addons/heizkalender/VERSION" r]
+    gets $vfh hk_version
+    close $vfh
+    set hk_version [string trim $hk_version]
+}
 puts "Content-Type: text/html; charset=iso-8859-1\nContent-Language: de\n"
 puts {<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="iso-8859-1">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Heizkalender: Raum&uuml;bersicht</title>
-  <link rel="stylesheet" href="heizkalender.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">}
+puts "  <title>Heizkalender ${hk_version}: Raum&uuml;bersicht</title>"
+puts {  <link rel="stylesheet" href="heizkalender.css">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -355,10 +362,10 @@ puts {<!DOCTYPE html>
   <nav class="hk-nav">
     <a href="index.cgi">Raum&uuml;bersicht</a>
     <a href="hkkurve.cgi">Heizkurve</a>
+    <a href="hkconfig.cgi">Einstellungen</a>
     <a href="hklog.cgi">HK-Log</a>
     <a href="syslog.cgi">Systemlog</a>
     <a href="sysvars.cgi">Systemvariablen</a>
-    <a href="hkconfig.cgi">Einstellungen</a>
   </nav>}
 
 set deg "&deg;"

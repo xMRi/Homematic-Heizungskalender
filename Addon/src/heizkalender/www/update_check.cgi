@@ -6,7 +6,7 @@
 #   ?cmd=check_version&version=<installiert>  -> neueste Version oder "n/a"
 #   ?cmd=download&version=<installiert>       -> Redirect zur Releases-Seite
 
-set checkURL    "https://raw.githubusercontent.com/xMRi/Homematic-Heizungskalender/main/Addon/VERSION"
+set checkURL    "https://raw.githubusercontent.com/xMRi/Homematic-Heizungskalender/main/Addon/src/VERSION"
 set downloadURL "https://github.com/xMRi/Homematic-Heizungskalender/releases"
 
 set cmd ""

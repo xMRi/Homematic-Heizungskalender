@@ -13,6 +13,24 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 # <u>[Unveröffentlicht]</u>
 
+# <u>[Unveröffentlicht]</u>
+
+## [2026-10-13]
+
+### Hinzugefügt
+
+- Addon: Versionsanzeige im Browser-Tab-Titel aller CGI-Seiten (`Heizkalender 0.5.0: Raumübersicht` usw.). Version wird zur Laufzeit aus der installierten `VERSION`-Datei gelesen.
+- Addon `sysvars.cgi`: Variablengruppen in `<fieldset>`-Elementen dargestellt (übersichtlichere Gliederung).
+
+### Geändert
+
+- Addon: Verzeichnisstruktur umgebaut. Quellen liegen jetzt unter `Addon/src/`, Dokumentation unter `Addon/docs/` (inkl. Bilder unter `Addon/docs/images/`), Build-Ausgabe unter `Addon/build/`.
+- Addon: Build-Skript von `build_addon.sh` (Projektroot) nach `Addon/build.sh` verschoben und umbenannt. Aufruf jetzt `./Addon/build.sh` vom Projektverzeichnis aus. Das tar.gz landet in `Addon/build/` (per `.gitignore` ausgeschlossen); die Paketierung für das Release übernimmt Martin mit 7-zip.
+- Addon `update_check.cgi`: GitHub-Raw-URL auf neuen Pfad `Addon/src/VERSION` korrigiert (war: `Addon/VERSION`).
+- Addon `hkkurve.cgi`: Überarbeitung der Auswertungslogik und Darstellung.
+- Dokumentation: Bilder von `Dokumentation/Bilder/` nach `Addon/docs/images/` verschoben; alle Bild-Links im Anwenderhandbuch angepasst.
+- Versionsnummer auf 0.5.0 angehoben.
+
 # <u>[Veröffentlicht]</u>
 
 ## [2026-10-12] Release
@@ -66,6 +84,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - `HeizkalenderInstallation.exe` *About Dialog* zeigt jetzt auch einen Link auf das GitHub Projekt
 
 ### Geändert
+
 - Doku erweitert
 - Bilder angepasst
 - Kommentare in Skript 2 an Programmierung angepasst.

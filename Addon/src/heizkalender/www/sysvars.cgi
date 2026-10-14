@@ -406,14 +406,21 @@ proc render_room_table {varlist} {
 # ---------------------------------------------------------------------------
 # HTML ausgeben
 # ---------------------------------------------------------------------------
+set hk_version "?"
+catch {
+    set vfh [open "/usr/local/addons/heizkalender/VERSION" r]
+    gets $vfh hk_version
+    close $vfh
+    set hk_version [string trim $hk_version]
+}
 puts "Content-Type: text/html; charset=iso-8859-1\nContent-Language: de\n"
 puts {<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="iso-8859-1">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Heizkalender: Systemvariablen</title>
-  <link rel="stylesheet" href="heizkalender.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">}
+puts "  <title>Heizkalender ${hk_version}: Systemvariablen</title>"
+puts {  <link rel="stylesheet" href="heizkalender.css">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -428,24 +435,28 @@ puts {<!DOCTYPE html>
   <nav class="hk-nav">
     <a href="index.cgi">Raum&uuml;bersicht</a>
     <a href="hkkurve.cgi">Heizkurve</a>
+    <a href="hkconfig.cgi">Einstellungen</a>
     <a href="hklog.cgi">HK-Log</a>
     <a href="syslog.cgi">Systemlog</a>
     <a href="sysvars.cgi">Systemvariablen</a>
-    <a href="hkconfig.cgi">Einstellungen</a>
   </nav>
 }
 
-puts "<h2 id=\"hk\">Allgemein (HK-*)</h2>"
+puts {<fieldset><legend>Allgemein (HK-*)</legend>}
 puts [render_table $vars_hk]
+puts {</fieldset>}
 
-puts "<h2 id=\"hk1\">Kalender (HK1-*)</h2>"
+puts {<fieldset><legend>Kalender (HK1-*)</legend>}
 puts [render_table $vars_hk1]
+puts {</fieldset>}
 
-puts "<h2 id=\"hk2\">Schalten (HK2-*)</h2>"
+puts {<fieldset><legend>Schalten (HK2-*)</legend>}
 puts [render_table $vars_hk2]
+puts {</fieldset>}
 
-puts "<h2 id=\"raeume\">R&auml;ume (HKG-Raum-*)</h2>"
+puts {<fieldset><legend>R&auml;ume (HKG-Raum-*)</legend>}
 puts [render_room_table $vars_hkg]
+puts {</fieldset>}
 
 puts {</div>
 </body>

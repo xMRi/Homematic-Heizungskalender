@@ -31,7 +31,7 @@ berichten auch Sie über Ihre Erfahrung mit dem Heizkalender.
 - [Kalender-Zugangsdaten ermitteln](/Dokumentation/Kalender-einrichten.md): Token/IDs für ChurchTools, ChurchDesk usw. beschaffen.
 - [Anwenderhandbuch](/Dokumentation/Anwenderhandbuch.md): Sonderbefehle, Raumvariablen, Vorheizzeit im laufenden Betrieb.
 - [Heizkalender-Installation Anleitung](/HeizkalenderInstallation/Dokumentation/Readme.md): Einrichtung und Updates auf der CCU.
-- [Heizkalender Addon](/Dokumentation/Addon/Anwenderhandbuch.md): Installation und Seiten-Übersicht des CCU-Addons zur Anzeige von Räumen, Protokollen und Heizkurvenkontrolle.
+- [Heizkalender Addon](/Addon/docs/Anwenderhandbuch.md): Installation und Seiten-Übersicht des CCU-Addons zur Anzeige von Räumen, Protokollen und Heizkurvenkontrolle.
 - [Skript-Referenz](/Skripte/Dokumentation/Readme.md): alle Skripte und Systemvariablen im Detail.
 - [Heizsteuerung und Vorheizzeit](/Skripte/Dokumentation/Heizsteuerung-Vorheizzeit.md): Berechnung der Vorheizzeit mit Beispielen.
 - [Tools](/Tools/Readme.md): optionale Zusatz-Skripte für Diagnose, Logging und Wartung.
@@ -39,7 +39,7 @@ berichten auch Sie über Ihre Erfahrung mit dem Heizkalender.
 ### Für Entwickler
 
 - [Entwickler-Dokumentation](/Dokumentation/Entwickler.md): Skript-Syntax, `HeizkalenderInstallation.exe`-Build, Versionierung, Beitrag-Workflow.
-- [Addon-Entwicklerdokumentation](/Dokumentation/Addon/Entwickler.md): Aufbau des CCU-Addons, CGI-Seiten, Paketformat, Tcl-8.2-Besonderheiten.
+- [Addon-Entwicklerdokumentation](/Addon/docs/Entwickler.md): Aufbau des CCU-Addons, CGI-Seiten, Paketformat, Tcl-8.2-Besonderheiten.
 - [CHANGELOG](/CHANGELOG.md): zentrale Änderungshistorie (Datums-Stände).
 
 ### Archiv (historische Dokumente)
@@ -56,7 +56,7 @@ berichten auch Sie über Ihre Erfahrung mit dem Heizkalender.
 | `Tools/` | Optionale Zusatzwerkzeuge (Diagnose, Logging, Wartung). |
 | `Tests/` | Entwickler-Testfälle, nicht für den Produktivbetrieb. |
 | `HeizkalenderInstallation/` | Windows-Installationsprogramm-Quellcode (C++/MFC) und dessen Doku. Die gebaute `.exe` liegt als Kopie in `Skripte/`. |
-| `Addon/` | CCU-Addon (Weboberfläche): Tcl-CGI-Seiten, rc.d-Service-Skript und Installationsskript. Wird als `heizkalender-addon.tar.gz` paketiert und über die CCU-Zusatzsoftware installiert. Doku: [Anwender](/Dokumentation/Addon/Anwenderhandbuch.md), [Entwickler](/Dokumentation/Addon/Entwickler.md). |
+| `Addon/` | CCU-Addon (Weboberfläche): Tcl-CGI-Seiten, rc.d-Service-Skript und Installationsskript. Wird als `heizkalender-addon.tar.gz` paketiert und über die CCU-Zusatzsoftware installiert. Doku: [Anwender](/Addon/docs/Anwenderhandbuch.md), [Entwickler](/Addon/docs/Entwickler.md). |
 | `Dokumentation/` | Übergreifende Anwender-, Entwickler- und Archiv-Doku. |
 | `Backup-Originale/` | Historische Original-Skripte, nur zur Referenz. |
 

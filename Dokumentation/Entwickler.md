@@ -282,4 +282,4 @@ Das Heizkalender Addon ist eine eigenständige Komponente mit eigener Entwickler
 Sie beschreibt Verzeichnisstruktur, Paketformat, rc.d-Script, CGI-Seiten und die
 Besonderheiten von Tcl 8.2 auf der CCU3.
 
-Vollständige Dokumentation: [Addon/Entwickler.md](Addon/Entwickler.md)
+Vollständige Dokumentation: [Addon/docs/Entwickler.md](../Addon/docs/Entwickler.md)

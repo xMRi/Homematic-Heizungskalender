@@ -114,14 +114,16 @@ fieldset {
   border-radius: 4px;
   margin-bottom: 1.5em;
   padding: 0.8em 1em;
-  overflow-x: auto;
   box-sizing: border-box;
   max-width: 100%;
+  width: fit-content;
 }
 
 fieldset fieldset {
   margin-bottom: 0.8em;
   margin-top: 0.3em;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 legend {
@@ -237,7 +239,6 @@ legend {
 .hk-kurve-table td { white-space: nowrap; }
 
 .hk-kurve-heizbeginn td { background-color: #d6eaf8 !important; }
-.hk-kurve-warn td       { background-color: #fde8d8 !important; }
 .hk-kurve-terminbeginn td { background-color: #d5f5e3 !important; }
 .hk-kurve-ziel td       { background-color: #e8f8e8 !important; }
 .hk-kurve-terminende td { background-color: #fef9e7 !important; }
@@ -254,7 +255,6 @@ legend {
 }
 
 .hk-kurve-heizbeginn.hk-kurve-badge  { background-color: #d6eaf8; }
-.hk-kurve-warn.hk-kurve-badge        { background-color: #fde8d8; }
 .hk-kurve-terminbeginn.hk-kurve-badge { background-color: #d5f5e3; }
 .hk-kurve-ziel.hk-kurve-badge        { background-color: #e8f8e8; }
 .hk-kurve-terminende.hk-kurve-badge  { background-color: #fef9e7; }

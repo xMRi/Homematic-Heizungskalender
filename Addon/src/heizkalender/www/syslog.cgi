@@ -7,6 +7,14 @@ proc htmlquote {s} {
     return $s
 }
 
+set hk_version "?"
+catch {
+    set vfh [open "/usr/local/addons/heizkalender/VERSION" r]
+    gets $vfh hk_version
+    close $vfh
+    set hk_version [string trim $hk_version]
+}
+
 # ---------------------------------------------------------------------------
 # Query-Parameter auslesen (GET)
 # ---------------------------------------------------------------------------
@@ -77,9 +85,9 @@ puts "<!DOCTYPE html>"
 puts {<html lang="de">
 <head>
   <meta charset="iso-8859-1">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Heizkalender: Systemlog</title>
-  <link rel="stylesheet" href="heizkalender.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">}
+puts "  <title>Heizkalender ${hk_version}: Systemlog</title>"
+puts {  <link rel="stylesheet" href="heizkalender.css">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -88,17 +96,17 @@ puts {<html lang="de">
 <body>
 <div id="content">}
 
-puts {  <div class="hk-header">
-    <img src="hk-logo-300.png" height="64" alt="Heizkalender-Logo" class="hk-header-logo">
-    <h1>Heizkalender: Systemlog</h1>
-  </div>}
+puts "  <div class=\"hk-header\">"
+puts {    <img src="hk-logo-300.png" height="64" alt="Heizkalender-Logo" class="hk-header-logo">}
+puts {    <h1>Heizkalender: Systemlog</h1>}
+puts {  </div>}
 puts {  <nav class="hk-nav">
     <a href="index.cgi">Raum&uuml;bersicht</a>
     <a href="hkkurve.cgi">Heizkurve</a>
+    <a href="hkconfig.cgi">Einstellungen</a>
     <a href="hklog.cgi">HK-Log</a>
     <a href="syslog.cgi">Systemlog</a>
     <a href="sysvars.cgi">Systemvariablen</a>
-    <a href="hkconfig.cgi">Einstellungen</a>
   </nav>}
 
 puts "  <div class=\"hk-log-controls\">"

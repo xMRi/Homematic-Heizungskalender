@@ -45,24 +45,10 @@ proc parse_ts {s} {
     return 0
 }
 
-proc format_cap {cap wtemp} {
-    set deg "&deg;"
-    set c [string trim $cap]
-    if {[string equal $c "-2"]} { return "EIN (dauerhaft)" }
-    if {[string equal $c "-1"]} { return "AUS (dauerhaft)" }
-    if {[string equal $c "-3"]} { return "Reset" }
-    if {[string equal $c "0"]} {
-        if {![string equal $wtemp ""]} {
-            set t 0.0
-            catch {set t [expr {double($wtemp)}]}
-            if {$t > 0} { return "[format "%.1f" $t] ${deg}C" }
-        }
-        return "Normaltemperatur"
-    }
-    set t 0.0
-    catch {set t [expr {double($c)}]}
-    if {$t > 0} { return "[format "%.1f" $t] ${deg}C" }
-    return $c
+proc format_termin {ein_str aus_str} {
+    if {[string equal $ein_str ""] && [string equal $aus_str ""]} { return "" }
+    if {[string equal $aus_str ""]} { return [htmlquote $ein_str] }
+    return "[htmlquote $ein_str] &ndash; [htmlquote $aus_str]"
 }
 
 proc format_hsflag {flag} {
@@ -217,14 +203,12 @@ if {$p1 >= 0} {
 }
 
 # ---------------------------------------------------------------------------
-# Positionsbasiertes Mapping: HKG-Raum-Variablenname -> ResID
+# Positionsbasiertes Mapping: HKG-Raum-Variablenname -> Liste von ResIDs
 #
 # HK2-HKG-Liste und HK1-R-Liste sind positionsbasiert gekoppelt (wie in Skript 1).
-# Erster Durchlauf: Hauptraeume (erster Variablenname vor "+") eintragen.
-# Zweiter Durchlauf: Gruppenraeume ("+"-Teil) nur eintragen, wenn sie noch
-# nicht als Hauptraum eingetragen sind -- so bekommt z.B. UG-Buero seinen
-# eigenen Termin (als Hauptraum), und zeigt zusaetzlich den Termin des
-# Hauptraums wenn er nur als Gruppenraum gebucht wird.
+# Ein Raum kann mehrere ResIDs haben: als Hauptraum (eigene Position) und
+# zusaetzlich als Gruppenraum anderer Positionen. Alle ResIDs werden gesammelt,
+# damit saemtliche Termine (eigen + Gruppe) in der Uebersicht erscheinen.
 # ---------------------------------------------------------------------------
 
 # HK1-R-Liste -> geordnete Liste der ResIDs (ohne Namen)
@@ -240,36 +224,32 @@ foreach entry [split $rliste_raw ";"] {
     }
 }
 
-# Erster Durchlauf: nur Hauptraeume eintragen
-set varname2rid {}
-set pos 0
-foreach hkgeintrag [split $hkgliste_raw ";"] {
-    set hkgeintrag [string trim $hkgeintrag]
-    if {![string equal $hkgeintrag ""]} {
-        set rid [lindex $rid_list $pos]
-        if {![string equal $rid ""]} {
-            set hauptraum [string trim [lindex [split $hkgeintrag "+"] 0]]
-            if {![string equal $hauptraum ""]} {
-                lappend varname2rid $hauptraum $rid
-            }
+# Mapping aufbauen: Variablenname -> Liste aller zugehoerigen ResIDs
+set varname2rids {}
+
+proc add_rid_for_varname {varname rid varname2rids_var} {
+    upvar $varname2rids_var vr
+    set idx [lsearch $vr $varname]
+    if {$idx >= 0 && ($idx % 2) == 0} {
+        set existing [lindex $vr [expr {$idx + 1}]]
+        if {[lsearch $existing $rid] < 0} {
+            set vr [lreplace $vr [expr {$idx + 1}] [expr {$idx + 1}] [linsert $existing end $rid]]
         }
+    } else {
+        lappend vr $varname [list $rid]
     }
-    incr pos
 }
 
-# Zweiter Durchlauf: Gruppenraeume eintragen, sofern noch nicht als Hauptraum vorhanden
 set pos 0
 foreach hkgeintrag [split $hkgliste_raw ";"] {
     set hkgeintrag [string trim $hkgeintrag]
     if {![string equal $hkgeintrag ""]} {
         set rid [lindex $rid_list $pos]
         if {![string equal $rid ""]} {
-            foreach gruppenraum [lrange [split $hkgeintrag "+"] 1 end] {
-                set gruppenraum [string trim $gruppenraum]
-                if {[string equal $gruppenraum ""]} { continue }
-                set already [lsearch $varname2rid $gruppenraum]
-                if {$already < 0} {
-                    lappend varname2rid $gruppenraum $rid
+            foreach teil [split $hkgeintrag "+"] {
+                set teil [string trim $teil]
+                if {![string equal $teil ""]} {
+                    add_rid_for_varname $teil $rid varname2rids
                 }
             }
         }
@@ -277,11 +257,11 @@ foreach hkgeintrag [split $hkgliste_raw ";"] {
     incr pos
 }
 
-proc lookup_rid_by_varname {varname varname2rid_var} {
-    upvar $varname2rid_var vr
+proc lookup_rids_by_varname {varname varname2rids_var} {
+    upvar $varname2rids_var vr
     set idx [lsearch $vr $varname]
     if {$idx >= 0 && ($idx % 2) == 0} { return [lindex $vr [expr {$idx + 1}]] }
-    return ""
+    return {}
 }
 
 # ---------------------------------------------------------------------------
@@ -311,44 +291,24 @@ while {[expr {$i + 4}] < $sl_len} {
     set eidx [lsearch $sl_by_rid $resid]
     if {$eidx >= 0 && ($eidx % 2) == 0} {
         set existing [lindex $sl_by_rid [expr {$eidx + 1}]]
-        lset sl_by_rid [expr {$eidx + 1}] [linsert $existing end [list $ein_i $aus_i $cap $aktiv]]
+        set sl_by_rid [lreplace $sl_by_rid [expr {$eidx + 1}] [expr {$eidx + 1}] [linsert $existing end [list $ein_i $aus_i $cap $aktiv]]]
     } else {
         lappend sl_by_rid $resid [list [list $ein_i $aus_i $cap $aktiv]]
     }
 }
 
-# Besten Eintrag fuer einen Raum ermitteln: aktiv > naechster zukuenftiger > letzter vergangener
-proc best_entry {rid sl_by_rid_var} {
+proc all_entries_for_rids {rids sl_by_rid_var} {
     upvar $sl_by_rid_var sb
-    set idx [lsearch $sb $rid]
-    if {$idx < 0 || ($idx % 2) != 0} { return {} }
-    set entries [lindex $sb [expr {$idx + 1}]]
-    set best_aktiv {}
-    set best_next  {}
-    set best_next_ein -1
-    set best_past  {}
-    set best_past_aus -1
-    foreach e $entries {
-        set ein_i  [lindex $e 0]
-        set aus_i  [lindex $e 1]
-        set aktiv  [lindex $e 3]
-        if {$aktiv} {
-            set best_aktiv $e
-        } elseif {$ein_i > [clock seconds]} {
-            if {$best_next_ein < 0 || $ein_i < $best_next_ein} {
-                set best_next $e
-                set best_next_ein $ein_i
-            }
-        } else {
-            if {$aus_i > $best_past_aus} {
-                set best_past $e
-                set best_past_aus $aus_i
+    set result {}
+    foreach rid $rids {
+        set idx [lsearch $sb $rid]
+        if {$idx >= 0 && ($idx % 2) == 0} {
+            foreach e [lindex $sb [expr {$idx + 1}]] {
+                lappend result $e
             }
         }
     }
-    if {[llength $best_aktiv] > 0} { return $best_aktiv }
-    if {[llength $best_next]  > 0} { return $best_next  }
-    return $best_past
+    return [lsort -index 0 -integer $result]
 }
 
 # ---------------------------------------------------------------------------
@@ -458,11 +418,10 @@ if {[llength $raeume] == 0} {
       <col class="col-sl-modus">
       <col class="col-sl-isttemp">
       <col class="col-sl-humi">
-      <col class="col-sl-ein">
-      <col class="col-sl-aus">
+      <col class="col-sl-termin">
       <col class="col-sl-temp">
     </colgroup>}
-    puts {    <tr><th>Status</th><th>Raum</th><th>Modus</th><th>Ist-Temp.</th><th>Luftfeuchte</th><th>Termin ab</th><th>Termin bis</th><th>Wohlf&uuml;hltemperatur</th></tr>}
+    puts {    <tr><th>Status</th><th>Raum</th><th>Modus</th><th>Ist-Temp.</th><th>Luftfeuchte</th><th>Termin</th><th>Wohlf&uuml;hltemperatur</th></tr>}
 
     foreach r $raeume {
         set varname [lindex $r 0]
@@ -471,10 +430,11 @@ if {[llength $raeume] == 0} {
         set wtemp   [lindex $r 3]
         set rname   [string range $varname 9 end]
 
-        set rid [lookup_rid_by_varname $varname varname2rid]
-        set entry {}
-        if {![string equal $rid ""]} {
-            set entry [best_entry $rid sl_by_rid]
+        set rids    [lookup_rids_by_varname $varname varname2rids]
+        set entries [all_entries_for_rids $rids sl_by_rid]
+        set entry   {}
+        if {[llength $entries] > 0} {
+            set entry [lindex $entries 0]
         }
 
         set rowclass ""
@@ -486,17 +446,13 @@ if {[llength $raeume] == 0} {
         }
         set ein_str ""
         set aus_str ""
-        set cap_str ""
 
         if {[llength $entry] > 0} {
             set ein_i [lindex $entry 0]
             set aus_i [lindex $entry 1]
-            set cap   [lindex $entry 2]
             set ein_str [format_ts $ein_i]
             set aus_str [format_ts $aus_i]
-            set cap_str [format_cap $cap $wtemp]
         }
-
         set isttemp_raw [lookup_isttemp $varname ist_temps]
         set isttemp_str ""
         if {![string equal $isttemp_raw ""]} {
@@ -518,8 +474,25 @@ if {[llength $raeume] == 0} {
             if {$wt > 0} { set wtemp_str "[format "%.1f" $wt] ${deg}C" }
         }
 
+        # Termin-Spalte: ein - aus, bei mehreren Eintraegen als <details> aufklappbar
+        if {[llength $entries] > 1} {
+            set first_termin [format_termin \
+                [format_ts [lindex [lindex $entries 0] 0]] \
+                [format_ts [lindex [lindex $entries 0] 1]]]
+            set termin_cell "<details><summary>$first_termin</summary>"
+            foreach e [lrange $entries 1 end] {
+                set t [format_termin [format_ts [lindex $e 0]] [format_ts [lindex $e 1]]]
+                append termin_cell "<div>$t</div>"
+            }
+            append termin_cell "</details>"
+        } elseif {[llength $entries] == 1} {
+            set termin_cell [format_termin $ein_str $aus_str]
+        } else {
+            set termin_cell ""
+        }
+
         set modus_str [format_hsflag $modus]
-        puts "    <tr${rowclass}><td class=\"hk-sl-status-cell\">$status_cell</td><td>[htmlquote $rname]</td><td>[htmlquote $modus_str]</td><td>$isttemp_str</td><td>[htmlquote $humi_str]</td><td>[htmlquote $ein_str]</td><td>[htmlquote $aus_str]</td><td>$wtemp_str</td></tr>"
+        puts "    <tr${rowclass}><td class=\"hk-sl-status-cell\">$status_cell</td><td>[htmlquote $rname]</td><td>[htmlquote $modus_str]</td><td>$isttemp_str</td><td>[htmlquote $humi_str]</td><td>$termin_cell</td><td>$wtemp_str</td></tr>"
     }
     puts {  </table></div>}
     puts {  <fieldset class="hk-legende-fieldset">}

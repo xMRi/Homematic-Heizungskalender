@@ -220,6 +220,45 @@ proc render_rliste {val} {
     return $html
 }
 
+proc render_schaltliste {val} {
+    if {[string equal $val ""]} {
+        return "<em>(leer)</em>"
+    }
+    # Format je Eintrag: ResID;Start;Ende;Steuerung;Modus;
+    # Einträge folgen direkt hintereinander, jeder endet mit ;
+    # Split liefert am Ende leere Elemente -> filtern
+    set fields [split $val ";"]
+    set clean {}
+    foreach f $fields {
+        if {![string equal $f ""]} { lappend clean $f }
+    }
+    set n [llength $clean]
+    if {$n == 0 || ($n % 5) != 0} {
+        return [htmlquote $val]
+    }
+    set html "<table class=\"hk-table hk-table-inline\">\n"
+    append html "  <tr><th>ID</th><th>Start</th><th>Ende</th><th>Steuerung</th><th>Modus</th></tr>\n"
+    set i 0
+    while {$i < $n} {
+        set rid   [lindex $clean $i]
+        set start [lindex $clean [expr {$i+1}]]
+        set ende  [lindex $clean [expr {$i+2}]]
+        set steu  [lindex $clean [expr {$i+3}]]
+        set modus [lindex $clean [expr {$i+4}]]
+
+        append html "  <tr>"
+        append html "<td>[htmlquote $rid]</td>"
+        append html "<td>[htmlquote $start]</td>"
+        append html "<td>[htmlquote $ende]</td>"
+        append html "<td>[htmlquote $steu]</td>"
+        append html "<td>[htmlquote $modus]</td>"
+        append html "</tr>\n"
+        set i [expr {$i+5}]
+    }
+    append html "</table>\n"
+    return $html
+}
+
 proc render_hkgliste {val} {
     set entries [split $val ";"]
     if {[llength $entries] == 0 || [string equal $val ""]} {
@@ -257,7 +296,8 @@ proc is_temp_var {name} {
 }
 
 proc is_time_min_var {name} {
-    if {[string equal $name "HK2-VorzeitAus"]} { return 1 }
+    if {[string equal $name "HK2-VorzeitAus"]}     { return 1 }
+    if {[string equal $name "HK2-Kurvenversatz"]}  { return 1 }
     return 0
 }
 
@@ -275,7 +315,9 @@ proc render_table {varlist} {
         set val  [lindex $varlist [expr {$i+1}]]
         set desc [lindex $varlist [expr {$i+2}]]
         set display_val [mask_if_sensitive $name $val]
-        if {[string equal $name "HK1-R-Liste"]} {
+        if {[string equal $name "HK1-Schaltliste"]} {
+            set cell [render_schaltliste $display_val]
+        } elseif {[string equal $name "HK1-R-Liste"]} {
             set cell [render_rliste $display_val]
         } elseif {[string equal $name "HK2-HKG-Liste"]} {
             set cell [render_hkgliste $display_val]

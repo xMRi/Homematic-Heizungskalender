@@ -1,6 +1,6 @@
 !// Skript 2 für das Schalten der Heizgruppen
 !//================================================================================================
-!// Stand:    29.10.2026
+!// Stand:    30.10.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,8 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
-!// TT:  2026-10-29 AT-Guard: Klammern um !isHeizModus ergänzt — HM-Script hat keine Operatorrangfolge
-!// TT:  2026-10-29 AT-Guard: Whitelist (H/HS) statt Blacklist (S) — Modus V wurde bei AT>=ATG nie geschaltet (#69)
+!// MRi: 2026-10-30 Takten der Heizung verindern bei schneller Aufheizung eines Raumes.
 !// TT:  2026-10-25 HK2-Schaltzeiten: Schlüssel von ResID auf Raumvariablenname (RVN) umgestellt.
 !//                 Behebt falsche Vorlaufzeit-Anzeige bei Multi-Raum-Zuordnungen.
 !// MRi: 2026-10-21 Zieltemperatur in Log ergänzt.
@@ -459,6 +458,7 @@ foreach(SLEintrag,SListe){
         if (offsetTempAn<0){
           offsetTempAn = 0;
         }
+        real offsetTempAnOrg = offsetTempAn;
 
         !// Bestimme den Verschiebungsfaktor zur Temperaturverschiebung. maximal 500%
         !// minimal 20%. Andere Werte setzen den Faktor auf
@@ -513,13 +513,10 @@ foreach(SLEintrag,SListe){
           }
         }
 
-        !// faktor2 wird nach unten auf 0.2 begrenzt. Besonders wenn wir bereits in der Heizphase sind.
-        !// Sonst verschiebt sich die EIN Zeit immer weiter auf die AUS-Zeit zu. Was dazu führen könnte,
-        !// dass die Heizung ausgeschaltet wird. faktor2 ist also ein Wert >=0.2
-        !// Die SollIstTemperaturAnpassung begrenzt die Anrechnung weil diese bei einer Fussbodenheizung zu
-        !// stark begrenzt.
+        !// Korrektur der VOrheizzeit um die bereits erreichte Raumtemperatur. Wir rechnen Anteilig
+        !// die erreichte IstTemperatur zur Grundtemperatur.
         real faktor2 = 1.0-(SollIstTemperaturAnpassung*((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
-        faktor2 = faktor2.Max(0.2);
+        faktor2 = faktor2.Max(0.0);
         offsetRaumAn = (offsetRaumAn.ToFloat()*faktor2).ToInteger();
         offsetTempAn = (0.0-(faktor1*faktor2*offsetTempAn).ToInteger()*60).ToInteger();
         if(DEBUG)  {WriteLine("faktor2=" # faktor2.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
@@ -533,6 +530,24 @@ foreach(SLEintrag,SListe){
         logText = logText # (offsetTempAn/60) # "min = ";
         integer EIN_orig = EIN;
         EIN = EIN + offsetRaumAn + offsetTempAn;
+        
+        !// Wenn der Raum immer wärmer wird, verschiebt sich die EIN Zeit immer mehr in die Zukunft. 
+        !// Das kann zu einem Taktzen führen. Ausschalten weil neuer Einschaltpunkt noch nicht erreicht ist.
+        !// Wenn also die Heizung bereit heizt, dann sorgen wir, dafür, das diese weiterläuft, wenn die nächste
+        !// Einschaltzeit im 10% Interrvall der offsetTempAnOrg liegt.
+        if (aktuellerSchaltZustand==1){
+          !// offsetTempAnOrg ist Positiv!
+          integer offsetTempDelta = offsetTempAnOrg/10;
+          !// Würde die Heizung in diesem Intrvall evtl. ausgeschaltet?          
+          if ((NOW<EIN) && (NOW>(EIN-offsetTempDelta))){
+            !// Einschaltzeit verschieben um dieses Offset
+            if(log) {logObj.State(RaumLogName # " - Heizung eingeschaltet lassen, Taktung verhindern.");}
+            if(DEBUG)  {WriteLine(RaumLogName # " - Heizung eingeschaltet lassen, Taktung verhindern.");}
+            offsetTempAn = offsetTempAn+offsetTempDelta;
+            EIN = EIN+offsetTempDelta;
+          }
+        }
+        
         integer vorlaufMin = (EIN_orig - EIN) / 60;
         HK2VLZListe = HK2VLZListe # RVN # ";" # vorlaufMin # ";" # EIN.ToTime().Format("%Y-%m-%d %X") # ";" # EIN_orig.ToTime().Format("%Y-%m-%d %X") # ";" # AUS.ToTime().Format("%Y-%m-%d %X") # ";" # ((offsetRaumAus/60)*-1) # "~";
         logText = logText # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " ";
@@ -786,7 +801,7 @@ foreach(SLEintrag,SListe){
       !// Nur die Heizmodi (H/HS) sind temperaturabhängig — Schalten (S) und Variable (V)
       !// werden immer ausgeführt, unabhängig von der Außentemperatur.
       boolean isHeizModus = ((HSFlag=="H") || (HSFlag=="HS"));
-      if((!isHeizModus) || (AT<ATG)){
+      if((!isHeizModus) || (AT<ATG)){        
         !// Und wir schalten nur ein wenn die Einschaltzeit mehr als 5min beträgt
         if(((EIN+300)<AUS) && (EIN<=NOW) && (AUS>NOW)){
           !// Da wir die Heizung einschalten, setzen wir den Raum in die Heizliste

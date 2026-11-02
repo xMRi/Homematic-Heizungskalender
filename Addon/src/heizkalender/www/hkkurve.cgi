@@ -261,8 +261,8 @@ if {$submitted && [llength $log_files] > 0} {
         set delta      ""
         set ist        ""
         set ziel       ""
-        set at_max     ""
-        set at_max_typ ""
+        set max_val    ""
+        set at_val     ""
 
         set sp [string first " " $msg]
         set dp [string first ":" $msg]
@@ -291,20 +291,19 @@ if {$submitted && [llength $log_files] > 0} {
                         set c2 [string first "," $after]
                         if {$c2 > 0} { set ziel [string range $after 0 [expr {$c2-1}]] } else { set ziel $after }
                     }
+                    set mp [string first "Max.:" $rest2]
+                    if {$mp >= 0} {
+                        set after [string trim [string range $rest2 [expr {$mp+5}] end]]
+                        set sp4 [string first " " $after]
+                        if {$sp4 > 0} { set max_val [string range $after 0 [expr {$sp4-1}]] } else { set max_val $after }
+                        set max_val [string trimright $max_val ","]
+                    }
                     set ap [string first "AT:" $rest2]
                     if {$ap >= 0} {
-                        set at_max_typ "AT"
                         set after [string trim [string range $rest2 [expr {$ap+3}] end]]
                         set sp3 [string first " " $after]
-                        if {$sp3 > 0} { set at_max [string range $after 0 [expr {$sp3-1}]] } else { set at_max $after }
-                    } else {
-                        set mp [string first "Max.:" $rest2]
-                        if {$mp >= 0} {
-                            set at_max_typ "Max"
-                            set after [string trim [string range $rest2 [expr {$mp+5}] end]]
-                            set sp4 [string first " " $after]
-                            if {$sp4 > 0} { set at_max [string range $after 0 [expr {$sp4-1}]] } else { set at_max $after }
-                        }
+                        if {$sp3 > 0} { set at_val [string range $after 0 [expr {$sp3-1}]] } else { set at_val $after }
+                        set at_val [string trimright $at_val ","]
                     }
                 }
             }
@@ -324,7 +323,7 @@ if {$submitted && [llength $log_files] > 0} {
         }
         if {![string equal $filter_ereignis "alle"] && ![string equal $ereignis $filter_ereignis]} { continue }
 
-        lappend alle_ereignisse [list $raumname $ts $ereignis $delta $ist $ziel $at_max $at_max_typ]
+        lappend alle_ereignisse [list $raumname $ts $ereignis $delta $ist $ziel $max_val $at_val]
     }
 }
 
@@ -424,9 +423,10 @@ if {[llength $log_files] == 0} {
       <col class="col-kurve-delta">
       <col class="col-kurve-ist">
       <col class="col-kurve-ziel">
+      <col class="col-kurve-max">
       <col class="col-kurve-at">
     </colgroup>}
-    puts {    <tr><th>Raum</th><th>Zeitpunkt</th><th>Ereignis</th><th>&Delta; min (Terminbeginn)</th><th>Ist-Temperatur</th><th>Ziel-Temperatur</th><th>Au&szlig;entemp. / Max.-Temperatur</th></tr>}
+    puts {    <tr><th>Raum</th><th>Zeitpunkt</th><th>Ereignis</th><th>&Delta; min (Terminbeginn)</th><th>Ist-Temperatur</th><th>Ziel-Temperatur</th><th>Max.-Temperatur</th><th>Au&szlig;entemperatur</th></tr>}
 
     foreach ev $alle_ereignisse {
         set raumname   [lindex $ev 0]
@@ -435,18 +435,20 @@ if {[llength $log_files] == 0} {
         set delta      [lindex $ev 3]
         set ist        [lindex $ev 4]
         set ziel       [lindex $ev 5]
-        set at_max     [lindex $ev 6]
-        set at_max_typ [lindex $ev 7]
+        set max_val    [lindex $ev 6]
+        set at_val     [lindex $ev 7]
 
         set eclass [ereignis_class $ereignis $delta $ziel_rot_unten $ziel_gruen_von $ziel_gruen_bis $ziel_rot_oben]
         set rowcls [expr {![string equal $eclass ""] ? " class=\"$eclass\"" : ""}]
 
         set ist_str  [expr {![string equal $ist  ""] ? "$ist ${deg}C" : ""}]
         set ziel_str [expr {![string equal $ziel ""] ? "$ziel ${deg}C" : ""}]
-        set at_str   [expr {![string equal $at_max ""] ? "$at_max ${deg}C ($at_max_typ)" : ""}]
+        set max_str  [expr {![string equal $max_val ""] ? "$max_val ${deg}C" : ""}]
+        set at_str   [expr {![string equal $at_val ""] ? "$at_val ${deg}C" : ""}]
         set delta_str $delta
         if {[string equal $ereignis "Fehler"]} {
             set delta_str ""
+            set max_str   ""
             set at_str    $delta
         }
 
@@ -472,6 +474,7 @@ if {[llength $log_files] == 0} {
         puts "      <td>[htmlquote $delta_str]</td>"
         puts "      <td>${ist_str}${indikator}</td>"
         puts "      <td>${ziel_str}</td>"
+        puts "      <td>${max_str}</td>"
         puts "      <td>${at_str}</td>"
         puts "    </tr>"
     }

@@ -149,7 +149,7 @@ set rega_script {
             }
         }
     }
-    if (sv5) { result = result # "===VLZ===\n" # vlz; }
+    if (sv5) { result = result # "\n===VLZ===\n" # vlz; }
     WriteLine(result);
 }
 

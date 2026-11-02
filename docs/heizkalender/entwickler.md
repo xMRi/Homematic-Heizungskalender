@@ -456,6 +456,12 @@ angelegt, muss jeder neue Eintrag in ALLEN Arrays an gleicher Index-Position
 stehen. Beschreibungstexte (`be`) dürfen KEIN Semikolon enthalten, da es als
 Array-Trenner interpretiert wird.
 
+## Messdaten-Auswertung
+
+Zur Analyse von Temperaturverläufen und Optimierung der Heizkurve können die
+RRD4J-Diagrammdaten der CCU exportiert werden. Die Anleitung dazu ist in einem
+eigenen Dokument beschrieben: [Messdaten-Auswertung](messdaten-auswertung.md)
+
 ## Heizkalender Addon
 
 Das Heizkalender Addon ist eine eigenständige Komponente mit eigener Entwicklerdokumentation.

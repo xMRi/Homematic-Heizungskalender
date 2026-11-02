@@ -52,6 +52,7 @@ nav:
     - Kalender einrichten: heizkalender/kalender-einrichten.md
     - Vorheizzeit: heizkalender/heizsteuerung-vorheizzeit.md
     - Planung: heizkalender/planung.md
+    - Messdaten-Auswertung: heizkalender/messdaten-auswertung.md
     - Entwickler: heizkalender/entwickler.md
   - Skripte: skripte/readme.md
   - Heizkalender-Installation: heizkalender-installation/readme.md

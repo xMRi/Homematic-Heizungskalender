@@ -483,6 +483,12 @@ Dieses kleine Programm speichert das aktuelle Systemprotokoll alle 29min in eine
 
 Ist kein USB Stick installiert, dann führt das Programm `HK-Systemprotokoll sichern` auch keine Operationen aus.
 
+### Messdaten exportieren und auswerten
+
+Neben den Protokollen speichert die CCU3 auch Diagramm-Messwerte (Temperatur, Luftfeuchte etc.) im RRD4J-Format. Diese lassen sich exportieren und extern auswerten, um z.B. Temperaturverläufe über längere Zeiträume zu analysieren oder die Heizkurve zu optimieren.
+
+Anleitung: [Messdaten-Auswertung](messdaten-auswertung.md)
+
 ## Warum sollte man die Vorheizzeit kontrollieren und anpassen?
 
 Die Vorheizzeit bestimmt, wie lange vor einem geplanten Termin mit dem Heizen eines Raums begonnen wird. Sie soll so bemessen sein, dass die gewünschte Wohlfühltemperatur möglichst genau zum Nutzungsbeginn erreicht wird. In der Praxis lässt sich das jedoch nicht immer allein durch eine theoretische Berechnung sicherstellen. Jeder Raum und jedes Heizsystem reagiert anders auf die Außentemperatur, die vorhandene Raumtemperatur und die Dauer des Heizbetriebs.

@@ -13,6 +13,27 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+
+- Doku: RRD4J-Diagrammexport dokumentiert, DumpRRD.java nach Tools verschoben
+- Doku: Eigenständiges Dokument `heizkalender/messdaten-auswertung.md` für Messdaten-Auswertung, Verlinkung aus Anwenderhandbuch und Entwickler-Doku
+
+### Geändert
+
+- HK-Heizkurvenkontrolle: Außentemperatur (AT) wird bei allen 5 Events mitgeloggt (für Regressionstest Sättigungsmodell)
+- HK-Heizkurvenkontrolle: Zieltemperatur-Event wird am Terminende nachgeholt, falls im 5-min-Zyklus verpasst
+- Addon: Logo von hk-logo-300.png auf hk-logo-200.png gewechselt und Darstellungsgröße auf 50px reduziert, alte Datei entfernt
+- Addon: H1 Überschriften entfernt, da doppelt zu Menüeinträgen
+- Addon: sysvars.cgi: Execute-Bit entfernt (644 statt 755)
+- Addon 0.7.7: Mobile-Responsive CSS
+- Addon: hkkurve.cgi: Max-Temperatur und Außentemperatur als getrennte Spalten anzeigen (rückwärtskompatibel mit alten Log-Einträgen, die nur Max oder nur AT enthalten)
+- Doku: Thermostat-Regelung bei Übertemperatur präzisiert (#73)
+
+### Behoben
+
+- Addon: sysvars.cgi: implizite Defaults für Faktor und Grundtemperatur anzeigen, wenn keine individuellen Werte gesetzt sind
+- Addon: CSS: Navigationsleiste bricht auf schmalen Displays um
+
 ## [2026-10-29]
 
 ### Hinzugefügt

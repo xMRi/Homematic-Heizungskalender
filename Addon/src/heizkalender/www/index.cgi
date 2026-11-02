@@ -149,7 +149,7 @@ set rega_script {
             }
         }
     }
-    if (sv5) { result = result # "===VLZ===\n" # vlz; }
+    if (sv5) { result = result # "\n===VLZ===\n" # vlz; }
     WriteLine(result);
 }
 
@@ -432,8 +432,8 @@ puts {  <link rel="stylesheet" href="heizkalender.css">
 <body>
 <div id="content">
   <div class="hk-header">
-    <img src="hk-logo-300.png" height="64" alt="Heizkalender-Logo" class="hk-header-logo">
-    <h1>Heizkalender: Raum&uuml;bersicht</h1>
+    <img src="hk-logo-200.png" height="50" alt="Heizkalender-Logo" class="hk-header-logo">
+    <h1>Heizkalender</h1>
   </div>
   <nav class="hk-nav">
     <a href="index.cgi" class="active">Raum&uuml;bersicht</a>
@@ -579,6 +579,14 @@ if {[llength $raeume] == 0} {
         }
     }
     puts {  </table></div>}
+    if {$has_vlz} {
+        puts {  <div class="hk-hint">}
+        puts {    <strong>Hinweis:</strong> Die Spalten &bdquo;Vorlauf&ldquo; und &bdquo;Heizen ab&ldquo;}
+        puts {    werden alle 5&nbsp;Minuten neu berechnet. W&auml;hrend der Heizphase sinkt die}
+        puts {    angezeigte Vorlaufzeit, da die steigende Raumtemperatur in die Berechnung}
+        puts {    einflie&szlig;t. Der tats&auml;chliche Heizbeginn lag fr&uuml;her als hier angezeigt.}
+        puts {  </div>}
+    }
 }
 
 puts {</div>

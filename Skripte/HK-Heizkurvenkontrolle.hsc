@@ -1,6 +1,6 @@
 !// Tool zur Kontrolle der Heizkurve
 !//================================================================================================
-!// Stand:    19.10.2026
+!// Stand:    02.11.2026
 !// Autoren:  Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -13,6 +13,9 @@
 !// Skript sollte alle 5min laufen ca. 30 Sekunden nach dem Schaltskript
 !//
 
+!// TT:  2026-11-02 AT bei allen 5 Events mitloggen (fuer Regressionstest Saettigungsmodell).
+!//                 Zieltemperatur-Event am Terminende nachholen, falls IST >= ZIEL aber
+!//                 das Event im normalen 5-min-Zyklus verpasst wurde.
 !// MRi: 2026-10-19 Neuen Modus "V" für das setzen einer Variable eingebaut
 !// TT:  2026-10-05 Log-Ausgabe: fehlendes Komma zwischen "Ist:" und "Ziel:" in allen
 !//                 fuenf Ereignis-Zeilen ergaenzt.
@@ -359,8 +362,8 @@ foreach(SLEintrag,SListe){
       if (!strTemp.StartsWith("-")){
         strTemp = "+" # strTemp;
       }
-      logObj.State          (RaumLogName # " Heizende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1));
-      if (DEBUG) { WriteLine(RaumLogName # " Heizende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1)); }
+      logObj.State          (RaumLogName # " Heizende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
+      if (DEBUG) { WriteLine(RaumLogName # " Heizende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
       !// Bit 0 löschen und bit 2 setzen
       status = status & 254;
       status = status | 4;
@@ -374,8 +377,8 @@ foreach(SLEintrag,SListe){
         if (!strTemp.StartsWith("-")){
           strTemp = "+" # strTemp;
         }
-        logObj.State          (RaumLogName # " Zieltemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1));
-        if (DEBUG) { WriteLine(RaumLogName # " Zieltemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1)); }
+        logObj.State          (RaumLogName # " Zieltemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
+        if (DEBUG) { WriteLine(RaumLogName # " Zieltemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
         !// Bit 1 setzen
         status = status | 2;
       }
@@ -389,8 +392,8 @@ foreach(SLEintrag,SListe){
       if (!strTemp.StartsWith("-")){
         strTemp = "+" # strTemp;
       }
-      logObj.State          (RaumLogName # " Terminbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1));
-      if (DEBUG) { WriteLine(RaumLogName # " Terminbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1)); }
+      logObj.State          (RaumLogName # " Terminbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
+      if (DEBUG) { WriteLine(RaumLogName # " Terminbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
     }
 
     !// Der Terminende wird 160sec in Zukunft und Vergangenheit (320sec) geprüft. Damit wird ein 5min (300sec) Interval abgedeckt.
@@ -401,8 +404,17 @@ foreach(SLEintrag,SListe){
       if (!strTemp.StartsWith("-")){
         strTemp = "+" # strTemp;
       }
-      logObj.State          (RaumLogName # " Terminende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1));
-      if (DEBUG) { WriteLine(RaumLogName # " Terminende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1)); }
+      logObj.State          (RaumLogName # " Terminende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
+      if (DEBUG) { WriteLine(RaumLogName # " Terminende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
+      !// TT: Zieltemperatur nachholen, falls IST >= ZIEL aber das Event noch nicht geloggt wurde.
+      !//     Das passiert, wenn die Zieltemperatur zwischen dem letzten 5-min-Lauf und dem
+      !//     Terminende erreicht wurde, oder wenn die Heizung vor Terminende abgeschaltet wurde
+      !//     und der Raum danach durch Nachwaerme noch auf ZIEL kam.
+      if (((status & 2)==0) && (istTemperatur>=RTemp)){
+        logObj.State          (RaumLogName # " Zieltemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
+        if (DEBUG) { WriteLine(RaumLogName # " Zieltemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
+        status = status | 2;
+      }
       !// Setze den Status 0, wenn wir wirklich nicht mehr heizen. Andernfalls befinden wir uns schon wieder in
       !// einer neuen Heizphase. Jeder andere Status ist uns egal.
       if (aktuellerSchaltZustand==0){
@@ -455,4 +467,3 @@ if (objVar.State()!=neueRaumListe){
 !// -----------------------------------------------------------------
 
 WriteLine("Ende Heizkurvenkontrolle");
-

@@ -416,7 +416,7 @@ proc render_hk_raeume_hkk {val} {
     return $html
 }
 
-proc render_room_table {varlist} {
+proc render_room_table {varlist {gt_default ""}} {
     global modus_map heiztyp_map status_map
     if {[llength $varlist] == 0} {
         return "<p class=\"hk-empty\">Keine Raum-Systemvariablen gefunden.</p>"
@@ -491,7 +491,12 @@ proc render_room_table {varlist} {
             append html "<td>[htmlquote $wtemp] &deg;C</td>"
         }
         if {[string equal $gtemp ""]} {
-            append html "<td></td>"
+            if {![string equal $gt_default ""]} {
+                catch {set gt_fmt [format "%.1f" $gt_default]}
+                append html "<td><i>[htmlquote $gt_fmt]</i> &deg;C</td>"
+            } else {
+                append html "<td></td>"
+            }
         } else {
             catch {set gtemp [format "%.1f" $gtemp]}
             append html "<td>[htmlquote $gtemp] &deg;C</td>"
@@ -501,7 +506,11 @@ proc render_room_table {varlist} {
         } else {
             append html "<td>[htmlquote $vzeit] min</td>"
         }
-        append html "<td>[htmlquote $faktor]</td>"
+        if {[string equal $faktor ""]} {
+            append html "<td><i>1.0</i></td>"
+        } else {
+            append html "<td>[htmlquote $faktor]</td>"
+        }
         if {[string equal $vorzeitaus ""]} {
             append html "<td></td>"
         } else {
@@ -543,8 +552,8 @@ puts {  <link rel="stylesheet" href="heizkalender.css">
 <body>
 <div id="content">
   <div class="hk-header">
-    <img src="hk-logo-300.png" height="64" alt="Heizkalender-Logo" class="hk-header-logo">
-    <h1>Heizkalender: Systemvariablen</h1>
+    <img src="hk-logo-200.png" height="50" alt="Heizkalender-Logo" class="hk-header-logo">
+    <h1>Heizkalender</h1>
   </div>
   <nav class="hk-nav">
     <a href="index.cgi">Raum&uuml;bersicht</a>
@@ -569,7 +578,17 @@ puts [render_table $vars_hk2]
 puts {</fieldset>}
 
 puts "<fieldset><legend>R&auml;ume (HKG-Raum-*) <a href=\"${doc_dev}#hkg-raum-\" target=\"_blank\" class=\"hk-doc-link\" title=\"Dokumentation\">&#x24D8;</a></legend>"
-puts [render_room_table $vars_hkg]
+# HK2-Grundtemperatur aus den HK2-Variablen extrahieren
+set gt_default ""
+set gi 0
+while {$gi < [llength $vars_hk2]} {
+    if {[string equal [lindex $vars_hk2 $gi] "HK2-Grundtemperatur"]} {
+        set gt_default [lindex $vars_hk2 [expr {$gi+1}]]
+        break
+    }
+    incr gi 3
+}
+puts [render_room_table $vars_hkg $gt_default]
 puts {</fieldset>}
 
 puts {</div>

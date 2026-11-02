@@ -5,13 +5,13 @@
 /HeizkalenderInstallation/.vs
 /HeizkalenderInstallation/x64
 /HeizkalenderInstallation/Bin
+/HeizkalenderInstallation/enc_temp_folder
 logs/*
 .DS_Store
-CLAUDE.md
 .vscode/*
 .claude/*
-/HeizkalenderInstallation/enc_temp_folder
+memory/*
 /build/
 /Addon/build/
 /site/
-Handbuch/*
+Homematic-Handbuch/*

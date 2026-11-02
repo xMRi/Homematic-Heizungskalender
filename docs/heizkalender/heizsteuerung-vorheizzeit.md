@@ -137,28 +137,39 @@ Konsequenz: Der Zähler der Formel wird 0, der Korrekturfaktor beträgt **1,00 (
 es wird immer die volle Kurvenzeit vorgeheizt. Dies ist der sicherste Fallback,
 führt aber bei niedrig konfigurierter Grundtemperatur zu sehr langen Vorlaufzeiten.
 
-### Übertemperatur im Raum (Modus HS)
+### Übertemperatur im Raum
 
 Im Modus **HS** (erster Aktor = Thermostat als Temperatursensor, weitere Aktoren = Schaltrelais)
-liest das Skript die Raumtemperatur vom Thermostat — nutzt sie aber **ausschließlich** für
+liest das Skript die Raumtemperatur vom Thermostat, nutzt sie aber **ausschließlich** für
 die Vorheizzeit-Berechnung (Korrekturfaktor). Die Schaltrelais werden anschließend
 **hart ein- bzw. ausgeschaltet**, ohne Rücksicht auf die aktuelle Raumtemperatur.
 
-Das Skript hat keine „Raum zu warm → Relais aus“-Logik. **Sind zum Beispiel durch viele Gäste
-bereits 24 °C im Saal erreicht, schalten die Heizrelais trotzdem ein.**
+Das Skript hat keine „Raum zu warm, Relais aus"-Logik. Sind zum Beispiel durch viele Gäste
+bereits 24 °C im Saal erreicht, schalten die Heizrelais trotzdem ein.
 
-Der einzige Schutz gegen unnötiges Heizen in diesem Fall:
+**In der Praxis verhindert jedoch die Raumthermostat-Regelung ein tatsächliches Überheizen:**
+Korrekt eingestellte Heizkörperthermostate (Raumthermostate) schließen das Ventil, sobald
+die Raumtemperatur den Sollwert erreicht. Auch wenn die Schaltrelais auf EIN stehen, fließt
+dann keine Wärme mehr in den Raum. Der Energiemehrverbrauch durch eine zu früh eingeschaltete
+Heizung beschränkt sich auf das Halten der Temperatur und ist in der Regel gering.
 
-- Die **Außentemperatur-Grenze**: Ist es draußen ≥ 19 °C, wird gar nicht geheizt.
-- Das **vorzeitige Heizende**: Die Heizung schaltet bereits 30 min vor Terminende ab.
-- Die **Vorheizzeit-Deckelung**: Bei 24 °C wird der Korrekturfaktor auf 0,40 (40 %) begrenzt —
-  die Relais schalten also später ein als bei einem kalten Raum, aber sie schalten dennoch ein.
+**Ausnahme:** Bei manuellen Raumthermostaten, die nicht automatisch auf den Nachtmodus
+zurückgestellt werden, kann es vorkommen, dass der Thermostat dauerhaft auf einen hohen
+Wert eingestellt ist. In diesem Fall regelt der Thermostat nicht herunter und die Heizung
+läuft tatsächlich unnötig.
+
+Der Schutz gegen unnötiges Heizen auf Skript-Ebene:
+
+- Die **Außentemperatur-Grenze**: Ist es draußen ≥ 19 °C, wird gar nicht geheizt.
+- Das **vorzeitige Heizende**: Die Heizung schaltet vor Terminende ab (konfigurierbar).
+- Die **Vorheizzeit-Deckelung**: Der Korrekturfaktor sinkt bei warmem Raum auf minimal 0,20 (20 %),
+  die Relais schalten also deutlich später ein als bei einem kalten Raum.
 
 | Modus | Schutz bei Übertemperatur im Raum |
 | :--- | :--- |
-| **H** (Thermostat) | ✔ Thermostat regelt selbst — Ventil bleibt bei Übertemp. geschlossen |
-| **S** (reines Relais) | ✖ Kein Schutz — kein Temperatursensor vorhanden |
-| **HS** (Thermostat + Relais) | ⚠ Thermostat misst, aber Relais schalten trotzdem ein |
+| **H** (Thermostat) | ✔ Thermostat regelt selbst, Ventil bleibt bei Übertemperatur geschlossen |
+| **S** (reines Relais) | ✖ Kein Schutz, kein Temperatursensor vorhanden |
+| **HS** (Thermostat + Relais) | ⚠ Relais schalten ein, aber korrekt eingestellte Raumthermostate begrenzen die Wärmeabgabe |
 
 ## Vorzeitiges Heiz-/Schaltende
 

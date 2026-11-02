@@ -76,8 +76,8 @@ puts {  <link rel="stylesheet" href="heizkalender.css">
 <div id="content">}
 
 puts "  <div class=\"hk-header\">"
-puts {    <img src="hk-logo-300.png" height="64" alt="Heizkalender-Logo" class="hk-header-logo">}
-puts {    <h1>Heizkalender: Syslog</h1>}
+puts {    <img src="hk-logo-200.png" height="50" alt="Heizkalender-Logo" class="hk-header-logo">}
+puts {    <h1>Heizkalender</h1>}
 puts {  </div>}
 puts {  <nav class="hk-nav">
     <a href="index.cgi">Raum&uuml;bersicht</a>

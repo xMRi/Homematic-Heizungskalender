@@ -24,6 +24,7 @@
 !// Tipp: Sie sollten unbedingt die Variablen organizationId und apiToken vorbelegen, weil dann
 !// automatisch alle benötigten Variablen automatisch erzeugt.
 
+!// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// TT:  2026-10-18 HK1-Vorlaufzeit: neue optionale Systemvariable (Integer, Default 720 min)
 !// TT:  2026-09-18 iPos>=0-Guard vor Substr ergänzt; rohe Debug-Ausgaben durch verständliche
 !//                 Meldung ersetzt (kein Raum, Typ-Id).
@@ -69,7 +70,7 @@ string nm=  "HK1-CT-Gemeindename;" #
 
 !// Beschreibungstexte
 string be=  "Name der Gemeinde in Churchtools;" #
-            "Schaltliste. Hier bitte nichts verändern!;" #
+            "Gelesene Termine aus Skript 1. Hier bitte nichts verändern!;" #
             "Zuordnung der Räume aus der Ressourcenverwaltung;" #
             "Sicherheitstoken für ChurchTools;" #
             "Liste der HK-Raum-Variablen;" #

@@ -14,9 +14,13 @@
 !// Skript2 verwenden in der MRI.
 !// HK-SystemProtokollSichern wird verwendet um das System Protokoll regelmässig auf einen
 !// USB Stick zu speichern.
-
+!//
 !// Code stammt von:
 !//   https://www.blogging-it.com/code-snippet-homematic-systemvariablen-ueber-ein-script-automatisch-erzeugen/hausautomatisierung-smart-home/homematic-ip/homematic-script.html
+!// 
+!// MRi:  2026-11-03 Neue Variable für Skript3, HK3-Log...
+!//  
+
 
 !//Eingabe eines Namens Präfix
 !//Dies ist nur erforderlich wenn die Namensvorgabe abgeändert werden soll.
@@ -33,6 +37,8 @@ string nm=  "HK-Logging;" #
             "HK1-Log;" #
             "HK2-Logging;" #
             "HK2-Log;" #
+            "HK3-Logging;" #
+            "HK3-Log;" #
             "HK-LoggingHeizkurvenkontrolle;" #
             "HK-LogHeizkurvenkontrolle;" #
             "HK-RäumeHeizkurvenkontrolle;";
@@ -43,6 +49,8 @@ string be=  "Flag um das Logging für Tools ein- und auszuschalten;" #
             "Flag um das Logging für Skript 1 ein- und auszuschalten;" #
             "Variable um ein einfaches Log im System Protokoll zu erzeugen;" #
             "Flag um das Logging für Skript 2 ein- und auszuschalten;" #
+            "Variable um ein einfaches Log im System Protokoll zu erzeugen;" #
+            "Flag um das Logging für Skript 3 ein- und auszuschalten;" #
             "Variable um ein einfaches Log im System Protokoll zu erzeugen;" #
             "Flag um das Logging für die Heizkurvenkontrolle ein- und auszuschalten;" #
             "Variable um ein einfaches Log im System Protokoll zu erzeugen;" #
@@ -57,10 +65,14 @@ string tp=  "boolean;" #
             "string;" #
             "boolean;" #
             "string;" #
+            "boolean;" #
+            "string;" #
             "string;";
 
 !// Vorgabe Werte
 string vl=  "1;" #
+            ";" #
+            "1;" #
             ";" #
             "1;" #
             ";" #
@@ -84,11 +96,15 @@ string wr=  "Logging ausgeschaltet+Logging eingeschaltet;" #
             ";" #
             "Logging ausgeschaltet+Logging eingeschaltet;" #
             ";" #
+            "Logging ausgeschaltet+Logging eingeschaltet;" #
+            ";" #
             ";";
 
 
 !// Protokollierungs Flags
 string pr=  "1;" #
+            "1;" #
+            "1;" #
             "1;" #
             "1;" #
             "1;" #

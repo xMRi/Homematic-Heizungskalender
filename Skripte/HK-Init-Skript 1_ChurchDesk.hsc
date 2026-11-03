@@ -25,6 +25,7 @@
 !// automatisch alle benötigten Variablen automatisch erzeugt.
 
 
+!// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// TT:  2026-10-18 HK1-Vorlaufzeit: neue optionale Systemvariable (Integer, Default 720 min)
 !// TT:  2026-09-18 color-Guard iPos>=0 statt iPos&& (verfehlte Position 0 / -1).
 !// MRi: 2026-01-13 HK1-R-Liste erhält nun auch den Namen der Resource getrennt mit Gleichheitszeichen
@@ -67,7 +68,7 @@ string nm=  "HK1-Schaltliste;" #
             "HK1-Vorlaufzeit";
 
 !// Beschreibungstexte
-string be=  "Schaltliste. Hier bitte nichts verändern!;" #
+string be=  "Gelesene Termine aus Skript 1. Hier bitte nichts verändern!;" #
             "Zuordnung der Räume aus der Ressourcenverwaltung;" #
             "Organisations ID in ChurchDesk;" #
             "API-Token für ChurchDesk;" #

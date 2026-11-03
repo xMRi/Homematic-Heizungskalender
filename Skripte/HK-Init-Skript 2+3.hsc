@@ -1,4 +1,4 @@
-!// Script zum Erzeugen der Systemvariablen des Heizkalenders für Skript 2
+!// Script zum Erzeugen der Systemvariablen des Heizkalenders für Skript 2+3
 !//================================================================================================
 !// Stand:    25.10.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
@@ -18,9 +18,10 @@
 !// Ich (MRi) habe diesen Code dann erweitert, korrigiert und verbessert um sie an die Nutzung in
 !// meiner Gemeinde anzupassen.
 !//
-!// TT: 2026-10-25 HK2-Schaltzeiten: Schlüssel von ResID auf Raumvariablenname (RVN) umgestellt.
-!// TT: 2026-10-19 HK2-Schaltzeiten ergaenzt (Ausgabe berechneter Schaltzeiten durch Skript 2)
-!// TT: 2026-10-04 Beschreibung von HK2-Aussentemperatur praezisiert (gleitender Durchschnitt)
+!// MRi:  2026-11-03 Neue Variable für Skript3, HK2-Schaltliste
+!// TT:   2026-10-25 HK2-Schaltzeiten: Schlüssel von ResID auf Raumvariablenname (RVN) umgestellt.
+!// TT:   2026-10-19 HK2-Schaltzeiten ergaenzt (Ausgabe berechneter Schaltzeiten durch Skript 2)
+!// TT:   2026-10-04 Beschreibung von HK2-Aussentemperatur praezisiert (gleitender Durchschnitt)
 
 !//Dieses Skript erstellt die nötigen Systemvariablen des Heizkalender für Skript 2 zum Schalten des Heizkalender
 !//Hinweis: Ein erneutes Ausführen dieses Programms ändert bestehende Variablen und ihren Inhalt nicht
@@ -40,6 +41,7 @@ string nm=  "HK2-HKG-Liste;" #
             "HK2-VorzeitAus;" #
             "HK2-Kurvenversatz;" #
             "HK2-Kurve;" #
+            "HK2-Schaltliste;" #
             "HK2-Schaltzeiten";
 
 !// Beschreibungstexte
@@ -52,7 +54,8 @@ string be=  "Liste der HK-Raum-Variablen;" #
             "Grundoffsetzeit Ausschalten;" #
             "Grundoffsetzeit Einschalten;" #
             "Hzg.-Vorlaufzeit: Eingeben in Minuten zu Außentemperaturen kleiner als -10, -5, 0, 8, 10, 12, 15, 17,5;" #
-            "Berechnete Schaltzeiten pro Raum (wird von Skript 2 geschrieben)";
+            "Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!;" #
+            "Berechnete Schaltzeiten pro Raum von Skript 2 für das Addon. Hier bitte nichts verändern!";
 
 !// Typen
 string tp=  "string;" #
@@ -63,6 +66,7 @@ string tp=  "string;" #
             "boolean;" #
             "integer;" #
             "integer;" #
+            "string;" #
             "string;" #
             "string";
 
@@ -76,6 +80,7 @@ string vl=  ";" #
             "0;" #
             "0;" #
             "162,130,100,59,50,41,30,20;" #    !// Komma wird ersetzt durch Semikolon
+            ";" #
             "";
 
 !// Einheit (z.B. °C)
@@ -88,6 +93,7 @@ string vu=  ";" #
             "min;" #
             "min;" #
             "min;" #
+            ";" #
             "";
 
 !// Zusätzliche Info Texte für
@@ -102,10 +108,12 @@ string wr=  ";" #
             "0+120;" #
             "-100+100;" #
             ";" #
+            ";" #
             "";
 
 !// Protokollierungs Flags
 string pr=  "1;" #
+            "1;" #
             "1;" #
             "1;" #
             "1;" #

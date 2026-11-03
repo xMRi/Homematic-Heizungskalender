@@ -23,6 +23,7 @@
 !//Dieses Skript erstellt die nötigen Systemvariablen des Heizkalender für Skript 1 Google Kalender
 !//Hinweis: Ein erneutes Ausführen dieses Programms ändert bestehende Variablen und ihren Inhalt nicht
 
+!// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// TT:  2026-10-18 HK1-Vorlaufzeit: neue optionale Systemvariable (Integer, Default 720 min)
 
 !//Eingabe eines Namens Präfix
@@ -38,7 +39,7 @@ string nm=  "HK1-Schaltliste;" #
             "HK1-Vorlaufzeit";
 
 !// Beschreibungstexte
-string be=  "Schaltliste. Hier bitte nichts verändern!;" #
+string be=  "Gelesene Termine aus Skript 1. Hier bitte nichts verändern!;" #
             "API-Key für den Google-Kalender;" #
             "ID des Google-Kalender;" #
             "Zuordnung der Räume aus der Ressourcenverwaltung;" #

@@ -150,6 +150,9 @@
     <None Include="res\SYSVARS_Init_Google.hsc">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\Create_HK-Skript 3.hsc">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\HeizkalenderInstallation.ico">

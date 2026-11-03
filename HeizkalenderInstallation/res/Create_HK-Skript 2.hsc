@@ -15,7 +15,7 @@ string sPRGName= "%2%HK-Skript 2";
 WriteLine ("Backup/Restore CCU Programme by Black 2025");
 WriteLine ("Backup erstellt vom SDV V5.04.06 LCL am 07.01.2026 19:21:25");
 WriteLine ("CCU ProgrammName: \"" # sPRGName # "\"");
-WriteLine ("CCU ProgrammInfo: \"Skript um Termine in der Schaltliste auf die Heizungssteuerung zu übertragen. \"");
+WriteLine ("CCU ProgrammInfo: \"Skript um Termine in der Schaltliste in die benötigten Schaltzeiten umzurechnen.\"");
 WriteLine ("----------------------------");
 !- Verwendete Kanäle
 string sCHNList= "";
@@ -62,7 +62,7 @@ if (oPRG) {isOK= false; WriteLine ("Programm existiert schon mit dem Namen \"" #
 oPRG= dom.CreateObject (OT_PROGRAM,sPRGName);
 if (!oPRG) {WriteLine ("Programm konnte nicht angelegt werden. --> Abbruch"); quit; }
 dom.GetObject (ID_PROGRAMS).Add (oPRG.ID () );
-oPRG.PrgInfo ("Skript um Termine in der Schaltliste auf die Heizungssteuerung zu übertragen. ");
+oPRG.PrgInfo ("Skript um Termine in der Schaltliste in die benötigten Schaltzeiten umzurechnen.");
 oPRG.Active (false);
 oPRG.Enabled  (true);
 oPRG.Visible  (true);

@@ -525,8 +525,14 @@ foreach(TLEintrag,TerminListe){
         }
 
         !// Die SollIstTemperaturAnpassung begrenzt die Anrechnung weil diese bei einer Fussbodenheizung zu
-        !// stark begrenzt.
-        real faktor2 = 1.0-(SollIstTemperaturAnpassung*((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
+        !// stark begrenzt. Schutz vor Division durch 0.
+        real faktor2 = 1.0;
+        if ((RTemp-GT)==0){
+          !// Minderungsfaktor für bereits erreichte Temperatur > GT, oder Vergrößerungsfaktor wenn 
+          !// ISTTemperatur<GT
+          faktor2 = 1.0-(SollIstTemperaturAnpassung*((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
+        }
+        
         offsetRaumAn = (offsetRaumAn.ToFloat()*faktor2).ToInteger();
         offsetTempAn = (0.0-(faktor1*faktor2*offsetTempAn).ToInteger()*60).ToInteger();
         if(DEBUG)  {WriteLine("faktor2=" # faktor2.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}

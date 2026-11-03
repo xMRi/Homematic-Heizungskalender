@@ -523,7 +523,7 @@ if((Flag_Hand_Grundtemp!=false) && (NOW.ToTime().Format("%H%M")>="0057") && (NOW
   if(log){logObj.State("Beginn Nachtabschaltung-------------------------");}
   if(DEBUG) {WriteLine("Beginn Nachtabschaltung");}
 
-  string GepruefteGereate = ";";
+  string GepruefteGeraete = ";";
   string RVNListe=VarNamen;
   RVNListe = RVNListe.Replace("+",";");
   !// Laufe über alle Räume
@@ -534,10 +534,12 @@ if((Flag_Hand_Grundtemp!=false) && (NOW.ToTime().Format("%H%M")>="0057") && (NOW
     }
 
     !// Gerät evtl. schon geprüft?
-    if (GepruefteGereate.Contains(";" # RVN # ";")){
+    if (GepruefteGeraete.Contains(";" # RVN # ";")){
       continue;
     }
-	GepruefteGereate = GepruefteGereate # ";";
+    
+    !// Eintrag in die geprüfte liste übernehmen
+    GepruefteGeraete = GepruefteGeraete # RVN # ";";
 
     !// Loggen
     RaumLogName = RVN.Replace(vrp#"HKG-Raum-","");
@@ -667,9 +669,6 @@ if((Flag_Hand_Grundtemp!=false) && (NOW.ToTime().Format("%H%M")>="0057") && (NOW
           if(DEBUG) {WriteLine(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
         }
       }
-
-      !// Eintrag in die geprüfte liste übernehmen
-      GepruefteGereate = GepruefteGereate # RVN # ";";
     }
   }
   if(log){logObj.State("Ende Nachtabschaltung-------------------------");}

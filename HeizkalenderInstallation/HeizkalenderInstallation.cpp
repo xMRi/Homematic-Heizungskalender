@@ -126,6 +126,7 @@ CHeizkalenderInstallationApp::CHeizkalenderInstallationApp()
 		"HK-Heizkurvenkontrolle",
 		"HK-Skript 1",
 		"HK-Skript 2",
+		"HK-Skript 3",
 		"HK-Systemprotokoll sichern",
 	};	
 	for (auto* pName : aFiles)
@@ -204,6 +205,7 @@ BOOL CHeizkalenderInstallationApp::InitInstance()
 		"HK-Skript 1_iCal",					true,
 		"HK-Skript 1_Google",				true,
 		"HK-Skript 2",						true,
+		"HK-Skript 3",						true,
 		"HK-Systemprotokoll sichern",		false,
 	};
 	for (auto const &e : aFiles)

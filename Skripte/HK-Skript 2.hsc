@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    02.11.2026
+!// Stand:    03.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de

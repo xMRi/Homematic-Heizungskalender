@@ -1,6 +1,6 @@
 !// Skript 3 für das Schalten der Heizgruppen
 !//================================================================================================
-!// Stand:    02.11.2026
+!// Stand:    03.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -212,8 +212,8 @@ foreach(SLEintrag,SListe.Split("#")){
   } elseif (HSFlag=="V"){
     strTemp = " Variable setzen - ";
   } 
-  if(log) {logObj.State(RaumLogName # strTemp # " " # EIN.ToTime().Format("%X").Substr(0,5) # "-" # AUS.ToTime().Format("%X").Substr(0,5));}
-  if(DEBUG)  {WriteLine(RaumLogName # strTemp # " " # EIN.ToTime().Format("%X").Substr(0,5) # "-" # AUS.ToTime().Format("%X").Substr(0,5));}
+  if(log) {logObj.State(RaumLogName # strTemp # " " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5));}
+  if(DEBUG)  {WriteLine(RaumLogName # strTemp # " " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5));}
   
   !// Dauerschaltstatus anzeigen, wenn es den gibt.
   !// 0=Aus, 1=Ein, 2=Dauer AUS, 3=Dauer EIN

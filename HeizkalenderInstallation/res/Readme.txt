@@ -30,6 +30,7 @@ Create_HK-Auﬂentemperatur_Open_Meteo
 Create_HK-Heizkurvenkontrolle		
 Create_HK-Skript_1					
 Create_HK-Skript_2					
+Create_HK-Skript_3					
 Create_HK-Systemprotokoll_sichern	
 	Backup Skripte der Programme aus meinem Livesyste mit den korrekten 
 	Zeitprogrammen und Bedingungen. Ersetz werden im Namen und im Skript 

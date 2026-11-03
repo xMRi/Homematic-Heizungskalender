@@ -77,7 +77,6 @@ string AGFParamSW="STATE";
 integer NOW=system.Date().ToTime().ToInteger();
 string SListe=dom.GetObject(vrp # "HK2-Schaltliste").State();
 string VarNamen=dom.GetObject(vrp # "HK2-HKG-Liste").State();
-string RIDI=dom.GetObject(vrp # "HK1-R-Liste").State();
 real ATG=dom.GetObject(vrp # "HK2-A.Temp.Grenze").State().ToFloat();
 boolean Flag_Hand_Temp=dom.GetObject(vrp # "HK2-Hand-Temp").State();
 boolean Flag_Hand_Grundtemp=dom.GetObject(vrp # "HK2-Hand-Grundtemp").State();
@@ -117,10 +116,6 @@ if (!logObj){
   log = false;
 }
 
-!// Baue eine simple Namensliste aus den HK2-HKG-Liste. Wir entfernen Prefix und im multiraum Fall auch die anderen Räume
-!// Aus HKG-Raum-GrSaal, wird GrSaal. Aus HKG-Foyer wird Foyer
-string RIDINamen=VarNamen.Replace("HKG-Raum-","").Replace("HKG-","");
-
 if(log){logObj.State("Beginn Schaltskriptlauf=========================");}
 WriteLine("Beginn Schaltskriptlauf");
 if(SListe!=""){
@@ -144,8 +139,6 @@ string SLEintrag;
 if(DEBUG){WriteLine("SListe=" # SListe);}
 foreach(SLEintrag,SListe.Split("#")){
   if(DEBUG){WriteLine("SLEintrag=" # SLEintrag);}
-  string AktSR=SLEintrag.StrValueByIndex(";",0);
-  if(DEBUG){WriteLine("AktSR=" # AktSR);}
 
   !// Listenelement auslesen
   !// Parameter für aktuellen Schaltvorgang. 
@@ -166,8 +159,25 @@ foreach(SLEintrag,SListe.Split("#")){
 
   if(log){logObj.State(RaumLogName # " Raumvariable: " # RVN # "=" # RVI);}
   
-  !//Aktoren und Raumtemp setzen, und bestimmen ob Heizen oder Schalten oder beides
+  !// Raum Parameter bestimmen
+  !// Aktoren, Heizen oder Schalten oder beides
+  !// Grundtemperatur individuell bestimmen
   string HSFlag = RVI.StrValueByIndex(";",1);
+  GT = RVI.StrValueByIndex(";",3).StrValueByIndex("/",1).ToFloat();
+  if(GT==0){
+    GT=GTStandard;
+  }
+
+  !// Schaltparameter bestimmen
+  AGF = RVI.StrValueByIndex(";",2);
+  AGFParam = "AGFParam"#AGF.ToUpper();
+  Param = AGFParamIP;
+  if (system.IsVar(AGFParam)){
+    Param = system.GetVar(AGFParam);
+  }
+  if (HSFlag!="H"){
+    Param="STATE";
+  }
   
   !// DUP: AktorenListe-Block (Referenz-Implementierung). Identisch bei Z.806, Z.932
   !//      und in HK-Test-Skript.hsc. Aenderungen an allen Stellen nachziehen.
@@ -192,9 +202,6 @@ foreach(SLEintrag,SListe.Split("#")){
     }
     iPos = iPos+1;
   }
-
-  !// Typ des Aktors bestimmen
-  AGF=RVI.StrValueByIndex(";",2);
 
   !// Protokolleintrag mit Zeit erzeugen
   string strTemp = " Schalten - ";    
@@ -277,7 +284,6 @@ foreach(SLEintrag,SListe.Split("#")){
           }
         }
         dom.GetObject(RVN).State("2;" # RVI.Substr(2,RVI.Length()-2));
-        !// if(log){logObj.State(RaumLogName # " Schaltstatus setzen " # AktSR # " " # dom.GetObject(RVN).State().StrValueByIndex(";",0));}
         continue;
       }
     }else{
@@ -324,7 +330,6 @@ foreach(SLEintrag,SListe.Split("#")){
           }
         }
         dom.GetObject(RVN).State("3;" # RVI.Substr(2,RVI.Length()-2));
-        !// if(log){logObj.State(RaumLogName # " Schaltstatus setzen " # AktSR # " " # dom.GetObject(RVN).State().StrValueByIndex(";",0));}
         continue;
       }
     }else{
@@ -371,7 +376,6 @@ foreach(SLEintrag,SListe.Split("#")){
           }
         }
         dom.GetObject(RVN).State("0;" # RVI.Substr(2,RVI.Length()-2));
-        !// if(log){logObj.State(RaumLogName # " Schaltstatus setzen " # AktSR # " " # dom.GetObject(RVN).State().StrValueByIndex(";",0));}
         continue;
       }
     }else{
@@ -432,7 +436,6 @@ foreach(SLEintrag,SListe.Split("#")){
           }
         }
         dom.GetObject(RVN).State("0;" # RVI.Substr(2,RVI.Length()-2));
-        !// if(log){logObj.State(RaumLogName # " Schaltstatus setzen " # AktSR # " " # dom.GetObject(RVN).State().StrValueByIndex(";",0));}
         continue;
       }
     }
@@ -499,7 +502,6 @@ foreach(SLEintrag,SListe.Split("#")){
             }
           }
           dom.GetObject(RVN).State("1;" # RVI.Substr(2,RVI.Length()-2));
-          !// if(log){logObj.State(RaumLogName # " Schaltstatus setzen " # AktSR # " " # dom.GetObject(RVN).State().StrValueByIndex(";",0));}
           continue;
         }
       }

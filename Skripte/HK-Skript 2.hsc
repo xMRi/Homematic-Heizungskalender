@@ -546,7 +546,7 @@ foreach(TLEintrag,TerminListe){
         !// Die SollIstTemperaturAnpassung begrenzt die Anrechnung weil diese bei einer Fussbodenheizung zu
         !// stark begrenzt. Schutz vor Division durch 0.
         real faktor2 = 1.0;
-        if ((RTemp-GT)==0){
+        if ((RTemp-GT)!=0){
           !// Minderungsfaktor für bereits erreichte Temperatur > GT, oder Vergrößerungsfaktor wenn
           !// ISTTemperatur<GT
           faktor2 = 1.0-(SollIstTemperaturAnpassung*((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));

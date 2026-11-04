@@ -497,7 +497,6 @@ foreach(TLEintrag,TerminListe){
           faktor1 = 1.0;
         }
         faktor1 = faktor1.Max(0.20).Min(5.0);
-        if(DEBUG)  {WriteLine("faktor1=" # faktor1.ToString(2));}
 
         !// Bestimme nun einen weiteren Faktor aus der ISTTemperatur und der Solltemperatur RTemp
         !// und der Grundtemperatur für den Raum (in diesem Fall wird nur die Temperatur, des ersten
@@ -552,9 +551,10 @@ foreach(TLEintrag,TerminListe){
           faktor2 = 1.0-(SollIstTemperaturAnpassung*((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
         }
 
+        if(DEBUG)  {WriteLine("Vor Korrektur: offsetRaumAn=" # offsetRaumAn.ToInteger() # " offsetTempAn=" # offsetTempAn.ToInteger());}
         offsetRaumAn = (offsetRaumAn.ToFloat()*faktor2).ToInteger();
         offsetTempAn = (0.0-(faktor1*faktor2*offsetTempAn).ToInteger()*60).ToInteger();
-        if(DEBUG)  {WriteLine("faktor2=" # faktor2.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
+        if(DEBUG)  {WriteLine("Korrektur: faktor1=" # faktor1.ToString(2) # " faktor2=" # faktor2.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "/" # RTemp.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
         !//if(log) {logObj.State("faktor2=" # faktor2.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
 
         !// Reale Schaltzeiten berechnen

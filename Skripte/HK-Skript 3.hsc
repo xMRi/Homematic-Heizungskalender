@@ -24,7 +24,6 @@
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// MRi: 2026-11-02 Alte Changelogs entfernt
 !// TT:  2026-10-29 AT-Guard: Klammern um !isHeizModus ergänzt — HM-Script hat keine Operatorrangfolge
-!// TT:  2026-10-29 AT-Guard: Whitelist (H/HS) statt Blacklist (S) — Modus V wurde bei AT>=ATG nie geschaltet (#69)
 !// TT:  2026-10-25 HK2-Schaltzeiten: Schlüssel von ResID auf Raumvariablenname (RVN) umgestellt.
 !//                 Behebt falsche Vorlaufzeit-Anzeige bei Multi-Raum-Zuordnungen.
 !// MRi: 2026-10-21 Zieltemperatur in Log ergänzt.
@@ -77,7 +76,6 @@ string AGFParamSW="STATE";
 integer NOW=system.Date().ToTime().ToInteger();
 string SListe=dom.GetObject(vrp # "HK2-Schaltliste").State();
 string VarNamen=dom.GetObject(vrp # "HK2-HKG-Liste").State();
-real ATG=dom.GetObject(vrp # "HK2-A.Temp.Grenze").State().ToFloat();
 boolean Flag_Hand_Temp=dom.GetObject(vrp # "HK2-Hand-Temp").State();
 boolean Flag_Hand_Grundtemp=dom.GetObject(vrp # "HK2-Hand-Grundtemp").State();
 real AT=dom.GetObject(vrp # "HK2-Aussentemperatur").State().ToFloat();
@@ -463,67 +461,61 @@ foreach(SLEintrag,SListe.Split("#")){
     !// Sollte die Außentemperatur über unserem Schwellenwert liegen, Heizen wir nicht.
     !// Nur die Heizmodi (H/HS) sind temperaturabhängig — Schalten (S) und Variable (V)
     !// werden immer ausgeführt, unabhängig von der Außentemperatur.
-    boolean isHeizModus = ((HSFlag=="H") || (HSFlag=="HS"));
-    if((!isHeizModus) || (AT<ATG)){
-      !// Und wir schalten nur ein wenn die Einschaltzeit mehr als 5min beträgt
-      if(((EIN+300)<AUS) && (EIN<=NOW) && (AUS>NOW)){
-        !// Da wir die Heizung einschalten, setzen wir den Raum in die Heizliste
-        if (RVNListeAn.Find(RVN # ";")<0){
-          RVNListeAn=RVNListeAn # RVN # ";";
-        }
-        !// Wir schalten aber nur, wenn er noch nicht geschaltet ist
-        if(aktuellerSchaltZustand==0){
-          foreach(AktAktor,AktorenListe.Split(";")){
-            objAktor = dom.GetObject(AktAktor);
-            if (objAktor){
-              if (HSFlag=="V"){
-                !// VARIABLE. Hier ist der Datenpunkt identisch mit dem Aktor/Variablen-Objekt
-                objDP = objAktor;
-                Param="VARIABLE";
-              }else{
-                !// Datenpunkt bestimmen
-                objDP = objAktor.DPByHssDP(Param);
-              }
-              if (objDP){
-                if(HSFlag=="H"){
-                  !// HEIZEN
-                  if(Flag_Hand_Temp!=false){
-                    real istTemperatur = objDP.State();
-                    if(istTemperatur==GT){
-                      objDP.State(RTemp);
-                      if(log) {logObj.State(AktAktor # " - Einschalten (mit Funktion Reglervorrang) - Ist: " # istTemperatur.ToString(1) # " Neu: " # RTemp.ToString(1) #" Parameter: " # Param);}
-                      if(DEBUG)  {WriteLine(AktAktor # " - Einschalten (mit Funktion Reglervorrang) - Ist: " # istTemperatur.ToString(1) # " Neu: " # RTemp.ToString(1) #" Parameter: " # Param);}
-                    }else{
-                      if(log){logObj.State(AktAktor # " - Reglervorrang bei EIN (Regeler händisch verstellt auf Temp.: " # istTemperatur.ToString(1));}
-                      if(DEBUG) {WriteLine(AktAktor # " - Reglervorrang bei EIN (Regeler händisch verstellt auf Temp.: " # istTemperatur.ToString(1));}
-                    }
-                  }else{
+    !// Und wir schalten nur ein wenn die Einschaltzeit mehr als 5min beträgt
+    if(((EIN+300)<AUS) && (EIN<=NOW) && (AUS>NOW)){
+      !// Da wir die Heizung einschalten, setzen wir den Raum in die Heizliste
+      if (RVNListeAn.Find(RVN # ";")<0){
+        RVNListeAn=RVNListeAn # RVN # ";";
+      }
+      !// Wir schalten aber nur, wenn er noch nicht geschaltet ist
+      if(aktuellerSchaltZustand==0){
+        foreach(AktAktor,AktorenListe.Split(";")){
+          objAktor = dom.GetObject(AktAktor);
+          if (objAktor){
+            if (HSFlag=="V"){
+              !// VARIABLE. Hier ist der Datenpunkt identisch mit dem Aktor/Variablen-Objekt
+              objDP = objAktor;
+              Param="VARIABLE";
+            }else{
+              !// Datenpunkt bestimmen
+              objDP = objAktor.DPByHssDP(Param);
+            }
+            if (objDP){
+              if(HSFlag=="H"){
+                !// HEIZEN
+                if(Flag_Hand_Temp!=false){
+                  real istTemperatur = objDP.State();
+                  if(istTemperatur==GT){
                     objDP.State(RTemp);
-                    if(log) {logObj.State(AktAktor # " - Einschalten (ohne Funktion Reglervorrang) auf Temp.: " # RTemp.ToString(1) # " Parameter: " # Param);}
-                    if(DEBUG)  {WriteLine(AktAktor # " - Einschalten (ohne Funktion Reglervorrang) auf Temp.: " # RTemp.ToString(1) # " Parameter: " # Param);}
+                    if(log) {logObj.State(AktAktor # " - Einschalten (mit Funktion Reglervorrang) - Ist: " # istTemperatur.ToString(1) # " Neu: " # RTemp.ToString(1) #" Parameter: " # Param);}
+                    if(DEBUG)  {WriteLine(AktAktor # " - Einschalten (mit Funktion Reglervorrang) - Ist: " # istTemperatur.ToString(1) # " Neu: " # RTemp.ToString(1) #" Parameter: " # Param);}
+                  }else{
+                    if(log){logObj.State(AktAktor # " - Reglervorrang bei EIN (Regeler händisch verstellt auf Temp.: " # istTemperatur.ToString(1));}
+                    if(DEBUG) {WriteLine(AktAktor # " - Reglervorrang bei EIN (Regeler händisch verstellt auf Temp.: " # istTemperatur.ToString(1));}
                   }
                 }else{
-                  !// SCHALTEN / VARIABLE
-                  objDP.State(1);
-                  if(log) {logObj.State(AktAktor # " - Einschalten. Parameter:" # Param);}
-                  if(DEBUG)  {WriteLine(AktAktor # " - Einschalten. Parameter:" # Param);}
+                  objDP.State(RTemp);
+                  if(log) {logObj.State(AktAktor # " - Einschalten (ohne Funktion Reglervorrang) auf Temp.: " # RTemp.ToString(1) # " Parameter: " # Param);}
+                  if(DEBUG)  {WriteLine(AktAktor # " - Einschalten (ohne Funktion Reglervorrang) auf Temp.: " # RTemp.ToString(1) # " Parameter: " # Param);}
                 }
               }else{
-                if(log){logObj.State("Datenpunkt " # Param # " nicht vorhanden!");}
-                if(DEBUG) {WriteLine("Datenpunkt " # Param # " nicht vorhanden!");}
+                !// SCHALTEN / VARIABLE
+                objDP.State(1);
+                if(log) {logObj.State(AktAktor # " - Einschalten. Parameter:" # Param);}
+                if(DEBUG)  {WriteLine(AktAktor # " - Einschalten. Parameter:" # Param);}
               }
             }else{
-              if(log){logObj.State(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
-              if(DEBUG) {WriteLine(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
+              if(log){logObj.State("Datenpunkt " # Param # " nicht vorhanden!");}
+              if(DEBUG) {WriteLine("Datenpunkt " # Param # " nicht vorhanden!");}
             }
+          }else{
+            if(log){logObj.State(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
+            if(DEBUG) {WriteLine(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
           }
-          dom.GetObject(RVN).State("1;" # RVI.Substr(2,RVI.Length()-2));
-          continue;
         }
+        dom.GetObject(RVN).State("1;" # RVI.Substr(2,RVI.Length()-2));
+        continue;
       }
-    }else{
-        if(log){logObj.State(RaumLogName # " Heizen abgebrochen Aussentemperatur " # AT.ToString(1) # "°C größer Grenzwert " # ATG.ToString(1) # "°C");}
-        if(DEBUG) {WriteLine(RaumLogName # " Heizen abgebrochen Aussentemperatur " # AT.ToString(1) # "°C größer Grenzwert " # ATG.ToString(1) # "°C");}
     }
   }
 }

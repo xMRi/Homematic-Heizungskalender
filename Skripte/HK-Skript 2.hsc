@@ -303,16 +303,16 @@ foreach(TLEintrag,TerminListe){
     !// bereits in der Schalphase ist, wen dies so ist wird er unverndert übernommen
     integer iPos = ("#" # SchaltListeAlt).Find("#" # SchaltListenIndex);
     if (iPos>=0) {
-      string strTemp = SchaltListeAlt.Substr(iPos);
-      integer iLen = strTemp.Find("#");
+      string strAlterListenEintrag = SchaltListeAlt.Substr(iPos);
+      integer iLen = strAlterListenEintrag.Find("#");
       if (iLen<0){
-        iLen = strTemp.Length();
+        iLen = strAlterListenEintrag.Length();
       }
-      strTemp = strTemp.Substr(0,iLen);
+      strAlterListenEintrag = strAlterListenEintrag.Substr(0,iLen);
 
       !// Alte berechnete Schaltzeiten bestimmen
-      EIN = strTemp.StrValueByIndex(";",4).ToTime().ToInteger();
-      AUS = strTemp.StrValueByIndex(";",5).ToTime().ToInteger();
+      EIN = strAlterListenEintrag.StrValueByIndex(";",4).ToTime().ToInteger();
+      AUS = strAlterListenEintrag.StrValueByIndex(";",5).ToTime().ToInteger();
 
       !// Ist der Eintrag überhaupt noch gültig, 30min nach Schaltende entfernen wie den Eintrag
       if ((AUS+(zeitNachlauf*60))<NOW){
@@ -326,10 +326,10 @@ foreach(TLEintrag,TerminListe){
         !// Der Termin ist noch nicht abgeschaltet aber er befindet sich in der Heizphase.
         !// Wir beerechnen die EIN und UAS Zeiten nicht neu, den alten Eintrag unverändert
         !// in  den aktuellen Schaltdaten übernehmen
-        SchaltListeNeu = SchaltListeNeu # strTemp # "#";
+        SchaltListeNeu = SchaltListeNeu # strAlterListenEintrag # "#";
         
         !// Protokolleintrag mit Zeit erzeugen
-        strTemp = "Schalten";    
+        string strTemp = "Schalten";    
         if (HSFlag=="H"){
           strTemp = "Heizen"; 
         }elseif (HSFlag=="HS"){

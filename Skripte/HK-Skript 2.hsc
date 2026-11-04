@@ -311,8 +311,8 @@ foreach(TLEintrag,TerminListe){
       sTemp = sTemp.Substr(0,iLen);
 
       !// Alte berechnete Schaltzeiten bestimmen
-      EIN = sTemp.StrValueByIndex(";",6).ToTime().ToInteger();
-      AUS = sTemp.StrValueByIndex(";",7).ToTime().ToInteger();
+      EIN = sTemp.StrValueByIndex(";",4).ToTime().ToInteger();
+      AUS = sTemp.StrValueByIndex(";",5).ToTime().ToInteger();
 
       !// Ist der Eintrag überhaupt noch gültig, 30min nach Schaltende entfernen wie den Eintrag
       if ((AUS+(zeitNachlauf*60))<NOW){

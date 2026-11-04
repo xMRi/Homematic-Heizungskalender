@@ -220,33 +220,33 @@ foreach(SLEintrag,SListe.Split("#")){
   }
 
   !// Protokolleintrag mit Zeit erzeugen
-  string strTemp = " Schalten - ";    
+  string strTemp1 = " Schalten - ";    
   if (HSFlag=="H"){
-    strTemp = " Heizen -"; 
+    strTemp1 = " Heizen -"; 
   }elseif (HSFlag=="HS"){
-    strTemp = " Heizen / Schalten-"; 
+    strTemp1 = " Heizen / Schalten-"; 
   } elseif (HSFlag=="V"){
-    strTemp = " Variable setzen - ";
+    strTemp1 = " Variable setzen - ";
   } 
-  if(log) {logObj.State(RaumLogName # strTemp # " " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5));}
-  if(DEBUG)  {WriteLine(RaumLogName # strTemp # " " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5));}
   
   !// Dauerschaltstatus anzeigen, wenn es den gibt.
   !// 0=Aus, 1=Ein, 2=Dauer AUS, 3=Dauer EIN
+  string strTemp2 = "";
   integer aktuellerSchaltZustand = RVI.StrValueByIndex(";",0).ToInteger();
   if(aktuellerSchaltZustand==0){
-    if(log){logObj.State(RaumLogName # " befindet sich im Schaltzustand AUS!");}
-    if(DEBUG) {WriteLine(RaumLogName # " befindet sich im Schaltzustand AUS!");}
+    strTemp2 = "AUS!";
   }elseif (aktuellerSchaltZustand==1){
-    if(log){logObj.State(RaumLogName # " befindet sich im Schaltzustand EIN!");}
-    if(DEBUG) {WriteLine(RaumLogName # " befindet sich im Schaltzustand EIN!");}
+    strTemp2 = "EIN!";
   }elseif(aktuellerSchaltZustand==2){
-    if(log){logObj.State(RaumLogName # " befindet sich im Schaltzustand Dauer-AUS!");}
-    if(DEBUG) {WriteLine(RaumLogName # " befindet sich im Schaltzustand Dauer-AUS!");}
+    strTemp2 = "Dauer-AUS!";
   }elseif (aktuellerSchaltZustand==3){
-    if(log){logObj.State(RaumLogName # " befindet sich im Schaltzustand Dauer-EIN!");}
-    if(DEBUG) {WriteLine(RaumLogName # " befindet sich im Schaltzustand Dauer-EIN!");}
+    strTemp2 = "Dauer-EIN!";
   }
+
+  !// Log schreiben für diesen Raum  
+  if(log) {logObj.State(RaumLogName # strTemp1 # " " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " - Aktueller Schaltzustand: " # strTemp2);}
+  if(DEBUG)  {WriteLine(RaumLogName # strTemp1 # " " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " - Aktueller Schaltzustand: " # strTemp2);}
+  
 
   !// Verhindern dass Ausschaltpunkt vor Einschaltpunkt liegt
   if(AUS<=EIN){

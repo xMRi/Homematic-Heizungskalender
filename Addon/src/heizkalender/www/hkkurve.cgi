@@ -415,7 +415,7 @@ if {[llength $log_files] == 0} {
     set deg "&deg;"
     set n_dateien [llength $log_files]
     puts "  <p class=\"hk-log-info\">[llength $alle_ereignisse] Eintr&auml;ge aus $n_dateien Datei(en) im gew&auml;hlten Zeitraum</p>"
-    puts {  <div class="hk-table-scroll"><table class="hk-table hk-kurve-table">}
+    puts {  <div class="hk-table-scroll"><table class="hk-table hk-kurve-table hk-has-header">}
     puts {    <colgroup>
       <col class="col-kurve-raum">
       <col class="col-kurve-ts">

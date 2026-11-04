@@ -459,7 +459,7 @@ if {![string equal $aussentemp_str ""]} {
 if {[llength $raeume] == 0} {
     puts {  <p class="hk-empty">Keine Raum-Systemvariablen (HKG-Raum-*) gefunden.</p>}
 } else {
-    puts {  <div class="hk-table-scroll"><table class="hk-table hk-schaltliste-table">}
+    puts {  <div class="hk-table-scroll"><table class="hk-table hk-schaltliste-table hk-has-header">}
     if {$has_vlz} {
         puts {    <colgroup>
       <col class="col-sl-status">

@@ -232,7 +232,7 @@ Zeitstempel im Log haben das Format `JJJJ-MM-TT HH:MM:SS` (aus der CCU-Historien
 
 ### hklogdownload.cgi: HK-Log-Download
 
-Liefert eine Logdatei vom USB-Stick als Download (`Content-Disposition: attachment`). Wird von `hksyslog.cgi` über den **Download**-Link aufgerufen. Der Dateiname wird als Query-Parameter übergeben; das Script prüft, dass der Pfad innerhalb des Log-Verzeichnisses bleibt (kein Directory Traversal).
+Liefert eine Logdatei vom USB-Stick als Download (`Content-Disposition: attachment`). Wird von `hklog.cgi` über den **Log-Datei:**-Link aufgerufen. Der Dateiname wird als Query-Parameter übergeben; das Script prüft, dass der Pfad innerhalb des Log-Verzeichnisses bleibt (kein Directory Traversal).
 
 ### syslog.cgi: Syslog
 
@@ -280,6 +280,8 @@ Klassen-Übersicht (Auswahl):
 | `.hk-log-table` | Log-Tabellen (monospace, automatische Spaltenbreiten) |
 | `.hk-schaltliste-table` | Raumübersichts-Tabelle |
 | `.hk-kurve-table` | Heizkurvenkontrolle-Tabelle |
+| `.hk-nowrap` | Verhindert Zeilenumbrüche in allen Tabellenzellen |
+| `.hk-has-header` | Tabellen mit Spalten-Überschriften: fetter, dunkler Header |
 | `.hk-log-error/hk1/hk2/hk` | Zeilenfärbung in Log-Tabellen |
 | `.hk-kurve-heizbeginn` etc. | Zeilenfärbung in Heizkurven-Tabelle |
 
@@ -289,7 +291,7 @@ Klassen-Übersicht (Auswahl):
 
 | Datei | Verwendung | Quelle |
 | ----- | ---------- | ------ |
-| `hk-logo-300.png` | Navigationsleiste in der Weboberfläche | `Logos/HK-Logo (300px).png` |
+| `hk-logo-200.png` | Navigationsleiste in der Weboberfläche | `Logos/HK-Logo (200px).png` |
 | `hk-logo-50.png` | Zusatzsoftware-Seite der CCU (im `Info:`-Feld des rc.d-Scripts) | `Logos/HK-Logo (50px).png` |
 
 ---

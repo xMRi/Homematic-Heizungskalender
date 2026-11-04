@@ -1,6 +1,6 @@
 !// Skript zum Anlegen der Systemvariablen für Skript 1 (ChurchDesk)
 !//================================================================================================
-!// Stand:    18.10.2026
+!// Stand:    04.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de

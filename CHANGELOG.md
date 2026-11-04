@@ -13,6 +13,18 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-03]
+
+### Geändert
+
+- Skripte: Aufteilung Skript 2 (Berechnen-Schalten) in neu Skript 2 (Berechnen) und Skript 3 (Schalten) 
+- Skripte: Neue Systemvariable HK3-Log, HK3-Logging, HK2-Schaltliste
+- Init-Skripte: Anpassung für neue Variablen
+- Doku: Anpassung der Doku an neues Skript 3
+- HeizkalenderInstallation: Anpassung an neue Systemvariablen und Skript3
+
+## [2026-11-02]
+
 ### Hinzugefügt
 
 - Doku: RRD4J-Diagrammexport dokumentiert, DumpRRD.java nach Tools verschoben

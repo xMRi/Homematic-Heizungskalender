@@ -1,6 +1,6 @@
 !// Skript 1 um die Termine aus iCal auszulesen
 !//================================================================================================
-!// Stand:    23.10.2026
+!// Stand:    04.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -52,7 +52,7 @@ boolean DEBUG=0;
 !// Zeitfenster fuer Termine: bis zeitVorlauf vor Terminstart, und noch die
 !// Haltezeit nach Terminende. Umgesetzt als minDatum = JETZT - zeitNachlauf
 !// (wirkt wie Terminende plus Haltezeit). zeitNachlauf haelt einen beendeten
-!// Termin in der Schaltliste, damit HK-Skript 2 ihn noch ausschalten kann.
+!// Termin in der Schaltliste, damit HK-Skript 3 ihn noch ausschalten kann.
 !// Kein Heiz-Nachlauf.
 integer zeitVorlauf=12*60;   !// 12 Stunden (Default, falls HK1-Vorlaufzeit nicht gesetzt)
 object objVorlaufzeit = dom.GetObject(vrp#"HK1-Vorlaufzeit");

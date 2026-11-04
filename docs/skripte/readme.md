@@ -2,9 +2,9 @@
 
 Dieser Ordner enthält alle Hauptkomponenten für den Heizkalender. Ein Teil der Skripte dient nur der Initialisierung. Diese haben das Kürzel _Init_ im Namen.
 
-Skripte mit dem Namenskürzel _Skript 1_ beschreiben die verschiedenen Methoden Termine für den Heizkalender auszulesen.
-
-Das _Skript 2_ ist das Hauptskript zum Schalten der Heizung.
+Skripte mit dem Namenskürzel _Skript 1_ beschreiben die verschiedenen Methoden Termine für den Heizkalender auszulesen.  
+Das _Skript 2_ ist das Hauptskript zum Berechnen der Schaltzeiten.  
+Das _Skript 3_ ist das Hauptskript zum Schalten der Heizung.
 
 ## HeizkalenderInstallation.exe
 
@@ -21,6 +21,7 @@ Die folgenden Skripte werden dabei zwingend benötigt und müssen im Programmver
 - HK-Skript 1_Google
 - HK-Skript 1_iCal
 - HK-Skript 2
+- HK-Skript 3
 - HK-SystemProtokoll sichern
 
 Die komplette [Dokumentation für die `HeizkalenderInstallation.exe`](../heizkalender-installation/readme.md) ist hier zu finden.
@@ -32,7 +33,7 @@ Die komplette [Dokumentation für die `HeizkalenderInstallation.exe`](../heizkal
 >
 > _Die Dokumentation dient nur zur Erklärung der Skript-Grundlagen und wenn es notwendig sein sollte, dass eine manuelle Installation erfolgen muss._
 
-Die folgenden Variablen werden in allen Skripten vom Typ 1 und natürlich vom Schaltskript 2 verwendet.
+Die folgenden Variablen werden in allen Skripten vom Typ 1 und natürlich vom Berechnungsskript 2 verwendet.
 
 | Variable | Bedeutung |
 | :--------------- | :--------- |
@@ -84,9 +85,12 @@ Dieses Skript legt alle Systemvariablen an, die für den Zugriff auf einen belie
 
 __Nicht unterstützt werden: BYMONTH, BYMONTHDAY, BYYEARDAY, BYWEEKNO, BYSETPOS, BYHOUR, BYMINUTE, BYSECOND!__
 
-### HK-Init-Skript 2.hsc
+### HK-Init-Skript 2+3.hsc
 
-Dieses Skript legt alle Systemvariablen an, die für das Schalt-Skript benötigt werden.
+Dieses Skript legt alle Systemvariablen an, die für das Berechnungs- und das SchaltSkript benötigt werden.
+
+- `HK-Skript 2` berechnet die Schaltzeiten aus `HK1-Schaltliste` und speichert diese in `HK2-Schaltliste`
+- `HK-Skript 3` Nutzt die Schaltzeiten aus `HK2-Schaltliste` schaltet die Aktoren entsprechend.
 
 | Variable | Bedeutung |
 | :--------------- | :--------- |
@@ -94,11 +98,12 @@ Dieses Skript legt alle Systemvariablen an, die für das Schalt-Skript benötigt
 | HK2-A.Temp.Grenze | Außentemperatur ab der kein Heizen mehr erfolgt |
 | HK2-Aussentemperatur | Aktuelle Außentemperatur (wird durch Skript _HK-Außentemperatur-Open-Meteo.hsc_) gesetzt oder alternativ durch einen Außentemperatursensor. |
 | HK2-Hand-Temp | Wenn `true` Vorrang einer manuell am Thermostat eingestellten Temperatur beim Ausschalten |
-| HK2-Hand-Grundtemp | Wenn `true` aktiviert die Nachtschaltung. HK-Skript 2 prüft täglich zwischen 00:57 und 01:03 Uhr alle Räume und setzt sie auf Grundtemperatur, sofern kein aktiver Termin (Schaltzustand=1) vorliegt. Bei Heizräumen (HSFlag=H) wird die Solltemperatur am Thermostat gesetzt, bei Schaltaktoren (HSFlag=S/HS) wird der Aktor ausgeschaltet. Die Prüfung erfolgt direkt am Aktor, nicht nur in der Systemvariablen. |
+| HK2-Hand-Grundtemp | Wenn `true` aktiviert die Nachtschaltung. `HK-Skript 3` prüft täglich zwischen 00:57 und 01:03 Uhr alle Räume und setzt sie auf Grundtemperatur, sofern kein aktiver Termin (Schaltzustand=1) vorliegt. Bei Heizräumen (HSFlag=H) wird die Solltemperatur am Thermostat gesetzt, bei Schaltaktoren (HSFlag=S/HS) wird der Aktor ausgeschaltet. Die Prüfung erfolgt direkt am Aktor, nicht nur in der Systemvariablen. |
 | HK2-VorzeitAus | Globale Grundoffsetzeit in Minuten, um die vor Terminende ausgeschaltet wird. Wird nur bei Heizvorgängen angewendet, nicht bei reinem Schalten. Gegenstück zu HK2-Kurvenversatz (Einschalt-Offset). Default: 0 |
 | HK2-Kurvenversatz | Globale Grundoffsetzeit in Minuten, um die vor Terminbeginn eingeschaltet wird. Wird nur bei Heizvorgängen angewendet, nicht bei reinem Schalten. Gegenstück zu HK2-VorzeitAus (Ausschalt-Offset). Default: 0 |
-| HK2-Kurve | Heizkurve: 8 Vorlaufzeiten in Minuten zu den Außentemperatur-Stützpunkten −10, −5, 0, 8, 10, 12, 15, 17,5 °C (semikolongetrennt). Zwischen den Stützpunkten interpoliert HK-Skript 2 linear; der höchste Wert (bei tiefster Außentemperatur) ist die längste Vorheizzeit. Installtion-Default (konservativ): `162;130;100;59;50;41;30;20` (max. 162 min ≈ 2,7 h). Als Orientierungshilfe sind drei Beispielkurven bekannt (konservativ / mittel / großzügig); Details und eine vollständige Vergleichstabelle siehe [Anwenderhandbuch](../heizkalender/anwenderhandbuch.md) und [../heizkalender/heizsteuerung-vorheizzeit.md](../heizkalender/heizsteuerung-vorheizzeit.md). |
-| HK2-Schaltzeiten | Wird von HK-Skript 2 am Ende jedes Laufs geschrieben (optional, nur wenn die Variable vorhanden ist). Enthält die berechneten Schaltzeiten aller Räume des letzten Skriptlaufs. Format: `RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;NachlaufMin~...` (Einträge durch `~` getrennt). Bei Multi-Raum-Zuordnungen ein Eintrag pro Raum mit individueller Vorheizzeit. Dient zur Anzeige im Addon. Nicht manuell setzen. |
+| HK2-Kurve | Heizkurve: 8 Vorlaufzeiten in Minuten zu den Außentemperatur-Stützpunkten −10, −5, 0, 8, 10, 12, 15, 17,5 °C (semikolongetrennt). Zwischen den Stützpunkten interpoliert `HK-Skript 2` linear; der höchste Wert (bei tiefster Außentemperatur) ist die längste Vorheizzeit. Installation-Default (konservativ): `162;130;100;59;50;41;30;20` (max. 162 min ≈ 2,7 h). Als Orientierungshilfe sind drei Beispielkurven bekannt (konservativ / mittel / großzügig); Details und eine vollständige Vergleichstabelle siehe [Anwenderhandbuch](../heizkalender/anwenderhandbuch.md) und [../heizkalender/heizsteuerung-vorheizzeit.md](../heizkalender/heizsteuerung-vorheizzeit.md). |
+| HK2-Schaltliste |  Hier werden von `HK-Skript 2` errechneten Schaltzeiten eingetragen, die von dann vom Schaltskript `HK-Skript 3` verwendet werden |
+| HK2-Schaltzeiten | Wird von `HK-Skript 2` am Ende jedes Laufs geschrieben (optional, nur wenn die Variable vorhanden ist). Enthält die berechneten Schaltzeiten aller Räume des letzten Skriptlaufs. Format: `RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;NachlaufMin~...` (Einträge durch `~` getrennt). Bei Multi-Raum-Zuordnungen ein Eintrag pro Raum mit individueller Vorheizzeit. Dient zur Anzeige im Addon. Nicht manuell setzen. |
 | HK2-Log | Variable für das Schalt-Log (siehe Abschnitt _HK-Init-Variablen Logging.hsc_) |
 | HK2-Logging | Flag das Logging vom Typ `HK2-Log` steuert (siehe Abschnitt _HK-Init-Variablen Logging.hsc_) |
 
@@ -109,7 +114,8 @@ Die Protokollierung erfolgt über die nachfolgenden Kategorien:
 
 - Allgemeines Log. Einträge tragen den Namen _HK-Log_.
 - Logging für die Skripte vom Typ 1. Hier werden die Zugriffe auf die Kalender protokolliert. Einträge tragen den Namen _HK1-Log_.
-- Logging für das Skript vom Typ 2. Hier werden die Schaltvorgänge der Heizung protokolliert und auch alle Sonderfunktionen, wie das Rückstellen der Heizung auf Grundtemperatur oder das Abschalten der Heizung, wenn der betroffene Termin gelöscht wird.  Einträge tragen den Namen _HK2-Log_.
+- Logging für das Skript vom Typ 2. Hier werden die Berechnungen der Schaltzeiten protokolliert. Einträge tragen den Namen _HK2-Log_.
+- Logging für das Skript vom Typ 3. Hier werden die Schaltvorgänge der Heizung protokolliert und auch alle Sonderfunktionen, wie das Rückstellen der Heizung auf Grundtemperatur oder das Abschalten der Heizung, wenn der betroffene Termin gelöscht wird.  Einträge tragen den Namen _HK3-Log_.
 - Logging für die Heizkurvenkontrolle. Um die Heizkurve kontrollieren zu können, werden spezielle Einträge im Systemprotokoll verzeichnet: Start des Heizens, Erreichen der Zieltemperatur, Start des Termins, Ende der Heizphase, Ende des Termines. Protokolliert werden Außentemperatur (beim Start), aktuelle Temperatur, bisher erreichte maximale Temperatur.  Einträge tragen den Namen _HK-LogHeizkurvenkontrolle_.
 
 | Variable | Bedeutung |
@@ -120,6 +126,8 @@ Die Protokollierung erfolgt über die nachfolgenden Kategorien:
 | HK1-Log | Variable um ein einfaches Log im System Protokoll zu erzeugen |
 | HK2-Logging | Flag das Logging vom Typ `HK2-Log` steuert |
 | HK2-Log | Variable um ein einfaches Log im System Protokoll zu erzeugen |
+| HK3-Logging | Flag das Logging vom Typ `HK2-Log` steuert |
+| HK3-Log | Variable um ein einfaches Log im System Protokoll zu erzeugen |
 | HK-LoggingHeizkurvenkontrolle | Flag das Logging vom Typ `HK-LogHeizkurvenkontrolle` steuert |
 | HK-LogHeizkurvenkontrolle | Variable um ein einfaches Log im System Protokoll zu erzeugen |
 | HK-RäumeHeizkurvenkontrolle | Variable in der der Status für die Heizkurvenkontrolle mehrerer Räume verzeichnet wird |
@@ -133,7 +141,7 @@ Die Protokollierung erfolgt über die nachfolgenden Kategorien:
 
 Es wird für den Betrieb des Heizkalenders eine der nachfolgenden Datenquellen (ChurchTools, ChurchDesk, iCal, Google-Kalender) benötigt. Das entsprechende Skript sollte ca. alle 30 min laufen um die Termine für die nächsten Heizzyklen zu bestimmen.
 
-Alle diese Skripte bedienen die Variable `HK1-Schaltliste`. In dieser Variable werden aktuelle Termine eingetragen, die durch das Schaltskript 2 berücksichtigt werden sollen.
+Alle diese Skripte bedienen die Variable `HK1-Schaltliste`. In dieser Variable werden aktuelle Termine eingetragen, die durch das Berechnungsskript 2 berücksichtigt werden sollen.
 
 ### HK-Skript 1_ChurchDeskAPI.hsc
 
@@ -198,18 +206,25 @@ Das Schaltskript ist das Herzstück der Heizkalender Software. Es muss zwingend 
 
 ## HK-Skript 2.hsc
 
-Das Skript 2 ist das Hauptskript um die Thermostate zu schalten.
+Das Skript 2 ist ein Hauptskript um eigentlichen Schaltzeiten zu berechnen.
 
-Benötigte Variablen: `HK1-R-Liste`, `HK1-Schaltliste`, `HK2-A.Temp.Grenze`, `HK2-Aussentemperatur`, `HK2-Grundtemperatur`, `HK2-HKG-Liste`, `HK2-Hand-Grundtemp`, `HK2-Hand-Temp`, `HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Log`, `HK2-Logging`, `HK2-VorzeitAus`. Optional (wird beschrieben falls vorhanden): `HK2-Schaltzeiten`
+Benötigte Variablen: `HK1-R-Liste`, `HK1-Schaltliste`, `HK2-Aussentemperatur`, `HK2-Grundtemperatur`, `HK2-HKG-Liste`, `HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Log`, `HK2-Logging`, `HK2-VorzeitAus`. Optional (wird beschrieben falls vorhanden): `HK2-Schaltzeiten`
+Sowie weitere Raum-Variablen `HKG-Raum-*`
+
+## HK-Skript 3.hsc
+
+Das Skript 3 ist ein Hauptskript um die Thermostate zu schalten.
+
+Benötigte Variablen: `HK2-Schaltliste`, `HK2-A.Temp.Grenze`, `HK2-Aussentemperatur`, `HK2-Grundtemperatur`, `HK2-HKG-Liste`, `HK2-Hand-Grundtemp`, `HK2-Hand-Temp`, `HK3-Log`, `HK3-Logging`. Optional (wird beschrieben falls vorhanden): `HK2-Schaltzeiten`
 Sowie weitere Raum-Variablen `HKG-Raum-*`
 
 ### Nachtschaltung
 
-Ist `HK2-Hand-Grundtemp` auf `true` gesetzt, führt HK-Skript 2 täglich zwischen 00:57 und 01:03 Uhr eine Nachtschaltung durch. Dabei werden alle Räume aus `HK2-HKG-Liste` geprüft. Räume mit einem aktiven Termin (Schaltzustand=1) werden übersprungen. Alle übrigen Räume werden auf Grundtemperatur gesetzt: bei Heizräumen (HSFlag=H) wird die Solltemperatur am Thermostat gesetzt, bei Schaltaktoren (HSFlag=S/HS) wird der Aktor ausgeschaltet. Die Prüfung und das Schalten erfolgen direkt am Aktor auf der CCU, nicht nur in der Systemvariablen. Die Nachtschaltung stellt damit sicher, dass keine Aktoren dauerhaft eingeschaltet bleiben, wenn ein Termin nicht sauber ausgeschaltet wurde.
+Ist `HK2-Hand-Grundtemp` auf `true` gesetzt, führt `HK-Skript 3` täglich zwischen 00:57 und 01:03 Uhr eine Nachtschaltung durch. Dabei werden alle Räume aus `HK2-HKG-Liste` geprüft. Räume mit einem aktiven Termin (Schaltzustand=1) werden übersprungen. Alle übrigen Räume werden auf Grundtemperatur gesetzt: bei Heizräumen (HSFlag=H) wird die Solltemperatur am Thermostat gesetzt, bei Schaltaktoren (HSFlag=S/HS) wird der Aktor ausgeschaltet. Die Prüfung und das Schalten erfolgen direkt am Aktor auf der CCU, nicht nur in der Systemvariablen. Die Nachtschaltung stellt damit sicher, dass keine Aktoren dauerhaft eingeschaltet bleiben, wenn ein Termin nicht sauber ausgeschaltet wurde.
 
 ### Schaltlistenprüfung
 
-Bei jedem Skriptlauf (alle 5 Minuten) prüft HK-Skript 2 zusätzlich alle Räume aus `HK2-HKG-Liste`. Für jeden Raum mit Schaltzustand=1 (aktiv) wird geprüft, ob er in diesem Lauf tatsächlich einen gültigen Schaltlisteneintrag hatte. Fehlt ein solcher Eintrag, wurde der Termin offenbar gelöscht oder der Ausschaltpunkt wurde verpasst. Der Raum wird dann sofort zurückgesetzt: die Systemvariable wird auf Schaltzustand=0 gesetzt und der Aktor direkt ausgeschaltet (Heiztyp H: Solltemperatur auf Grundtemperatur; Schalttyp: Relais auf AUS). Die Schaltlistenprüfung ist das Gegenstück zur Nachtschaltung: sie greift sofort im laufenden Betrieb, die Nachtschaltung dient als nächtliche Generalabsicherung.
+Bei jedem Skriptlauf (alle 5 Minuten) prüft `HK-Skript 3` zusätzlich alle Räume aus `HK2-HKG-Liste`. Für jeden Raum mit Schaltzustand=1 (aktiv) wird geprüft, ob er in diesem Lauf tatsächlich einen gültigen Schaltlisteneintrag hatte. Fehlt ein solcher Eintrag, wurde der Termin offenbar gelöscht oder der Ausschaltpunkt wurde verpasst. Der Raum wird dann sofort zurückgesetzt: die Systemvariable wird auf Schaltzustand=0 gesetzt und der Aktor direkt ausgeschaltet (Heiztyp H: Solltemperatur auf Grundtemperatur; Schalttyp: Relais auf AUS). Die Schaltlistenprüfung ist das Gegenstück zur Nachtschaltung: sie greift sofort im laufenden Betrieb, die Nachtschaltung dient als nächtliche Generalabsicherung.
 
 ## Sonstige Skripte
 

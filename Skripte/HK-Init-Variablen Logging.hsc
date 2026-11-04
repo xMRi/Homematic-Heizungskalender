@@ -1,6 +1,6 @@
 !// Skript zum Erstellen der Systemvariablen des Heizkalender für das Logging
 !//================================================================================================
-!// Stand:    23.02.2026
+!// Stand:    04.11.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------

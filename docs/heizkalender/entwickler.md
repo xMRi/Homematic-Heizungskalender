@@ -40,11 +40,12 @@ flowchart TD
     end
 
     subgraph CCU["CCU3"]
-        SysVar[("Systemvariablen\nHK1-*, HK2-*, HK1-Schaltliste, HKG-Raum-*")]
-        Programme[("Programme\nHK-Skript 1, HK-Skript 2, HK-*")]
+        SysVar[("Systemvariablen\nHK1-*, HK2-*, HK1-Schaltliste, HK2-Schaltliste, HKG-Raum-*")]
+        Programme[("Programme\nHK-Skript 1, HK-Skript 2, HK-Skript 3, HK-*")]
         Skript1["HK-Skript 1\n(alle 30 min)"]
         ATSkript["HK-Außentemp.-Skript\n(stündlich)"]
-        Skript2["HK-Skript 2\n(alle 5 min)"]
+        Skript2["HK-Skript 2\nBerechnet Heiz-/Schaltzeiten\n(alle 5 min)"]
+        Skript3["HK-Skript 3\nSchaltskript\n(alle 5 min)"]
         Aktoren["Thermostate / Aktoren"]
     end
 
@@ -54,9 +55,13 @@ flowchart TD
     Skript1 -->|"schreibt HK1-Schaltliste"| SysVar
     OpenMeteo -->|"Außentemperatur"| ATSkript
     ATSkript -->|"schreibt HK2-Aussentemperatur"| SysVar
-    SysVar --> Skript2
-    Skript2 -->|"konfiguriert / schaltet"| Aktoren
-    Skript2 -->|"schreibt HKG-Raum-* Status"| SysVar
+    SysVar -->|"liest HK1-Schaltliste"| Skript2
+    Skript1 --> Skript2
+    Skript2 --> Skript3
+    Skript2 -->|"schreibt HK2-Schaltliste"| SysVar
+    SysVar -->|"liest HK2-Schaltliste"| Skript3
+    Skript3 -->|"konfiguriert / schaltet"| Aktoren
+    Skript3 -->|"schreibt HKG-Raum-* Status"| SysVar
     Aktoren -.->|"Ist-Temperatur"| Skript2
     SysVar -.->|"liest"| Addon
 ```
@@ -67,13 +72,18 @@ Der Laufzeit-Ablauf:
 1. Eine **Skript-1-Variante** liest Termine aus einer externen Quelle
    (ChurchTools, ChurchDesk, iCal oder Google) und schreibt sie in die
    Systemvariable `HK1-Schaltliste`.
-2. **HK-Skript 2** läuft alle 5 Minuten, liest `HK1-Schaltliste` und schaltet die
+2. **HK-Skript 2** läuft alle 5 Minuten, liest `HK1-Schaltliste` berechnet die Schaltzeiten und speichert diese in der Systemvariable `HK1-Schaltliste`.
+3. **HK-Skript 3** läuft alle 5 Minuten, liest `HK2-Schaltliste` und schaltet die
    Thermostate entsprechend.
-3. Das **Addon** liest dieselben Systemvariablen lesend aus und stellt sie im
+4. Das **Addon** liest dieselben Systemvariablen lesend aus und stellt sie im
    Browser dar; es schreibt nichts in die Skript-Variablen zurück.
 
 Es wird immer nur eine Skript-1-Variante eingesetzt. Alle Skripte eines
 Release-Standes gehören zusammen und müssen gemeinsam eingespielt werden.
+
+`HK-Skript 1` läuft alle 30 Minuten. `HK-Skript 2` und `HK-Skript 3` laufen beide alle 5 Minuten.  
+Dadurch kann es zu gleichzeitigen Laufzeiten kommen. Alle Skripte sind über Verzögerungen so eingestellt dass die Reihenfolge immer `HK-Skript 1` ->`HK-Skript 2` -> `HK-Skript 3` garantiert ist.
+
 
 ## Systemvariablen-Formate
 
@@ -264,7 +274,7 @@ Systemvariablen reagieren (z.B. Lüftung, Beschattung, Benachrichtigungen).
 
 ### HK1-Schaltliste
 
-Übergabepuffer von Skript 1 an Skript 2. Wird automatisch befüllt und
+Übergabepuffer von `HK-Skript 1` an `HK-Skript 2`. Wird automatisch befüllt und
 ausgelesen; niemals manuell verändern.
 
 Mehrere Einträge stehen direkt hintereinander ohne zusätzliches Trennzeichen;
@@ -330,9 +340,38 @@ Beispielkurven und Berechnungshintergrund:
 [Anwenderhandbuch](anwenderhandbuch.md#die-heizkurve-hk2-kurve),
 [Heizsteuerung-Vorheizzeit.md](heizsteuerung-vorheizzeit.md)
 
+### HK2-Schaltliste
+
+Übergabepuffer von `HK-Skript 2` an `HK-Skript 3`. Wird automatisch befüllt und
+ausgelesen; niemals manuell verändern.
+
+Einzelne Einträge werden durch # (Raute) getrennt, einzelne Felder durch ; (Semikolon).
+
+```txt
+Raumvariable;Terminstartzeit;Terminende;Sonderbefehl;Heiz-/Schaltstart;Heiz-/Schaltende;Außentemperatur;Isttemperatur#...
+```
+
+| Feld | Index | Typ | Bedeutung |
+| ---- | ----- | --- | --------- |
+| Raumvariable | 0 | String | HKG-Raum Variable für diesen Termin |
+| Terminstartzeit | 1 | Zeitstempel | Original Startzeit des Termins aus `HK1-Schaltliste` |
+| Terminende | 2 | Zeitstempel | Original Endzeit des Termins aus `HK1-Schaltliste` |
+| Sonderbefehl | 3 | String | Sonderbefehl aus `HK1-Schaltliste` (Dauer-Ein/Dauer-Aus/Raumtemperatur abweichend definiert) |
+| Heiz-/Schaltstart | 4 | Zeitstempel | In `HK-Skript 2` berechnete Startzeit für Heizen/Schalten unter Berücksichtigung der Vorheizzeit und Raumparameter |
+| Heiz-/Schaltende | 5 | Zeitstempel | In `HK-Skript 2` berechnete Startzeit für Heizen/Schalten unter Berücksichtigung der Raumparameter |
+| Außentemperatur | 6 |  String | Außentemperatur bei der letzten Aktualisierung  |
+| Isttemperatur | 7 |  String | Isttemperatur bei der letzten Aktualisierung (damit Temperatur bei Heizstart) |
+
+Beispiel:
+
+```txt
+HKG-Raum-Küche;2026-11-04 10:00:00;2026-11-04 12:00:00;0;2026-11-04 09:02:00;2026-11-04 11:30:00;8.1;18.4#HKG-Raum-Küche;2026-11-04 18:00:00;2026-11-04 20:30:00;0;2026-11-04 17:02:00;2026-11-04 20:00:00;8.1;18.4#HKG-Raum-Foyer;2026-11-04 18:30:00;2026-11-04 20:30:00;0;2026-11-04 17:32:00;2026-11-04 20:00:00;8.1;16.0#HKG-Raum-KlSaal;2026-11-04 18:30:00;2026-11-04 20:30:00;0;2026-11-04 17:32:00;2026-11-04 20:00:00;8.1;20.0#HKG-Raum-WCs;2026-11-04 18:30:00;2026-11-04 20:30:00;0;2026-11-04 17:32:00;2026-11-04 20:00:00;8.1;16.0#
+```
+
+
 ### HK2-Schaltzeiten
 
-Wird von HK-Skript 2 am Ende jedes Skriptlaufs geschrieben (sofern die Variable auf der CCU vorhanden ist). Enthält die berechneten Schaltzeiten aller Ressourcen des letzten Skriptlaufs. Die Variable ist rein informativ und wird vom Benutzer nicht manuell gesetzt.
+Wird von `HK-Skript 2` am Ende jedes Skriptlaufs geschrieben (sofern die Variable auf der CCU vorhanden ist). Enthält die berechneten Schaltzeiten aller Ressourcen des letzten Skriptlaufs. Die Variable ist rein informativ und wird vom Benutzer nicht manuell gesetzt.
 
 Einträge sind durch `~` getrennt, Felder innerhalb eines Eintrags durch `;`:
 

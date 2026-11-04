@@ -1,7 +1,7 @@
 SYSVARS-InitValues.hsc
 	Backup mit SDV. Direkt nach erzeugen mit den Init Skripten
 		HK-Init-Variablen Logging.hsc
-		HK-Init-Skript 2.hsc
+		HK-Init-Skript 2+3.hsc
 	Anpassungen
 		bupdate = false		Wenn die Variable existiert, wird sienicht verändert
 		barchive = true		Archive Flag immer setzen

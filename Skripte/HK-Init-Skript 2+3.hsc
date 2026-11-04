@@ -1,6 +1,6 @@
 !// Script zum Erzeugen der Systemvariablen des Heizkalenders für Skript 2+3
 !//================================================================================================
-!// Stand:    25.10.2026
+!// Stand:    04.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -23,12 +23,13 @@
 !// TT:   2026-10-19 HK2-Schaltzeiten ergaenzt (Ausgabe berechneter Schaltzeiten durch Skript 2)
 !// TT:   2026-10-04 Beschreibung von HK2-Aussentemperatur praezisiert (gleitender Durchschnitt)
 
-!//Dieses Skript erstellt die nötigen Systemvariablen des Heizkalender für Skript 2 zum Schalten des Heizkalender
-!//Hinweis: Ein erneutes Ausführen dieses Programms ändert bestehende Variablen und ihren Inhalt nicht
+!// Dieses Skript erstellt die nötigen Systemvariablen des Heizkalenders für Skript 2+3. Diese 
+!// dienen der Berechnung und dem eigentlichen des Heizkalenders.
+!// Hinweis: Ein erneutes Ausführen dieses Programms ändert bestehende Variablen und ihren Inhalt nicht
 
-!//Eingabe eines Namens Präfix
-!//Dies ist nur erforderlich wenn die Namensvorgabe abgeändert werden soll.
-!//Wird hier ein Präfix eingeben so muss dieser in allen Skripten auch angegeben werden.
+!// Eingabe eines Namens Präfix
+!// Dies ist nur erforderlich wenn die Namensvorgabe abgeändert werden soll.
+!// Wird hier ein Präfix eingeben so muss dieser in allen Skripten auch angegeben werden.
 string vrp="";
 
 !// Namen der Variablen, die angelegt werden sollen

@@ -79,10 +79,11 @@ aktuelle Konfiguration zu Diagnose-/Support-Zwecken aus.
 Die Skripte sind das Kernstück des Heizkalenders. Sie umfassen 3 Gruppen.
 
 1. **Skript 1:** Einlesen von Terminen aus unterschiedlichen Quellen (Google, iCal, ChurchDesk iCal/API und ChurchTools). Pro Quelle gibt es eine eigene Variante (`HK-Skript 1_ChurchTools`, `HK-Skript 1_Google` usw.); es wird immer nur eine eingesetzt. Die eingelesenen Termine landen in der Systemvariablen `HK1-Schaltliste`.
-2. **Skript 2:** Schalten der Thermostate (`HK-Skript 2`) sowie Hilfsmittel zur Überwachung. Es liest `HK1-Schaltliste` und schaltet die Heizung entsprechend.
-3. Diverse andere optionale Hilfsmittel.
+2. **Skript 2:** Berechnet die Schalt- und Heizzeiten (`HK-Skript 2`). Es liest `HK1-Schaltliste` und berücksichtigt die Raumparameter und Vorheizzeiten. Diese Daten landen in der `HK2-Schaltliste`. Es bedient auch einige Hilfsmittel zur Überwachung.
+3. **Skript 3:** Schalten der Thermostate (`HK-Skript 3`). Es liest `HK2-Schaltliste` und schaltet die Heizung entsprechend.
+4. Diverse andere optionale Hilfsmittel.
 
-Die Systemvariablen folgen diesem Namensschema: `HK1-` für Skript 1 (Termineinlesen), `HK2-` für Skript 2 (Schalten) und `HKG-Raum-*` für die einzelnen Räume.
+Die Systemvariablen folgen diesem Namensschema: `HK1-` für Skript 1 (Termineinlesen), `HK2-` für Skript 2 (Berechnen),`HK3- für Skript 3 (Schalten)` und `HKG-Raum-*` für die einzelnen Räume.
 
 Intern gesteuert werden die Skripte durch Systemvariablen, die das Verhalten der Skripte kontrollieren. Die Skripte selbst sind auf allen Installationen austauschbar.
 
@@ -97,25 +98,29 @@ flowchart TD
     OpenMeteo["HK-Außentemperatur-Open-Meteo<br/>(stündlich)"] -->|"schreibt Außentemperatur"| ATVar[("HK2-Aussentemperatur")]
 
     CT["ChurchTools-Kalender"] -->|"Termine"| Skript1["HK-Skript 1_ChurchTools<br/>(alle 30 Minuten)"]
-    Skript1 -->|"schreibt Termine"| Schaltliste[("HK1-Schaltliste")]
+    Skript1 -->|"schreibt Termine"| Schaltliste1[("HK1-Schaltliste")]
+    Skript2 -->|"schreibt Schaltzeiten"| Schaltliste2[("HK2-Schaltliste")]
 
-    Schaltliste --> Skript2["HK-Skript 2<br/>(alle 5 Minuten)"]
+    Schaltliste1 --> Skript2["HK-Skript 2<br/>Berechnet<br/>(alle 5 Minuten)"]
+    Schaltliste2 --> Skript3["HK-Skript 3<br/>Schaltet<br/>(alle 5 Minuten)"]
     ATVar --> Skript2
     Raumtemp["Raumtemperatur<br/>(Thermostat-Sensor)"] --> Skript2
     SysVar --> Skript2
-    Skript2 -->|"berechnet Vorlaufzeit,<br/>heizt bzw. schaltet"| Thermostate["Thermostate / Aktoren"]
+    SysVar --> Skript3
+    Skript3 -->|"berechnet Vorlaufzeit,<br/>heizt bzw. schaltet"| Thermostate["Thermostate / Aktoren"]
 
     Installationsprogramm["HeizkalenderInstallation.exe<br/>(bei Installation, Konfiguration<br/>und Updates)"]
-    Installationsprogramm -->|"richtet ein und aktualisiert"| Programme[("Programme<br/>HK-Skript 1, HK-Skript 2, HK*")]
+    Installationsprogramm -->|"richtet ein und aktualisiert"| Programme[("Programme<br/>HK-Skript 1, HK-Skript 2, HK-Skript 3,HK*")]
     Installationsprogramm -->|"richtet ein und aktualisiert"| SysVar[("Systemvariablen<br/>HK1-*, HK2-*, HKG-Raum-*")]
 ```
 
 Ablauf im Detail:
 
-1. **Bei Installation/Konfiguration/Updates:** Die `HeizkalenderInstallation.exe` richtet die Programme (HK-Skript 1, HK-Skript 2 und weitere HK-Skripte) sowie die Systemvariablen auf der CCU ein und hält sie aktuell.
+1. **Bei Installation/Konfiguration/Updates:** Die `HeizkalenderInstallation.exe` richtet die Programme (HK-Skript 1, HK-Skript 2, HK-Skript 3 und weitere HK-Skripte) sowie die Systemvariablen auf der CCU ein und hält sie aktuell.
 2. **Stündlich:** `HK-Außentemperatur-Open-Meteo` aktualisiert die Außentemperatur in `HK2-Aussentemperatur`.
 3. **Alle 30 Minuten:** `HK-Skript 1_ChurchTools` liest die ChurchTools-Termine und schreibt sie in `HK1-Schaltliste`.
-4. **Alle 5 Minuten:** `HK-Skript 2` berechnet aus der Schaltliste, der Außentemperatur, den Systemvariablen und der aktuellen Raumtemperatur die Vorlaufzeiten und heizt bzw. schaltet die Räume entsprechend.
+4. **Alle 5 Minuten:** `HK-Skript 2` berechnet aus der Schaltliste (Skript 1), der Außentemperatur, den Systemvariablen und der aktuellen Raumtemperatur die Vorlaufzeiten.
+5. **Alle 5 Minuten:** `HK-Skript 3` nimmt die berechneten Werte aus `HK-Skript 2` und heizt bzw. schaltet die Räume entsprechend.
 
 Die Hauptskripte und eine ausführbare Version der HeizkalenderInstallation findet sich [hier](/Skripte).
 Eine Zusammenfassung der Skripte und eine Beschreibung ist [hier](/docs/skripte/readme.md) zu finden.

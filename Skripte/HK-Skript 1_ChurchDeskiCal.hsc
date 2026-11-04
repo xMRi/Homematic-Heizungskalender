@@ -1,6 +1,6 @@
 !// Skript 1 um die Termine aus ChurchDesk auszulesen (iCal)
 !//================================================================================================
-!// Stand:    25.10.2026
+!// Stand:    04.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -56,7 +56,7 @@ boolean DEBUG=0;
 
 !// Zeitfenster fuer Termine: von (Terminstart minus zeitVorlauf) bis
 !// (Terminende plus zeitNachlauf). Die Haltezeit zeitNachlauf haelt einen beendeten Termin
-!// so lange in der Schaltliste, dass HK-Skript 2 ihn noch ausschalten kann.
+!// so lange in der Schaltliste, dass HK-Skript 3 ihn noch ausschalten kann.
 !// Kein Heiz-Nachlauf.
 integer zeitVorlauf=12*60;   !// 12 Stunden (Default, falls HK1-Vorlaufzeit nicht gesetzt)
 object objVorlaufzeit = dom.GetObject(vrp#"HK1-Vorlaufzeit");

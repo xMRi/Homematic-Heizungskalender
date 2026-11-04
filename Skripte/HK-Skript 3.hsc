@@ -220,13 +220,13 @@ foreach(SLEintrag,SListe.Split("#")){
   }
 
   !// Protokolleintrag mit Zeit erzeugen
-  string strTemp1 = " Schalten - ";    
+  string strTemp1 = "Schalten";    
   if (HSFlag=="H"){
-    strTemp1 = " Heizen -"; 
+    strTemp1 = "Heizen"; 
   }elseif (HSFlag=="HS"){
-    strTemp1 = " Heizen / Schalten-"; 
+    strTemp1 = "Heizen / Schalten"; 
   } elseif (HSFlag=="V"){
-    strTemp1 = " Variable setzen - ";
+    strTemp1 = "Variable setzen";
   } 
   
   !// Dauerschaltstatus anzeigen, wenn es den gibt.
@@ -244,8 +244,8 @@ foreach(SLEintrag,SListe.Split("#")){
   }
 
   !// Log schreiben für diesen Raum  
-  if(log) {logObj.State(RaumLogName # strTemp1 # " " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " - Aktueller Schaltzustand: " # strTemp2);}
-  if(DEBUG)  {WriteLine(RaumLogName # strTemp1 # " " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " - Aktueller Schaltzustand: " # strTemp2);}
+  if(log) {logObj.State(RaumLogName # " - " # strTemp1 # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " - Aktueller Schaltzustand: " # strTemp2);}
+  if(DEBUG)  {WriteLine(RaumLogName # " - " # strTemp1 # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " - Aktueller Schaltzustand: " # strTemp2);}
   
 
   !// Verhindern dass Ausschaltpunkt vor Einschaltpunkt liegt

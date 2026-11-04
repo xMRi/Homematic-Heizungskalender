@@ -303,16 +303,16 @@ foreach(TLEintrag,TerminListe){
     !// bereits in der Schalphase ist, wen dies so ist wird er unverndert übernommen
     integer iPos = ("#" # SchaltListeAlt).Find("#" # SchaltListenIndex);
     if (iPos>=0) {
-      string sTemp = SchaltListeAlt.Substr(iPos);
-      integer iLen = sTemp.Find("#");
+      string strTemp = SchaltListeAlt.Substr(iPos);
+      integer iLen = strTemp.Find("#");
       if (iLen<0){
-        iLen = sTemp.Length();
+        iLen = strTemp.Length();
       }
-      sTemp = sTemp.Substr(0,iLen);
+      strTemp = strTemp.Substr(0,iLen);
 
       !// Alte berechnete Schaltzeiten bestimmen
-      EIN = sTemp.StrValueByIndex(";",4).ToTime().ToInteger();
-      AUS = sTemp.StrValueByIndex(";",5).ToTime().ToInteger();
+      EIN = strTemp.StrValueByIndex(";",4).ToTime().ToInteger();
+      AUS = strTemp.StrValueByIndex(";",5).ToTime().ToInteger();
 
       !// Ist der Eintrag überhaupt noch gültig, 30min nach Schaltende entfernen wie den Eintrag
       if ((AUS+(zeitNachlauf*60))<NOW){
@@ -326,11 +326,21 @@ foreach(TLEintrag,TerminListe){
         !// Der Termin ist noch nicht abgeschaltet aber er befindet sich in der Heizphase.
         !// Wir beerechnen die EIN und UAS Zeiten nicht neu, den alten Eintrag unverändert
         !// in  den aktuellen Schaltdaten übernehmen
-        SchaltListeNeu = SchaltListeNeu # sTemp # "#";
+        SchaltListeNeu = SchaltListeNeu # strTemp # "#";
+        
+        !// Protokolleintrag mit Zeit erzeugen
+        strTemp = "Schalten";    
+        if (HSFlag=="H"){
+          strTemp = "Heizen"; 
+        }elseif (HSFlag=="HS"){
+          strTemp = "Heizen / Schalten"; 
+        } elseif (HSFlag=="V"){
+          strTemp = "Variable setzen";
+        } 
 
         !// Log Eintrag für Eintrag erzeugen, der in Schaltung ist. DIese Daten verändern sich nicht mehr
-        if(log){logObj.State(RaumLogName # " - Heiz-/Schaltphase " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5)) };
-        if(DEBUG) {WriteLine(RaumLogName # " - Heiz-/Schaltphase " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5)) };
+        if(log){logObj.State(RaumLogName # " - " # strTemp # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5)); };
+        if(DEBUG) {WriteLine(RaumLogName # " - " # strTemp # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5)); };
 
         !// Übername der Daten in die HK2VLZListe
         if(DEBUG) {WriteLine(RVN # " Schaltlisteneintrag befindet sich im Heiz-/Schaltzustand und wird übernommen!");}

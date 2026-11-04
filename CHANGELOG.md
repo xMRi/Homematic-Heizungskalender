@@ -26,6 +26,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Addon: H1 Überschriften entfernt, da doppelt zu Menüeinträgen
 - Addon: sysvars.cgi: Execute-Bit entfernt (644 statt 755)
 - Addon 0.7.7: Mobile-Responsive CSS
+- Addon: Einheitliches Layout für alle Seiten (Mobile + Desktop)
 - Addon: hkkurve.cgi: Max-Temperatur und Außentemperatur als getrennte Spalten anzeigen (rückwärtskompatibel mit alten Log-Einträgen, die nur Max oder nur AT enthalten)
 - Doku: Thermostat-Regelung bei Übertemperatur präzisiert (#73)
 

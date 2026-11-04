@@ -349,7 +349,7 @@ proc render_table {varlist} {
     if {[llength $varlist] == 0} {
         return "<p class=\"hk-empty\">Keine Variablen gefunden.</p>"
     }
-    set html "<div class=\"hk-table-scroll\"><table class=\"hk-table\">\n"
+    set html "<div class=\"hk-table-scroll\"><table class=\"hk-table hk-has-header\">\n"
     append html "  <colgroup><col class=\"col-name\"><col class=\"col-val\"><col class=\"col-desc\"></colgroup>\n"
     append html "  <tr><th>Variable</th><th>Wert</th><th>Beschreibung</th></tr>\n"
     set i 0
@@ -421,7 +421,7 @@ proc render_room_table {varlist {gt_default ""}} {
     if {[llength $varlist] == 0} {
         return "<p class=\"hk-empty\">Keine Raum-Systemvariablen gefunden.</p>"
     }
-    set html "<div class=\"hk-table-scroll\"><table class=\"hk-table hk-table-rooms\">\n"
+    set html "<div class=\"hk-table-scroll\"><table class=\"hk-table hk-nowrap hk-has-header\">\n"
     append html "  <colgroup>\n"
     append html "    <col class=\"col-room\"><col class=\"col-status\"><col class=\"col-modus\">\n"
     append html "    <col class=\"col-heiztyp\"><col class=\"col-wtemp\"><col class=\"col-gtemp\">\n"

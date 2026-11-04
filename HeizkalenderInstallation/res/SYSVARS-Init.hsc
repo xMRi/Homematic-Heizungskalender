@@ -339,7 +339,7 @@ if (oSV) {
 } elseif (bcreate) {
 	neu=neu+1;oSV = dom.CreateObject (1089); rSV.Add (oSV.ID()); oSV.Name (svName); oSV.ValueType (20); oSV.ValueSubType (11);
 	oSV.DPInfo("Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
-	oSV.DPArchive (false && barchive); !// Keine Protokollierung
+	oSV.DPArchive (true && barchive); 
 		oSV.Variable ("");
 	WriteLine (svName # neut);}
 !------------

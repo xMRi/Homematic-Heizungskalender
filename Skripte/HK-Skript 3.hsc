@@ -1,6 +1,6 @@
 !// Skript 3 für das Schalten der Heizgruppen
 !//================================================================================================
-!// Stand:    03.11.2026
+!// Stand:    04.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -143,10 +143,9 @@ foreach(SLEintrag,SListe.Split("#")){
   !// Listenelement auslesen
   !// Parameter für aktuellen Schaltvorgang. 
   string  RVN     = SLEintrag.StrValueByIndex(";",0);
-  integer SDFlag  = SLEintrag.StrValueByIndex(";",4).ToInteger();
-  real    RTemp   = SLEintrag.StrValueByIndex(";",5).ToFloat();
-  integer EIN     = SLEintrag.StrValueByIndex(";",6).ToTime().ToInteger();
-  integer AUS     = SLEintrag.StrValueByIndex(";",7).ToTime().ToInteger();
+  integer SDFlag  = SLEintrag.StrValueByIndex(";",3).ToInteger();
+  integer EIN     = SLEintrag.StrValueByIndex(";",4).ToTime().ToInteger();
+  integer AUS     = SLEintrag.StrValueByIndex(";",5).ToTime().ToInteger();
 
   !// Erzeuge einen Namen ohne prefixe
   string RVNName = RVN.Replace(vrp#"HKG-Raum-","");
@@ -168,6 +167,23 @@ foreach(SLEintrag,SListe.Split("#")){
     GT=GTStandard;
   }
 
+  !// Temperaturen individuell bestimmen. Ist 
+  !//  SDFlag>0   individuelle Temperatur
+  !//  SDFlag==0  Normaltemperatur verwenden
+  !//  SDFlag==-1 AUS
+  !//  SDFlag==-2 EIN
+  !//  SDFlag==-3 RESET
+  real RTemp = SDFlag.ToFloat();
+  if(SDFlag<=0){
+    RTemp=RVI.StrValueByIndex(";",3).StrValueByIndex("/",0).ToFloat();
+    if((log))
+    {
+      if (SDFlag==-3)     {logObj.State(RaumLogName # " Sonderfunktion \"Normalisierung\": " # GT.ToString(1));}
+      elseif(SDFlag==-1)  {logObj.State(RaumLogName # " Sonderfunktion \"AUS\": " # GT.ToString(1));}
+      elseif(SDFlag==-2)  {logObj.State(RaumLogName # " Sonderfunktion \"EIN\": " # RTemp.ToString(1));}
+    }
+  }
+    
   !// Schaltparameter bestimmen
   AGF = RVI.StrValueByIndex(";",2);
   AGFParam = "AGFParam"#AGF.ToUpper();

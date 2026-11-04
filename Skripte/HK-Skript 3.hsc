@@ -212,8 +212,8 @@ foreach(SLEintrag,SListe.Split("#")){
   } elseif (HSFlag=="V"){
     strTemp = " Variable setzen - ";
   } 
-  if(log) {logObj.State(RaumLogName # strTemp # " " # EIN.ToTime().Format("%X").Substr(0,5) # "-" # AUS.ToTime().Format("%X").Substr(0,5));}
-  if(DEBUG)  {WriteLine(RaumLogName # strTemp # " " # EIN.ToTime().Format("%X").Substr(0,5) # "-" # AUS.ToTime().Format("%X").Substr(0,5));}
+  if(log) {logObj.State(RaumLogName # strTemp # " " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5));}
+  if(DEBUG)  {WriteLine(RaumLogName # strTemp # " " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5));}
   
   !// Dauerschaltstatus anzeigen, wenn es den gibt.
   !// 0=Aus, 1=Ein, 2=Dauer AUS, 3=Dauer EIN

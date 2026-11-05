@@ -200,6 +200,10 @@ legend {
   background-color: #e8fde8 !important;
 }
 
+.hk-log-hk3 td {
+  background-color: #fdf3e8 !important;
+}
+
 .hk-schaltliste-table,
 .hk-kurve-table,
 .hk-log-table { width: auto; }

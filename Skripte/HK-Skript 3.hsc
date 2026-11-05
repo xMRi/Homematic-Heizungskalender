@@ -1,6 +1,6 @@
 !// Skript 3 für das Schalten der Heizgruppen
 !//================================================================================================
-!// Stand:    04.11.2026
+!// Stand:    05.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// MRi: 2026-11-03 Optimierungen Sonderschaltungen und Außentemperaturgrenze
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// MRi: 2026-11-02 Alte Changelogs entfernt
 !// TT:  2026-10-29 AT-Guard: Klammern um !isHeizModus ergänzt — HM-Script hat keine Operatorrangfolge
@@ -174,12 +175,6 @@ foreach(SLEintrag,SListe.Split("#")){
   real RTemp = SDFlag.ToFloat();
   if(SDFlag<=0){
     RTemp=RVI.StrValueByIndex(";",3).StrValueByIndex("/",0).ToFloat();
-    if((log))
-    {
-      if (SDFlag==-3)     {logObj.State(RaumLogName # " Sonderfunktion \"Normalisierung\": " # GT.ToString(1));}
-      elseif(SDFlag==-1)  {logObj.State(RaumLogName # " Sonderfunktion \"AUS\": " # GT.ToString(1));}
-      elseif(SDFlag==-2)  {logObj.State(RaumLogName # " Sonderfunktion \"EIN\": " # RTemp.ToString(1));}
-    }
   }
     
   !// Schaltparameter bestimmen
@@ -218,14 +213,25 @@ foreach(SLEintrag,SListe.Split("#")){
   }
 
   !// Protokolleintrag mit Zeit erzeugen
-  string strTemp1 = "Schalten";    
-  if (HSFlag=="H"){
-    strTemp1 = "Heizen"; 
-  }elseif (HSFlag=="HS"){
-    strTemp1 = "Heizen / Schalten"; 
-  } elseif (HSFlag=="V"){
-    strTemp1 = "Variable setzen";
-  } 
+  string strTemp1;
+  if (SDFlag<0){
+    if(SDFlag==-1){
+      strTemp1 = "Sonderfunktion \"AUS\": " # GT.ToString(1);
+    }elseif(SDFlag==-2){
+      strTemp1 = "Sonderfunktion \"EIN\": " # RTemp.ToString(1);
+    }else{
+      strTemp1 = "Sonderfunktion \"RSESET\": " # GT.ToString(1);
+    }
+  }else{
+    string strTemp1 = "Schalten";
+    if (HSFlag=="H"){
+      strTemp1 = "Heizen"; 
+    }elseif (HSFlag=="HS"){
+      strTemp1 = "Heizen / Schalten"; 
+    } elseif (HSFlag=="V"){
+      strTemp1 = "Variable setzen";
+    } 
+  }  
   
   !// Dauerschaltstatus anzeigen, wenn es den gibt.
   !// 0=Aus, 1=Ein, 2=Dauer AUS, 3=Dauer EIN
@@ -260,141 +266,76 @@ foreach(SLEintrag,SListe.Split("#")){
   !// ein 5min (300sec) Interval abgedeckt.
   !// Das Skript sollte alle 5m,in laufen. Der Ausschaltpunkt der Sonderbefehle hat keine Wirkung.
 
-  !// Sonderbefehl: Ausschalten generell (Status 1/3 ==> 2)
-  !// Geht nur, wenn wir heizen oder im Dauer-Ein sind.
-  if(SDFlag==-1){
-    if(aktuellerSchaltZustand!=2){
-      if (((EIN-160)<NOW) && ((EIN+160)>NOW)){
-        foreach(AktAktor,AktorenListe.Split(";")){
-          objAktor = dom.GetObject(AktAktor);
-          if (AktAktor && objAktor){
-            if (HSFlag=="V"){
-              !// VARIABLE. Hier ist der Datenpunkt identisch mit dem Aktor/Variablen-Objekt
-              objDP = objAktor;
-              Param="VARIABLE";
-            }else{
-              !// Datenpunkt bestimmen
-              objDP = objAktor.DPByHssDP(Param);
-            }
-            if (objDP){
-              if(HSFlag=="H"){
-                !// HEIZEN
-                objDP.State(GT);
-                if(log){logObj.State(AktAktor # " - Dauerhaft ausschalten auf Temp.: " # GT.ToString(1));}
-                if(DEBUG) {WriteLine(AktAktor # " - Dauerhaft ausschalten auf Temp.: " # GT.ToString(1));}
-              }else{
-              !// SCHALTEN/VARIABLE
-                objDP.State(0);
-                if(log){logObj.State(AktAktor # " - Dauerhaft ausschalten. Parameter:" # Param);}
-                if(DEBUG) {WriteLine(AktAktor # " - Dauerhaft ausschalten. Parameter:" # Param);}
-              }
-            }else{
-              if(log){logObj.State("Datenpunkt " # Param # " nicht vorhanden!");}
-              if(DEBUG) {WriteLine("Datenpunkt " # Param # " nicht vorhanden!");}
-            }
+  !// Sonderbefehl: -1 Ausschalten generell (aktuellerSchaltZustand 0/1/3 ==> 2)
+  !//   Geht nur, wenn wir im Dauer-Ein sind.
+  !// Sonderbefehl: -2 Einschalten generell (aktuellerSchaltZustand 0/1/2 ==> 3)
+  !//   Geht nur wenn wir nicht heizen, oder im Dauer-Aus sind
+  !// Sonderbefehl: -3 Rückstellung/Reset (aktuellerSchaltZustand 0/2/3 ==> 0)
+  !//   Rückstellen erlauben wir nur bei Dauer-Ein, oder Dauer-Aus
+  string logText;
+  if(((SDFlag==-1) && (aktuellerSchaltZustand!=2)) ||
+     ((SDFlag==-2) && (aktuellerSchaltZustand!=3)) ||
+     ((SDFlag==-3) && (aktuellerSchaltZustand!=1))){
+    if (((EIN-160)<NOW) && ((EIN+160)>NOW)){
+      foreach(AktAktor,AktorenListe.Split(";")){
+        objAktor = dom.GetObject(AktAktor);
+        if (AktAktor && objAktor){
+          if (HSFlag=="V"){
+            !// VARIABLE. Hier ist der Datenpunkt identisch mit dem Aktor/Variablen-Objekt
+            objDP = objAktor;
+            Param="VARIABLE";
           }else{
-            if(log){logObj.State(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
-            if(DEBUG) {WriteLine(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
+            !// Datenpunkt bestimmen
+            objDP = objAktor.DPByHssDP(Param);
           }
-        }
-        dom.GetObject(RVN).State("2;" # RVI.Substr(2,RVI.Length()-2));
-        continue;
-      }
-    }else{
-!       if(log){logObj.State(RaumLogName # " ist dauerhaft ausgeschaltet");}
-!       if(DEBUG) {WriteLine(RaumLogName # " ist dauerhaft ausgeschaltet");}
-    }
-  }
-
-  !// Sonderbefehl: Einschalten generell (Status 1/2 ==> 3)
-  !// Geht nur wenn wir nicht heizen, oder im Dauer-Aus sind
-  if(SDFlag==-2){
-    if(aktuellerSchaltZustand!=3){
-      if (((EIN-160)<NOW) && ((EIN+160)>NOW)){
-        foreach(AktAktor,AktorenListe.Split(";")){
-          objAktor = dom.GetObject(AktAktor);
-          if (AktAktor && objAktor){
-            if (HSFlag=="V"){
-              !// VARIABLE. Hier ist der Datenpunkt identisch mit dem Aktor/Variablen-Objekt
-              objDP = objAktor;
-              Param="VARIABLE";
-            }else{
-              !// Datenpunkt bestimmen
-              objDP = objAktor.DPByHssDP(Param);
-            }
-            if (objDP){
-              if(HSFlag=="H"){
-                !// HEIZEN
-                objDP.State(RTemp);
-                if(log){logObj.State(AktAktor # " - Dauerhaft einschalten auf Temp.: " # RTemp.ToString(1));}
-                if(DEBUG) {WriteLine(AktAktor # " - Dauerhaft einschalten auf Temp.: " # RTemp.ToString(1));}
+          if (objDP){
+            if(HSFlag=="H"){
+              !// HEIZEN
+              real rVal = GT;
+              if (SDFlag==-1){
+                logText = AktAktor # " - Dauerhaft ausschalten auf Temp.: " # GT.ToString(1) # " Parameter: " # Param;
+              }elseif (SDFlag==-2){
+                rVal = RTemp;
+                logText = AktAktor # " - Dauerhaft einschalten auf Temp.: " # RTemp.ToString(1) # " Parameter: " # Param;
               }else{
-                !// SCHALTEN / VARIABLE
-                objDP.State(1);
-                if(log){logObj.State(AktAktor # " - Dauerhaft einschalten. Parameter:" # Param);}
-                if(DEBUG) {WriteLine(AktAktor # " - Dauerhaft einschalten. Parameter:" # Param);}
+                logText = AktAktor # " - Rückstellung aus dauerhafter Schaltung Ein/Aus auf Grundtemperatur: " # GT.ToString(1) # " Parameter: " # Param;
               }
+              objDP.State(rVal);
             }else{
-              if(log){logObj.State("Datenpunkt " # Param # " nicht vorhanden!");}
-              if(DEBUG) {WriteLine("Datenpunkt " # Param # " nicht vorhanden!");}
-            }
-          }else{
-            if(log){logObj.State(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
-            if(DEBUG) {WriteLine(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
-          }
-        }
-        dom.GetObject(RVN).State("3;" # RVI.Substr(2,RVI.Length()-2));
-        continue;
-      }
-    }else{
-!        if(log){logObj.State(RaumLogName # " ist dauerhaft eingeschaltet");}
-!        if(DEBUG) {WriteLine(RaumLogName # " ist dauerhaft eingeschaltet");}
-    }
-  }
-
-  !// Sonderbefehl: Rückstellung (Status 2/3 ==> 0)
-  !// Rückstellen erlauben wir nur bei Dauer-Ein, oder Dauer-Aus
-  if(SDFlag==-3){
-    if((aktuellerSchaltZustand==2) || (aktuellerSchaltZustand==3)){
-      if (((EIN-160)<NOW) && ((EIN+160)>NOW)){
-        foreach(AktAktor,AktorenListe.Split(";")){
-          objAktor = dom.GetObject(AktAktor);
-          if (AktAktor && objAktor){
-            if (HSFlag=="V"){
-              !// VARIABLE. Hier ist der Datenpunkt identisch mit dem Aktor/Variablen-Objekt
-              objDP = objAktor;
-              Param="VARIABLE";
-            }else{
-              !// Datenpunkt bestimmen
-              objDP = objAktor.DPByHssDP(Param);
-            }
-            if (objDP){
-              if(HSFlag=="H"){
-                !// HEIZEN
-                objDP.State(GT);
-                if(log){logObj.State(AktAktor # " - Rückstellung aus dauerhafter Schaltung Ein/Aus auf Grundtemperatur: " # GT.ToString(1));}
-                if(DEBUG) {WriteLine(AktAktor # " - Rückstellung aus dauerhafter Schaltung Ein/Aus auf Grundtemperatur: " # GT.ToString(1));}
+              !// SCHALTEN / VARIABLE
+              real iVal = 0;
+              if (SDFlag==-1){
+                logText = AktAktor # " - Rückstellung aus dauerhafter Schaltung auf AUS. Parameter:" # Param;
+              }elseif (SDFlag==-2){
+                iVal = 1;
+                logText = AktAktor # " - Dauerhaft einschalten. Parameter:" # Param;
               }else{
-                !// SCHALTEN / VARIABLE
-                objDP.State(0);
-                if(log){logObj.State(AktAktor # " - Rückstellung aus dauerhafter Schaltung auf AUS. Parameter:" # Param);}
-                if(DEBUG) {WriteLine(AktAktor # " - Rückstellung aus dauerhafter Schaltung auf AUS. Parameter:" # Param);}
+                logText = AktAktor # " - Dauerhaft ausschalten. Parameter:" # Param;
               }
-            }else{
-              if(log){logObj.State("Datenpunkt " # Param # " nicht vorhanden!");}
-              if(DEBUG) {WriteLine("Datenpunkt " # Param # " nicht vorhanden!");}
+              objDP.State(iVal);
             }
+            if(log){logObj.State(logText);}
+            if(DEBUG) {WriteLine(logText);}
           }else{
-            if(log){logObj.State(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
-            if(DEBUG) {WriteLine(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
+            if(log){logObj.State("Datenpunkt " # Param # " nicht vorhanden!");}
+            if(DEBUG) {WriteLine("Datenpunkt " # Param # " nicht vorhanden!");}
           }
+        }else{
+          if(log){logObj.State(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
+          if(DEBUG) {WriteLine(RaumLogName # ": " # AktAktor # " Objekt existiert nicht!");}
         }
-        dom.GetObject(RVN).State("0;" # RVI.Substr(2,RVI.Length()-2));
-        continue;
       }
-    }else{
-!        if(log){logObj.State(RaumLogName # " ist bereits in einem normalen Schaltzustand");}
-!        if(DEBUG) {WriteLine(RaumLogName # " ist bereits in einem normalen Schaltzustand");}
+      !// Neuen Schaltzustand setzen.
+      string strTemp="";
+      if (SDFlag==-1) {
+        strTemp="2";
+      }elseif (SDFlag==-2) {
+        strTemp="3";
+      }else{
+        strTemp="0";
+      }
+      dom.GetObject(RVN).State(strTemp # ";" # RVI.Substr(2,RVI.Length()-2));
+      continue;
     }
   }
 

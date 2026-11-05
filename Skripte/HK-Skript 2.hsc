@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    04.11.2026
+!// Stand:    05.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// MRi: 2026-11-03 Optimierungen Sonderschaltungen und Außentemperaturgrenze
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// MRi: 2026-11-02 Alte Changelogs entfernt
 !// TT:  2026-10-29 AT-Guard: Klammern um !isHeizModus ergänzt — HM-Script hat keine Operatorrangfolge
@@ -311,8 +312,9 @@ foreach(TLEintrag,TerminListe){
       strAlterListenEintrag = strAlterListenEintrag.Substr(0,iLen);
 
       !// Alte berechnete Schaltzeiten bestimmen
-      EIN = strAlterListenEintrag.StrValueByIndex(";",4).ToTime().ToInteger();
-      AUS = strAlterListenEintrag.StrValueByIndex(";",5).ToTime().ToInteger();
+      SDFlag  = strAlterListenEintrag.StrValueByIndex(";",3).ToTime().ToInteger();
+      EIN     = strAlterListenEintrag.StrValueByIndex(";",4).ToTime().ToInteger();
+      AUS     = strAlterListenEintrag.StrValueByIndex(";",5).ToTime().ToInteger();
 
       !// Ist der Eintrag überhaupt noch gültig, 30min nach Schaltende entfernen wie den Eintrag
       if ((AUS+(zeitNachlauf*60))<NOW){
@@ -321,8 +323,10 @@ foreach(TLEintrag,TerminListe){
         continue;
       }
 
-      !// Befinden wir uns schon in der Schaltphase? Dann wird dieser Eintrag nicht mehr geändert
-      if (EIN<NOW){
+      !// Wir prüfen den alten Schaltlisteneintrag. Befinden wir uns schon in der Schaltphase? 
+      !// Dann wird dieser Eintrag nicht mehr geändert.
+      !// Das gilt nicht für Sonderbefehle (SDFlag<0).
+      if ((EIN<NOW) && (SDFlag>=0)){
         !// Der Termin ist noch nicht abgeschaltet aber er befindet sich in der Heizphase.
         !// Wir beerechnen die EIN und UAS Zeiten nicht neu, den alten Eintrag unverändert
         !// in  den aktuellen Schaltdaten übernehmen
@@ -338,7 +342,7 @@ foreach(TLEintrag,TerminListe){
           strTemp = "Variable setzen";
         } 
 
-        !// Log Eintrag für Eintrag erzeugen, der in Schaltung ist. DIese Daten verändern sich nicht mehr
+        !// Log Eintrag für Eintrag erzeugen, der in Schaltung ist. Diese Daten verändern sich nicht mehr
         if(log){logObj.State(RaumLogName # " - " # strTemp # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5)); };
         if(DEBUG) {WriteLine(RaumLogName # " - " # strTemp # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5)); };
 
@@ -353,8 +357,9 @@ foreach(TLEintrag,TerminListe){
     }
 
     !// Originaldaten noch mal laden
-    integer EIN     = EIN_Org.ToTime().ToInteger();
-    integer AUS     = AUS_Org.ToTime().ToInteger();
+    EIN     = EIN_Org.ToTime().ToInteger();
+    AUS     = AUS_Org.ToTime().ToInteger();
+    SDFlag  = SDFlag_Org.ToInteger();
 
     !// Dieser Termin ist noch nicht in der Schaltliste oder er ist nicht in der Heizphase,
     !// wir berechnen nun die Schaltzeiten neu.
@@ -407,7 +412,7 @@ foreach(TLEintrag,TerminListe){
 
     !// Temperaturen individuell bestimmen. Ist
     !//  SDFlag>0   individuelle Temperatur
-    !//  SDFlag==0  Normaltemperatur verwenden
+    !//  SDFlag==0  Normaltemperatur verwenden aus Raumvariable 
     !//  SDFlag==-1 AUS
     !//  SDFlag==-2 EIN
     !//  SDFlag==-3 RESET
@@ -415,132 +420,126 @@ foreach(TLEintrag,TerminListe){
     if(SDFlag<=0){
       !// Temperaturen individuell bestimmen nach Raumparameter
       RTemp=RVI.StrValueByIndex(";",3).StrValueByIndex("/",0).ToFloat();
-      if((log))
-      {
-        if (SDFlag==-3)     {logObj.State(RaumLogName # " Sonderfunktion \"Normalisierung\": " # GT.ToString(1));}
-        elseif(SDFlag==-1)  {logObj.State(RaumLogName # " Sonderfunktion \"AUS\": " # GT.ToString(1));}
-        elseif(SDFlag==-2)  {logObj.State(RaumLogName # " Sonderfunktion \"EIN\": " # RTemp.ToString(1));}
-      }
     }
 
     !// Bestimmen der Vorheiz-/Schaltzeiten
     real ISTTemperatur=0.0;
 
-    !//Nach aktueller Aussentemperatur den Offsetwert berechnen und am Einschaltzeitpunkt abziehen und Aktor Paramter setzen
-    real ux=0.0;
-    real uy=0.0;
-    real lx=0.0;
-    real ly=0.0;
-    if((HSFlag=="H") || (HSFlag=="HS")){
-      !// HEIZEN / HEIZEN+SCHALTEN
-          
-      !// Parameter bestimmen für Temperatur
-      AGF=RVI.StrValueByIndex(";",2);
-      AGFParam = "AGFParam"#AGF.ToUpper();
-      Param = AGFParamIP;
-      if (system.IsVar(AGFParam)){
-        Param = system.GetVar(AGFParam);
-      }
-
-      if(AT<-5.0){
-        lx=-10.0;
-        ly = OffsetAT.StrValueByIndex(";",0).ToFloat();
-        ux=-5;
-        uy = OffsetAT.StrValueByIndex(";",1).ToFloat();
-      }elseif(AT<0.0){
-        lx=-5.0;
-        ly = OffsetAT.StrValueByIndex(";",1).ToFloat();
-        ux=0.0;
-        uy = OffsetAT.StrValueByIndex(";",2).ToFloat();
-      }elseif(AT<8.0){
-        lx=0.0;
-        ly = OffsetAT.StrValueByIndex(";",2).ToFloat();
-        ux=8.0;
-        uy = OffsetAT.StrValueByIndex(";",3).ToFloat();
-      }elseif(AT<10.0){
-        lx=8.0;
-        ly = OffsetAT.StrValueByIndex(";",3).ToFloat();
-        ux=10.0;
-        uy = OffsetAT.StrValueByIndex(";",4).ToFloat();
-      }elseif(AT<12.0){
-        lx=10.0;
-        ly = OffsetAT.StrValueByIndex(";",4).ToFloat();
-        ux=12.0;
-        uy = OffsetAT.StrValueByIndex(";",5).ToFloat();
-      }elseif(AT<15.0){
-        lx=12.0;
-        ly = OffsetAT.StrValueByIndex(";",5).ToFloat();
-        ux=15.0;
-        uy = OffsetAT.StrValueByIndex(";",6).ToFloat();
-      }else{
-        !// Alles andere wird mit 15.0 bis 17.5 interpoliert
-        lx=15.0;
-        ly = OffsetAT.StrValueByIndex(";",6).ToFloat();
-        ux=17.5;
-        uy = OffsetAT.StrValueByIndex(";",7).ToFloat();
-      }
-
-      !// linear Interpolieren
-      real offsetTempAn = (((uy-ly)/(ux-lx))*(AT-lx))+ly;
-      if (offsetTempAn<0){
-        offsetTempAn = 0;
-      }
-
-      !// Bestimme den Verschiebungsfaktor zur Temperaturverschiebung. maximal 500%
-      !// minimal 20%. Andere Werte setzen den Faktor auf
-      real faktor1 = RVI.StrValueByIndex(";",4).StrValueByIndex("*",1).ToFloat();
-      if (faktor1==0){
-        faktor1 = 1.0;
-      }
-      faktor1 = faktor1.Max(0.20).Min(5.0);
-
-      !// Bestimme nun einen weiteren Faktor aus der ISTTemperatur und der Solltemperatur RTemp
-      !// und der Grundtemperatur für den Raum (in diesem Fall wird nur die Temperatur, des ersten
-      !// Aktors verwendet). Dadurch wird ein bereits warmer Raum nur so lange vorgeheizt, wie das
-      !// die temperaturabhängige Vorheizzeit eben auch angibt, denn diese bezieht sich ja immer
-      !// auf die Grundtemperatur.
-      ISTTemperatur = GT.Max(AT);
-      AktAktor = RVI.StrValueByIndex(";",6);
-      if(DEBUG) { WriteLine("AktAktor=" # AktAktor); }
-      objAktor = dom.GetObject(AktAktor);
-      if (AktAktor && objAktor){
-        objDP = objAktor.DPByHssDP("ACTUAL_TEMPERATURE");
-        if (!objDP){
-          objDP = objAktor.DPByHssDP("TEMPERATURE");
+    if (SDFlag>=0){
+      !// Normaler Heiz- bzw. Schaltvorgang
+      !//Nach aktueller Aussentemperatur den Offsetwert berechnen und am Einschaltzeitpunkt abziehen und Aktor Paramter setzen
+      if((HSFlag=="H") || (HSFlag=="HS")){
+        !// HEIZEN / HEIZEN+SCHALTEN
+            
+        !// Parameter bestimmen für Temperatur
+        AGF=RVI.StrValueByIndex(";",2);
+        AGFParam = "AGFParam"#AGF.ToUpper();
+        Param = AGFParamIP;
+        if (system.IsVar(AGFParam)){
+          Param = system.GetVar(AGFParam);
         }
-        if (objDP){
-          ISTTemperatur = objDP.State().ToFloat();
-          }else{
-            if(log){logObj.State(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " hat keinen Datenpunkt ACTUAL_TEMPERATURE/TEMPERATURE! Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)");}
-            if(DEBUG) {WriteLine(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " hat keinen Datenpunkt ACTUAL_TEMPERATURE/TEMPERATURE! Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)");}
+
+        real ux=0.0;
+        real uy=0.0;
+        real lx=0.0;
+        real ly=0.0;
+        if(AT<-5.0){
+          lx=-10.0;
+          ly = OffsetAT.StrValueByIndex(";",0).ToFloat();
+          ux=-5;
+          uy = OffsetAT.StrValueByIndex(";",1).ToFloat();
+        }elseif(AT<0.0){
+          lx=-5.0;
+          ly = OffsetAT.StrValueByIndex(";",1).ToFloat();
+          ux=0.0;
+          uy = OffsetAT.StrValueByIndex(";",2).ToFloat();
+        }elseif(AT<8.0){
+          lx=0.0;
+          ly = OffsetAT.StrValueByIndex(";",2).ToFloat();
+          ux=8.0;
+          uy = OffsetAT.StrValueByIndex(";",3).ToFloat();
+        }elseif(AT<10.0){
+          lx=8.0;
+          ly = OffsetAT.StrValueByIndex(";",3).ToFloat();
+          ux=10.0;
+          uy = OffsetAT.StrValueByIndex(";",4).ToFloat();
+        }elseif(AT<12.0){
+          lx=10.0;
+          ly = OffsetAT.StrValueByIndex(";",4).ToFloat();
+          ux=12.0;
+          uy = OffsetAT.StrValueByIndex(";",5).ToFloat();
+        }elseif(AT<15.0){
+          lx=12.0;
+          ly = OffsetAT.StrValueByIndex(";",5).ToFloat();
+          ux=15.0;
+          uy = OffsetAT.StrValueByIndex(";",6).ToFloat();
+        }else{
+          !// Alles andere wird mit 15.0 bis 17.5 interpoliert
+          lx=15.0;
+          ly = OffsetAT.StrValueByIndex(";",6).ToFloat();
+          ux=17.5;
+          uy = OffsetAT.StrValueByIndex(";",7).ToFloat();
+        }
+
+        !// linear Interpolieren
+        real offsetTempAn = (((uy-ly)/(ux-lx))*(AT-lx))+ly;
+        if (offsetTempAn<0){
+          offsetTempAn = 0;
+        }
+
+        !// Bestimme den Verschiebungsfaktor zur Temperaturverschiebung. maximal 500%
+        !// minimal 20%. Andere Werte setzen den Faktor auf
+        real faktor1 = RVI.StrValueByIndex(";",4).StrValueByIndex("*",1).ToFloat();
+        if (faktor1==0){
+          faktor1 = 1.0;
+        }
+        faktor1 = faktor1.Max(0.20).Min(5.0);
+
+        !// Bestimme nun einen weiteren Faktor aus der ISTTemperatur und der Solltemperatur RTemp
+        !// und der Grundtemperatur für den Raum (in diesem Fall wird nur die Temperatur, des ersten
+        !// Aktors verwendet). Dadurch wird ein bereits warmer Raum nur so lange vorgeheizt, wie das
+        !// die temperaturabhängige Vorheizzeit eben auch angibt, denn diese bezieht sich ja immer
+        !// auf die Grundtemperatur.
+        ISTTemperatur = GT.Max(AT);
+        AktAktor = RVI.StrValueByIndex(";",6);
+        if(DEBUG) { WriteLine("AktAktor=" # AktAktor); }
+        objAktor = dom.GetObject(AktAktor);
+        if (AktAktor && objAktor){
+          objDP = objAktor.DPByHssDP("ACTUAL_TEMPERATURE");
+          if (!objDP){
+            objDP = objAktor.DPByHssDP("TEMPERATURE");
           }
-      }elseif(!AktAktor) {
-        if(log){logObj.State(RaumLogName # ": Kein Thermostat-Aktor/Kanal zugeordnet, Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)");}
-        if(DEBUG) {WriteLine(RaumLogName # ": Kein Thermostat-Aktor/Kanal zugeordnet, Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)");}
-      }else{
-        if(log){logObj.State(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " existiert nicht!");}
-        if(DEBUG) {WriteLine(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " existiert nicht!");}
-      }
-
-      !// Luftfeuchte optional auslesen (nur wenn Datenpunkt vorhanden und Wert > 0).
-      !// Wert 0 bedeutet: kein Sensor vorhanden (z.B. IP-Thermostat ohne Feuchtigkeitssensor).
-      string HUMText = "";
-      if (AktAktor && objAktor){
-        objDP = objAktor.DPByHssDP("ACTUAL_HUMIDITY");
-        if (!objDP){
-          objDP = objAktor.DPByHssDP("HUMIDITY");
+          if (objDP){
+            ISTTemperatur = objDP.State().ToFloat();
+            }else{
+              if(log){logObj.State(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " hat keinen Datenpunkt ACTUAL_TEMPERATURE/TEMPERATURE! Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)");}
+              if(DEBUG) {WriteLine(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " hat keinen Datenpunkt ACTUAL_TEMPERATURE/TEMPERATURE! Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)");}
+            }
+        }elseif(!AktAktor) {
+          if(log){logObj.State(RaumLogName # ": Kein Thermostat-Aktor/Kanal zugeordnet, Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)");}
+          if(DEBUG) {WriteLine(RaumLogName # ": Kein Thermostat-Aktor/Kanal zugeordnet, Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)");}
+        }else{
+          if(log){logObj.State(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " existiert nicht!");}
+          if(DEBUG) {WriteLine(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " existiert nicht!");}
         }
-        if (objDP){
-          integer humVal = objDP.State().ToInteger();
-          if (humVal > 0){
-            HUMText = " / HUM " # humVal.ToString() # "%";
+
+        !// Luftfeuchte optional auslesen (nur wenn Datenpunkt vorhanden und Wert > 0).
+        !// Wert 0 bedeutet: kein Sensor vorhanden (z.B. IP-Thermostat ohne Feuchtigkeitssensor).
+        string HUMText = "";
+        if (AktAktor && objAktor){
+          objDP = objAktor.DPByHssDP("ACTUAL_HUMIDITY");
+          if (!objDP){
+            objDP = objAktor.DPByHssDP("HUMIDITY");
+          }
+          if (objDP){
+            integer humVal = objDP.State().ToInteger();
+            if (humVal > 0){
+              HUMText = " / HUM " # humVal.ToString() # "%";
+            }
           }
         }
-      }
 
-      !// Wir nutzen die Temperaturverschiebung nur, wenn wir einen normalen Schaltvorgang haben
-      !// Spezial Befehle #EIN# #AUS# #NORMAL# werden zur normalen Zeit ausgeführt.
-      if (SDFlag>=0){
+        !// Wir nutzen die Temperaturverschiebung nur, wenn wir einen normalen Schaltvorgang haben
         !// Wenn die Außentemperaturgrenze erreicht ist brechen wir alle Heizvorgänge ab. Hier heißt das einfach, wir
         !// ignorieren diesen Schaltlisten eintrag und nehmen den nächtsen.
         if(AT>=ATG){
@@ -563,53 +562,59 @@ foreach(TLEintrag,TerminListe){
         offsetTempAn = (0.0-(faktor1*faktor2*offsetTempAn).ToInteger()*60).ToInteger();
         if(DEBUG)  {WriteLine("Korrektur: faktor1=" # faktor1.ToString(2) # " faktor2=" # faktor2.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "/" # RTemp.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
         !//if(log) {logObj.State("faktor2=" # faktor2.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
-      } else {
-        !// Sonderbefehle werden ohne Versatz ausgeführt
-        offsetRaumAn = 0;
-        offsetRaumAus = 0;
+        
+        !// Reale Schaltzeiten berechnen
+        string logText = RaumLogName # " - Heizen - AT " # AT.ToString(1) # "°C / GT " # GT.ToString(1) # "°C / IST " # ISTTemperatur.ToString(1) # "°C / ZIEL " # RTemp.ToString(1) # "°C" # HUMText # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " ";
+        if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
+        logText = logText # (offsetRaumAn/60) #"min ";
+        if (offsetTempAn==0){ logText=logText#" - "; }
+        logText = logText # (offsetTempAn/60) # "min = ";
+        EIN = EIN + offsetRaumAn + offsetTempAn;
+        logText = logText # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " ";
+        if (offsetRaumAus>0){ logText=logText#"+"; }elseif(offsetRaumAus==0){ logText=logText#"-"; }
+        AUS = AUS + offsetRaumAus;
+        logText = logText # (offsetRaumAus/60) # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
+        HK2VLZListe = HK2VLZListe # RVN # ";" # ((EIN_Org.ToTime().ToInteger()-EIN)/60) # ";" # EIN.ToTime() # ";" # EIN_Org # ";" # AUS.ToTime() # ";" # ((AUS_Org.ToTime().ToInteger()-AUS)/60) # "~";
+        if(log) {logObj.State(logText);}
+        if(DEBUG)  {WriteLine(logText);}
+      }else{
+        !// SCHALTEN / VARIABLE kennt keine Vorheizzeiten
+        string strTemp = " - Schalten - ";
+        if (HSFlag=="V"){
+          strTemp = " - Variable setzen - ";
+        }
+
+        !// Reale Schaltzeiten berechnen
+        string logText = RaumLogName # strTemp #EIN.ToTime().Format("%X").Substr(0,5) # " ";
+        if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
+        logText = logText # (offsetRaumAn/60) #"min = ";
+        EIN = EIN + offsetRaumAn;
+        logText = logText # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " ";
+        if (offsetRaumAus>0){ logText=logText#"+"; }elseif(offsetRaumAus==0){ logText=logText#"-"; }
+        AUS = AUS + offsetRaumAus;
+        logText = logText # (offsetRaumAus/60) # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
+        HK2VLZListe = HK2VLZListe # RVN # ";" # ((EIN_Org.ToTime().ToInteger()-EIN)/60) # ";" # EIN.ToTime() # ";" # EIN_Org # ";" # AUS.ToTime() # ";" # ((AUS_Org.ToTime().ToInteger()-AUS)/60) # "~";
+        if(log) {logObj.State(logText);}
+        if(DEBUG)  {WriteLine(logText);}
       }
-      
-      !// Reale Schaltzeiten berechnen
-      string logText = RaumLogName # " - Heizen - AT " # AT.ToString(1) # "°C / GT " # GT.ToString(1) # "°C / IST " # ISTTemperatur.ToString(1) # "°C / ZIEL " # RTemp.ToString(1) # "°C" # HUMText # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " ";
-      if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
-      logText = logText # (offsetRaumAn/60) #"min ";
-      if (offsetTempAn==0){ logText=logText#" - "; }
-      logText = logText # (offsetTempAn/60) # "min = ";
-      EIN = EIN + offsetRaumAn + offsetTempAn;
-      logText = logText # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " ";
-      if (offsetRaumAus>0){ logText=logText#"+"; }elseif(offsetRaumAus==0){ logText=logText#"-"; }
-      AUS = AUS + offsetRaumAus;
-      logText = logText # (offsetRaumAus/60) # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
-      HK2VLZListe = HK2VLZListe # RVN # ";" # ((EIN_Org.ToTime().ToInteger()-EIN)/60) # ";" # EIN.ToTime() # ";" # EIN_Org # ";" # AUS.ToTime() # ";" # ((AUS_Org.ToTime().ToInteger()-AUS)/60) # "~";
-      if(log) {logObj.State(logText);}
-      if(DEBUG)  {WriteLine(logText);}
     }else{
-      !// SCHALTEN / VARIABLE kennt kein Offset
-      string strTemp = " - Schalten - ";
-      if (HSFlag=="V"){
-        strTemp = " - Variable setzen - ";
-      }
+        !// Spezial Befehle #EIN# #AUS# #NORMAL# werden zur normalen Zeit ausgeführt.
+        !// Sonderbefehle werden ganz ohne Versatz ausgeführt.
 
-      !// Sonderbefehle werden ohne Versatz ausgeführt
-      if (SDFlag<0){
-        offsetRaumAn = 0;
-        offsetRaumAus = 0;
-      }
+        string strTemp = "???";
+        if (SDFlag==-3){
+          strTemp = "\"RESET\": " # GT.ToString(1);
+        }elseif(SDFlag==-1){
+          strTemp = "\"AUS\": " # GT.ToString(1);
+        }elseif(SDFlag==-2){
+          strTemp = "\"EIN\": " # RTemp.ToString(1);
+        }
 
-      !// Reale Schaltzeiten berechnen
-      string logText = RaumLogName # strTemp #EIN.ToTime().Format("%X").Substr(0,5) # " ";
-      if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
-      logText = logText # (offsetRaumAn/60) #"min = ";
-      EIN = EIN + offsetRaumAn;
-      logText = logText # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " ";
-      if (offsetRaumAus>0){ logText=logText#"+"; }elseif(offsetRaumAus==0){ logText=logText#"-"; }
-      AUS = AUS + offsetRaumAus;
-      logText = logText # (offsetRaumAus/60) # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
-      HK2VLZListe = HK2VLZListe # RVN # ";" # ((EIN_Org.ToTime().ToInteger()-EIN)/60) # ";" # EIN.ToTime() # ";" # EIN_Org # ";" # AUS.ToTime() # ";" # ((AUS_Org.ToTime().ToInteger()-AUS)/60) # "~";
-      if(log) {logObj.State(logText);}
-      if(DEBUG)  {WriteLine(logText);}
+        !// Log Eintrag für Eintrag erzeugen.
+        if(log){logObj.State(RaumLogName # " - Sonderfunktion - " # strTemp # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5)); };
+        if(DEBUG) {WriteLine(RaumLogName # " - Sonderfunktion - " # strTemp # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5)); };
     }
-
+    
     !// Verhindern dass Ausschaltpunkt vor Einschaltpunkt liegt
     if(AUS<=EIN){
       !// Durch das überspringen des Raumes hier, wird ein Raum evtl. ausgeschaltet, weil er nicht mehr

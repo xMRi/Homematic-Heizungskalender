@@ -13,6 +13,15 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-05]
+
+### Geändert
+
+- Skript3: Starke Optimierung der Sonderbefehle (nur noch ein Schaltblock).
+- Skript2+3: Außentemperaturgrenze wird nun in Skript2 behandelt und nicht mehr im Schaltteil.
+- Skript2+3: Logging verbessert und vereinfacht.
+- Doku: Anpassungen
+
 ## [2026-11-03]
 
 ### Geändert

@@ -77,6 +77,7 @@
   border: 1px solid #ccc;
   padding: 4px 8px;
   text-align: left;
+  vertical-align: top;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }

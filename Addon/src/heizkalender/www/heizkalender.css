@@ -1,4 +1,4 @@
-/* Heizkalender-Addon: eigene Stile, ergänzend zum CCU-Stylesheet */
+/* Heizkalender-Addon: eigene Stile */
 
 /* Addon-Startseite: Logo + Titel nebeneinander */
 .hk-header {
@@ -77,6 +77,7 @@
   border: 1px solid #ccc;
   padding: 4px 8px;
   text-align: left;
+  vertical-align: top;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
@@ -90,7 +91,7 @@
   white-space: nowrap;
 }
 
-.hk-table-rooms td {
+.hk-nowrap td {
   white-space: nowrap;
 }
 
@@ -105,14 +106,23 @@
 
 /* Eingebettete Tabelle (z.B. HK1-R-Liste in einer Tabellenzelle) */
 .hk-table-inline {
+  border-collapse: collapse;
   width: auto;
-  table-layout: auto;
   margin: 0;
 }
 
 .hk-table-inline th,
 .hk-table-inline td {
   padding: 2px 6px;
+  white-space: nowrap;
+}
+
+.hk-table-inline td {
+  background-color: #ffffff !important;
+}
+
+.hk-table-inline tr:nth-child(even) td {
+  background-color: #f5f5f5 !important;
 }
 
 /* Log-Seite */
@@ -122,6 +132,13 @@
 
 .hk-log-controls form {
   display: inline;
+}
+
+.hk-log-controls label {
+  white-space: nowrap;
+  display: inline-block;
+  margin-bottom: 0.4em;
+  font-style: italic;
 }
 
 fieldset {
@@ -148,12 +165,7 @@ legend {
 }
 
 .hk-download-link {
-  font-weight: bold;
-  text-decoration: none;
   color: #0066cc;
-}
-
-.hk-download-link:hover {
   text-decoration: underline;
 }
 
@@ -172,20 +184,6 @@ legend {
   margin-bottom: 0.5em;
 }
 
-.hk-log-table {
-  width: 100%;
-  table-layout: auto;
-}
-
-.hk-log-table col.col-log-ts  { width: auto; }
-.hk-log-table col.col-log-src { width: auto; }
-.hk-log-table col.col-log-msg { width: 100%; }
-
-.hk-log-table th:nth-child(1), .hk-log-table td:nth-child(1),
-.hk-log-table th:nth-child(2), .hk-log-table td:nth-child(2) {
-  white-space: nowrap;
-}
-
 .hk-log-hk td {
   background-color: #fffbe6 !important;
 }
@@ -202,12 +200,16 @@ legend {
   background-color: #e8fde8 !important;
 }
 
-.hk-schaltliste-table { width: auto; }
+.hk-schaltliste-table,
+.hk-kurve-table,
+.hk-log-table { width: auto; }
 
 .hk-schaltliste-table th,
-.hk-schaltliste-table td { white-space: nowrap; }
-.hk-schaltliste-table td.col-sl-termin,
-.hk-schaltliste-table th.col-sl-termin { white-space: normal; }
+.hk-schaltliste-table td,
+.hk-kurve-table th,
+.hk-kurve-table td,
+.hk-log-table th,
+.hk-log-table td { white-space: nowrap; }
 
 .hk-sl-aktiv td {
   font-weight: bold;
@@ -223,22 +225,18 @@ legend {
 .hk-legende-fieldset {
   margin-bottom: 0.8em;
   display: inline-block;
-  padding: 0.3em 0.8em 0.3em;
+  padding: 0.3em 0.8em;
 }
 
 .hk-sl-status-aktiv {
-  color: red;
+  color: #cc0000;
 }
 
 .hk-sl-status-inaktiv {
-  color: gray;
+  color: #888;
 }
 
 /* Heizkurvenkontrolle-Seite */
-.hk-kurve-table { width: auto; }
-.hk-kurve-table th,
-.hk-kurve-table td { white-space: nowrap; }
-
 .hk-kurve-ziel-gruen td { background-color: #e8f8e8 !important; }
 .hk-kurve-ziel-gelb td  { background-color: #fff3cd !important; }
 .hk-kurve-ziel-rot td   { background-color: #f8d7da !important; }
@@ -263,13 +261,18 @@ legend {
 .hk-config-table-auto { border-collapse: collapse; width: auto; }
 .hk-config-table-auto th,
 .hk-config-table-auto td { padding: 0.35em 0.7em; border: 1px solid #ddd; }
-.hk-config-table-auto th { background: #f4f4f4; text-align: left; font-weight: normal; white-space: nowrap; }
-.hk-config-table-auto td.hk-val { word-break: break-all; max-width: 30em; }
-.hk-config-table-auto td.hk-code { font-family: monospace; word-break: break-all; max-width: 30em; }
+.hk-config-table-auto th { background: #f4f4f4; text-align: left; font-weight: normal; }
+.hk-config-table-auto td.hk-val,
+.hk-config-table-auto td.hk-code { word-break: break-all; max-width: 30em; }
+.hk-config-table-auto td.hk-code { font-family: monospace; }
 .hk-config-table-auto td.hk-id { text-align: right; color: #666; }
 
+/* Tabellen mit Spalten-Überschriften: fett, dunkler Header, abwechselnde Zeilen */
+.hk-has-header th { font-weight: bold; background-color: #e8e8e8; white-space: nowrap; }
+.hk-has-header tr:nth-child(even) td { background-color: #f5f5f5; }
+
 .hk-kurve-grid { display: flex; gap: 0.5em; flex-wrap: wrap; margin: 0.5em 0; }
-.hk-kurve-cell { text-align: center; min-width: 5.5em; border: 1px solid #bbb; padding: 0.5em 0.7em; border-radius: 4px; }
+.hk-kurve-cell { text-align: center; min-width: 4.2em; border: 1px solid #bbb; padding: 0.5em 0.7em; border-radius: 4px; }
 .hk-kurve-cell .hk-at { font-size: 1em; font-weight: bold; }
 .hk-kurve-cell .hk-min { font-weight: bold; font-size: 1.6em; line-height: 1.3; }
 
@@ -280,9 +283,11 @@ legend {
   margin-bottom: 1.5em;
 }
 
-/* Seite scrollt nie horizontal — fieldsets und Tabellen-Wrapper scrollen intern */
+/* Tabellen-Wrapper scrollen intern; Seite darf bei Bedarf horizontal scrollen */
 body {
-  overflow-x: hidden;
+  overflow-x: auto;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 #content {
@@ -305,9 +310,8 @@ body {
   .hk-header-logo { height: 44px; }
   .hk-header h1   { font-size: 1.2em; }
 
-  /* Navigation: umbrechend, kompakter */
+  /* Navigation: kompakter */
   .hk-nav {
-    flex-wrap: wrap;
     gap: 4px;
     padding: 4px 6px;
   }
@@ -315,27 +319,9 @@ body {
     padding: 5px 10px;
     font-size: 0.95em;
   }
-
-  /* Filter-Fieldsets: jedes Label in eigener Zeile */
-  .hk-log-controls fieldset label {
-    display: block;
-    margin-bottom: 0.5em;
+  .hk-nav a.active {
+    padding: 4px 9px;
   }
-  .hk-log-controls fieldset select {
-    width: 100%;
-    max-width: 320px;
-    box-sizing: border-box;
-  }
-  .hk-log-controls fieldset button[type="submit"] {
-    display: block;
-    margin-top: 0.5em;
-  }
-
-  /* Schaltliste und Log-Tabelle: horizontal scrollbar, kleinere Schrift */
-  .hk-schaltliste-table th,
-  .hk-schaltliste-table td { font-size: 0.88em; }
-  .hk-log-table th,
-  .hk-log-table td { font-size: 0.88em; }
 
   /* Legende: umbrechen */
   .hk-legende-fieldset { display: block; }

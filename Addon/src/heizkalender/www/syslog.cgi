@@ -7,6 +7,7 @@ proc htmlquote {s} {
     return $s
 }
 
+
 set hk_version "?"
 catch {
     set vfh [open "/usr/local/addons/heizkalender/VERSION" r]
@@ -91,7 +92,7 @@ puts {  <nav class="hk-nav">
 puts "  <div class=\"hk-log-controls\">"
 puts "    <form method=\"get\" action=\"syslog.cgi\">"
 puts {      <fieldset>}
-puts {        <legend>Anzeige</legend>}
+puts {        <legend>Filter</legend>}
 puts "        <label>Letzte Zeilen: <select name=\"n\">"
 foreach opt {50 100 200 500 1000 2000} {
     if {$opt == $lines_to_show} {
@@ -102,7 +103,7 @@ foreach opt {50 100 200 500 1000 2000} {
 }
 puts "        </select></label>"
 puts "        &nbsp;"
-puts "        <button type=\"submit\">Aktualisieren</button>"
+puts "        <button type=\"submit\">Anzeigen</button>"
 puts {      </fieldset>}
 puts "    </form>"
 puts "  </div>"

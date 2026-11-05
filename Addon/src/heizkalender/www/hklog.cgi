@@ -186,15 +186,23 @@ puts {  <link rel="stylesheet" href="heizkalender.css">
     <a href="hklog.cgi" class="active">HK-Log</a>
     <a href="syslog.cgi">Syslog</a>
     <a href="sysvars.cgi">Systemvariablen</a>
-  </nav>
-  <p class="hk-hint">Die Logdateien werden auf einem USB-Stick gespeichert, der an der CCU angeschlossen ist (<code>/media/usb1/HK-Log_JJJJ-MM-TT.log</code>). Es werden die Eintr&auml;ge der letzten 60 Tage angezeigt. Da <em>HK-SystemProtokoll sichern.hsc</em> alle 29 Minuten l&auml;uft, kann die Anzeige bis zu 29 Minuten hinter dem aktuellen Geschehen zur&uuml;ckliegen.</p>}
+  </nav>}
 
 # Filterleiste
 puts {  <div class="hk-log-controls">}
 puts "    <form method=\"get\" action=\"hklog.cgi\">"
 puts {      <fieldset>}
 puts {        <legend>Filter</legend>}
-puts "        <label>Filter: <select name=\"filter\">"
+puts "        <label>Letzte Zeilen: <select name=\"n\">"
+foreach opt {50 100 200 500 1000 2000} {
+    if {$opt == $lines_to_show} {
+        puts "          <option value=\"$opt\" selected>$opt</option>"
+    } else {
+        puts "          <option value=\"$opt\">$opt</option>"
+    }
+}
+puts "        </select></label> &nbsp;"
+puts "        <label>Quelle: <select name=\"filter\">"
 foreach fopt {alle hk1 hk2 hkk hkl nacht} {
     set flabel "Alle"
     if {[string equal $fopt "hk1"]}   { set flabel "Nur HK1 (Kalender)" }
@@ -209,7 +217,11 @@ foreach fopt {alle hk1 hk2 hkk hkl nacht} {
     }
 }
 puts "        </select></label> &nbsp;"
-puts "        <label>Log-Datei: <select name=\"file\">"
+if {$has_file_param} {
+    puts "        <label><a href=\"hklogdownload.cgi?file=[htmlquote $file_param]\" class=\"hk-download-link\">Log-Datei:</a> <select name=\"file\">"
+} else {
+    puts "        <label>Log-Datei: <select name=\"file\">"
+}
 foreach lf $log_files {
     if {[string equal $lf $file_param]} {
         puts "          <option value=\"[htmlquote $lf]\" selected>[htmlquote $lf]</option>"
@@ -218,20 +230,7 @@ foreach lf $log_files {
     }
 }
 puts "        </select></label> &nbsp;"
-puts "        <label>Letzte Zeilen: <select name=\"n\">"
-foreach opt {50 100 200 500 1000 2000} {
-    if {$opt == $lines_to_show} {
-        puts "          <option value=\"$opt\" selected>$opt</option>"
-    } else {
-        puts "          <option value=\"$opt\">$opt</option>"
-    }
-}
-puts "        </select></label> &nbsp;"
 puts "        <button type=\"submit\">Anzeigen</button>"
-if {$has_file_param} {
-    puts "        &nbsp;&nbsp;"
-    puts "        <a href=\"hklogdownload.cgi?file=[htmlquote $file_param]\" class=\"hk-download-link\">&#8595; Download [htmlquote $file_param]</a>"
-}
 puts {      </fieldset>}
 puts "    </form>"
 puts {  </div>}
@@ -285,6 +284,8 @@ if {$count == 0} {
     }
     puts {  </table></div>}
 }
+
+puts {  <p class="hk-hint">Die Logdateien werden auf einem USB-Stick gespeichert, der an der CCU angeschlossen ist (<code>/media/usb1/HK-Log_JJJJ-MM-TT.log</code>). Es werden die Eintr&auml;ge der letzten 60 Tage angezeigt. Da <em>HK-SystemProtokoll sichern.hsc</em> alle 29 Minuten l&auml;uft, kann die Anzeige bis zu 29 Minuten hinter dem aktuellen Geschehen zur&uuml;ckliegen.</p>}
 
 puts {</div>
 </body>

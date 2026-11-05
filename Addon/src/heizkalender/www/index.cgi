@@ -19,8 +19,10 @@
 # 3. HK1-Schaltliste: mit der ResID den besten Termin ermitteln
 #    (laufend > naechster zukuenftiger > letzter vergangener).
 # 4. HK2-Schaltzeiten (optional): falls vorhanden, Vorlaufzeit und Einschaltzeitpunkt
-#    je ResID nachschlagen und in den Spalten "Vorlauf" und "Heizen ab" anzeigen.
-#    Ist die Variable nicht vorhanden, entfallen diese beiden Spalten komplett.
+#    je Raumvariablenname nachschlagen und in den Spalten "Vorlauf" und "Heizen ab" anzeigen.
+#    Pro Raum koennen mehrere Eintraege vorkommen (Gruppenraeume); es wird der Eintrag
+#    mit dem kleinsten HeizenAb gewaehlt. Ist die Variable nicht vorhanden, entfallen
+#    diese beiden Spalten komplett.
 # 5. Sensor-Kanal (Feld 6 der Raumvariable, optional): Ist-Temperatur und
 #    Luftfeuchtigkeit direkt aus dem HomeMatic-Geraet lesen.
 
@@ -358,13 +360,14 @@ proc lookup_isttemp {rname ist_temps_var} {
 }
 
 # ---------------------------------------------------------------------------
-# HK2-Schaltzeiten parsen: RaumVarName -> {VorlaufMin HeizenAb}
+# HK2-Schaltzeiten parsen: RaumVarName -> Liste aller {VorlaufMin HeizenAb}-Einträge
 # Format: RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;NachlaufMin~...
+# Pro Raum können mehrere Einträge vorkommen; lookup_vlz wählt den nächsten.
 # ---------------------------------------------------------------------------
 set vlz_raw [string trim $vlz_raw]
 if {[string equal $vlz_raw "???"] || [string equal $vlz_raw ""]} { set vlz_raw "" }
 set has_vlz [expr {$vlz_present && ![string equal $vlz_raw ""]}]
-set vlz_by_room {}
+array set vlz_by_room_arr {}
 foreach entry [split $vlz_raw "~"] {
     set entry [string trim $entry]
     if {[string equal $entry ""]} { continue }
@@ -373,15 +376,27 @@ foreach entry [split $vlz_raw "~"] {
     set vmin   [string trim [lindex $fields 1]]
     set heiab  [string trim [lindex $fields 2]]
     if {![string equal $rvar ""]} {
-        lappend vlz_by_room $rvar [list $vmin $heiab]
+        lappend vlz_by_room_arr($rvar) [list $vmin $heiab]
     }
 }
 
+# Gibt den Eintrag mit dem kleinsten HeizenAb für einen Raum zurück.
+# Die Reihenfolge in HK2-Schaltzeiten ist nicht garantiert chronologisch
+# (Skript 2 schreibt pro Termin alle Gruppenräume, nicht pro Raum alle Termine).
 proc lookup_vlz {varname vlz_by_room_var} {
-    upvar $vlz_by_room_var vb
-    set idx [lsearch $vb $varname]
-    if {$idx >= 0 && ($idx % 2) == 0} { return [lindex $vb [expr {$idx + 1}]] }
-    return {}
+    upvar $vlz_by_room_var arr
+    if {![info exists arr($varname)]} { return {} }
+    set best {}
+    set best_t -1
+    foreach e $arr($varname) {
+        set t 0
+        catch {set t [parse_ts [lindex $e 1]]}
+        if {$t > 0 && ($best_t < 0 || $t < $best_t)} {
+            set best $e
+            set best_t $t
+        }
+    }
+    return $best
 }
 
 # ---------------------------------------------------------------------------
@@ -464,26 +479,26 @@ if {[llength $raeume] == 0} {
         puts {    <colgroup>
       <col class="col-sl-status">
       <col class="col-sl-raum">
-      <col class="col-sl-modus">
       <col class="col-sl-isttemp">
       <col class="col-sl-humi">
       <col class="col-sl-vorlauf">
       <col class="col-sl-heizenab">
       <col class="col-sl-termin">
       <col class="col-sl-temp">
+      <col class="col-sl-modus">
     </colgroup>}
-        puts {    <tr><th>Status</th><th>Raum</th><th>Modus</th><th>Ist-Temp.</th><th>Luftfeuchte</th><th>Vorlauf</th><th>Heizen ab</th><th class="col-sl-termin">Termin</th><th>Wohlf&uuml;hltemperatur</th></tr>}
+        puts {    <tr><th>Status</th><th>Raum</th><th>Ist-Temp.</th><th>Luftfeuchte</th><th>Vorlauf</th><th>Heizen ab</th><th class="col-sl-termin">Termin</th><th>Wohlf&uuml;hltemperatur</th><th>Modus</th></tr>}
     } else {
         puts {    <colgroup>
       <col class="col-sl-status">
       <col class="col-sl-raum">
-      <col class="col-sl-modus">
       <col class="col-sl-isttemp">
       <col class="col-sl-humi">
       <col class="col-sl-termin">
       <col class="col-sl-temp">
+      <col class="col-sl-modus">
     </colgroup>}
-        puts {    <tr><th>Status</th><th>Raum</th><th>Modus</th><th>Ist-Temp.</th><th>Luftfeuchte</th><th class="col-sl-termin">Termin</th><th>Wohlf&uuml;hltemperatur</th></tr>}
+        puts {    <tr><th>Status</th><th>Raum</th><th>Ist-Temp.</th><th>Luftfeuchte</th><th class="col-sl-termin">Termin</th><th>Wohlf&uuml;hltemperatur</th><th>Modus</th></tr>}
     }
 
     foreach r $raeume {
@@ -556,7 +571,7 @@ if {[llength $raeume] == 0} {
 
         set modus_str [format_hsflag $modus]
         if {$has_vlz} {
-            set vlz_info [lookup_vlz $varname vlz_by_room]
+            set vlz_info [lookup_vlz $varname vlz_by_room_arr]
             set vorlauf_str ""
             set heiab_str ""
             if {[llength $vlz_info] >= 2} {
@@ -573,18 +588,17 @@ if {[llength $raeume] == 0} {
                     }
                 }
             }
-            puts "    <tr${rowclass}><td>$status_cell</td><td>[htmlquote $rname]</td><td>[htmlquote $modus_str]</td><td>$isttemp_str</td><td>[htmlquote $humi_str]</td><td>$vorlauf_str</td><td>$heiab_str</td><td class=\"col-sl-termin\">$termin_cell</td><td>$wtemp_str</td></tr>"
+            puts "    <tr${rowclass}><td>$status_cell</td><td>[htmlquote $rname]</td><td>$isttemp_str</td><td>[htmlquote $humi_str]</td><td>$vorlauf_str</td><td>$heiab_str</td><td class=\"col-sl-termin\">$termin_cell</td><td>$wtemp_str</td><td>[htmlquote $modus_str]</td></tr>"
         } else {
-            puts "    <tr${rowclass}><td>$status_cell</td><td>[htmlquote $rname]</td><td>[htmlquote $modus_str]</td><td>$isttemp_str</td><td>[htmlquote $humi_str]</td><td class=\"col-sl-termin\">$termin_cell</td><td>$wtemp_str</td></tr>"
+            puts "    <tr${rowclass}><td>$status_cell</td><td>[htmlquote $rname]</td><td>$isttemp_str</td><td>[htmlquote $humi_str]</td><td class=\"col-sl-termin\">$termin_cell</td><td>$wtemp_str</td><td>[htmlquote $modus_str]</td></tr>"
         }
     }
     puts {  </table></div>}
     if {$has_vlz} {
         puts {  <div class="hk-hint">}
         puts {    <strong>Hinweis:</strong> Die Spalten &bdquo;Vorlauf&ldquo; und &bdquo;Heizen ab&ldquo;}
-        puts {    werden alle 5&nbsp;Minuten neu berechnet. W&auml;hrend der Heizphase sinkt die}
-        puts {    angezeigte Vorlaufzeit, da die steigende Raumtemperatur in die Berechnung}
-        puts {    einflie&szlig;t. Der tats&auml;chliche Heizbeginn lag fr&uuml;her als hier angezeigt.}
+        puts {    werden alle 5&nbsp;Minuten neu berechnet, bis die Heizphase beginnt. Ab}
+        puts {    Heizbeginn bleiben die Werte eingefroren und zeigen den tats&auml;chlichen Heizbeginn.}
         puts {  </div>}
     }
 }

@@ -349,7 +349,7 @@ proc render_table {varlist} {
     if {[llength $varlist] == 0} {
         return "<p class=\"hk-empty\">Keine Variablen gefunden.</p>"
     }
-    set html "<div class=\"hk-table-scroll\"><table class=\"hk-table hk-has-header\">\n"
+    set html "<div class=\"hk-table-scroll\"><table class=\"hk-table hk-nowrap hk-has-header\">\n"
     append html "  <colgroup><col class=\"col-name\"><col class=\"col-val\"><col class=\"col-desc\"></colgroup>\n"
     append html "  <tr><th>Variable</th><th>Wert</th><th>Beschreibung</th></tr>\n"
     set i 0

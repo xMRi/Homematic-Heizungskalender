@@ -1,6 +1,6 @@
 !// Skript 3 für das Schalten der Heizgruppen
 !//================================================================================================
-!// Stand:    05.11.2026
+!// Stand:    06.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-11-06 Kommentar RESET-Bedingung korrigiert (erlaubt jetzt alle Zustaende ausser EIN)
 !// MRi: 2026-11-06 Diverse Fixes Aufgrund einer statischen Code-Analyse
 !// MRi: 2026-11-06 Nachtschaltung berücksichtigt Dauer-Ein/Aus falsch.
 !// MRi: 2026-11-03 Optimierungen Sonderschaltungen und Außentemperaturgrenze
@@ -282,7 +283,7 @@ foreach(SLEintrag,SListe.Split("#")){
   !// Sonderbefehl: -2 Einschalten generell (aktuellerSchaltZustand 0/1/2 ==> 3)
   !//   Geht nur wenn wir nicht heizen, oder im Dauer-Aus sind
   !// Sonderbefehl: -3 Rückstellung/Reset (aktuellerSchaltZustand 0/2/3 ==> 0)
-  !//   Rückstellen erlauben wir nur bei Dauer-Ein, oder Dauer-Aus
+  !//   Rückstellen erlauben wir aus jedem Zustand ausser EIN (1)
   string logText;
   if(((SDFlag==-1) && (aktuellerSchaltZustand!=2)) ||
      ((SDFlag==-2) && (aktuellerSchaltZustand!=3)) ||

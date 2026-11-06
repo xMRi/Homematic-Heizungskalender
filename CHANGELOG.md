@@ -13,7 +13,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
-## [2026-11-05]
+## [2026-11-06]
 
 ### Geändert
 
@@ -21,6 +21,8 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Skript3: Nachtschaltung berücksichtigt Dauer-Ein/Aus falsch.
 - Skripte: Code Hardening
 - Skripte: Diverse Fixes Aufgrund einer statischen Code-Analyse
+- Heizkurvenkontrolle: Terminende-Doppellog verhindert. 
+- Skript2: SDFlag-Parsing in der Freeze-Wiederherstellung korrigiert.
 
 ## [2026-11-05]
 

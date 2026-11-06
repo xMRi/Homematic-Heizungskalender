@@ -27,7 +27,7 @@
 4318	HK2-VorzeitAus	0.000000	Grundoffsetzeit Ausschalten	4	true	true
 4329	HK1-Vorlaufzeit	720.00000	Zeithorizont für Terminabfrage in Minuten (Default 720, max. 1380)	4	true	true
 4311	HK2-Schaltzeiten		Berechnete Schaltzeiten pro Raum von Skript 2 für das Addon. Hier bitte nichts verändern!	20	false	true
-7322	HK2-HKK-Zieltemperatur	-90;-60;-30;-15	Heizkurvenkontrolle Zieltemperatur: Kritisch-vor;Perfekt-von;Perfekt-bis;Kritisch-nach	20	true	true
+7322	HK2-HKK-Zieltemperatur	-90;-60;0;30	Heizkurvenkontrolle Zieltemperatur: Kritisch-vor;Perfekt-von;Perfekt-bis;Kritisch-nach	20	true	true
 7323	HK3-Log		Variable um ein einfaches Log im System Protokoll zu erzeugen	20	true	true
 7324	HK3-Logging	true	Flag um das Logging für Skript 3 ein- und auszuschalten	2	true	true
 7325	HK2-Schaltliste		Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!	20	true	true

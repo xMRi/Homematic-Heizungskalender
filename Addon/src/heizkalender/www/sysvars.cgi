@@ -15,7 +15,7 @@ set rega_script {
     var sv = dom.GetObject(id);
     if (!sv) { continue; }
     string name = sv.Name();
-    if (name.StartsWith("HK-") || name.StartsWith("HK1-") || name.StartsWith("HK2-") || name.StartsWith("HKG-Raum-")) {
+    if (name.StartsWith("HK-") || name.StartsWith("HK1-") || name.StartsWith("HK2-") || name.StartsWith("HK3-") || name.StartsWith("HKG-Raum-")) {
       string val = sv.Value();
       string desc = sv.DPInfo();
       result = result # name # "\t" # val # "\t" # desc # "\n";
@@ -66,6 +66,7 @@ if {$stdout_start >= 0} {
 set vars_hk  {}
 set vars_hk1 {}
 set vars_hk2 {}
+set vars_hk3 {}
 set vars_hkg  {}
 
 foreach line [split $raw "\n"] {
@@ -78,6 +79,8 @@ foreach line [split $raw "\n"] {
 
     if {[string match "HKG-Raum-*" $name]} {
         lappend vars_hkg $name $val $desc
+    } elseif {[string match "HK3-*" $name]} {
+        lappend vars_hk3 $name $val $desc
     } elseif {[string match "HK2-*" $name]} {
         lappend vars_hk2 $name $val $desc
     } elseif {[string match "HK1-*" $name]} {
@@ -112,6 +115,7 @@ set doc_dev_vlz1    "${doc_dev}#hk1-vorlaufzeit"
 set doc_dev_vlz2    "${doc_dev}#hk2-schaltzeiten"
 set doc_dev_kurve   "${doc_dev}#hk2-kurve"
 set doc_dev_raeume_hkk "${doc_dev}#hk-raumeheizkurvenkontrolle"
+set doc_dev_sl2    "${doc_dev}#hk2-schaltliste"
 
 set doc_links [list \
     HK-Log                        $doc_skripte_log \
@@ -133,6 +137,8 @@ set doc_links [list \
     HK1-Vorlaufzeit               $doc_dev_vlz1 \
     HK2-Log                       $doc_skripte_log \
     HK2-Logging                   $doc_skripte_log \
+    HK3-Log                       $doc_skripte_log \
+    HK3-Logging                   $doc_skripte_log \
     HK2-A.Temp.Grenze             $doc_skripte_s2 \
     HK2-Aussentemperatur          $doc_skripte_s2 \
     HK2-Grundtemperatur           $doc_skripte_s2 \
@@ -142,8 +148,9 @@ set doc_links [list \
     HK2-Kurve                     $doc_dev_kurve  \
     HK2-Kurvenversatz             $doc_skripte_s2 \
     HK2-VorzeitAus                $doc_skripte_s2 \
-    HK2-Schaltzeiten               $doc_dev_vlz2 \
-    HK2-HKK-Zieltemperatur         $doc_awh_kurve \
+    HK2-Schaltliste               $doc_dev_sl2 \
+    HK2-Schaltzeiten              $doc_dev_vlz2 \
+    HK2-HKK-Zieltemperatur        $doc_awh_kurve \
 ]
 
 proc lookup_doc_url {name doc_links_var} {
@@ -276,6 +283,61 @@ proc render_schaltliste {val} {
     return $html
 }
 
+proc render_hk2schaltliste {val} {
+    if {[string equal $val ""]} {
+        return "<em>(leer)</em>"
+    }
+    # Format HK2-Schaltliste je Eintrag (getrennt durch #):
+    # RVN;TerminAb;TerminBis;SDFlag;HeizenAb;HeizenBis;AT;IST
+    set entries [split $val "#"]
+    set clean {}
+    foreach e $entries {
+        if {![string equal $e ""]} { lappend clean $e }
+    }
+    if {[llength $clean] == 0} { return "<em>(leer)</em>" }
+    set html "<table class=\"hk-table hk-table-inline\">\n"
+    append html "  <tr><th>Raum</th><th>Termin ab</th><th>Termin bis</th><th>SDFlag</th><th>Heizen ab</th><th>Heizen bis</th><th>AT (&deg;C)</th><th>IST (&deg;C)</th></tr>\n"
+    foreach entry $clean {
+        set fields [split $entry ";"]
+        set rvn    [lindex $fields 0]
+        set tab    [lindex $fields 1]
+        set tbis   [lindex $fields 2]
+        set sdflag [lindex $fields 3]
+        set heiab  [lindex $fields 4]
+        set heibis [lindex $fields 5]
+        set at     [lindex $fields 6]
+        set ist    [lindex $fields 7]
+        catch {set at  [format "%.1f" $at]}
+        catch {set ist [format "%.1f" $ist]}
+        set sdflag_int 0
+        catch {set sdflag_int [expr {int($sdflag)}]}
+        if {$sdflag_int == -1} {
+            set sdflag_text "AUS (-1)"
+        } elseif {$sdflag_int == -2} {
+            set sdflag_text "EIN (-2)"
+        } elseif {$sdflag_int == -3} {
+            set sdflag_text "RESET (-3)"
+        } elseif {$sdflag_int == 0} {
+            set sdflag_text "Normal (0)"
+        } else {
+            set sdflag_text "${sdflag_int} &deg;C"
+        }
+        set rvn_short [string map {"HKG-Raum-" ""} $rvn]
+        append html "  <tr>"
+        append html "<td>[htmlquote $rvn_short]</td>"
+        append html "<td>[htmlquote $tab]</td>"
+        append html "<td>[htmlquote $tbis]</td>"
+        append html "<td>$sdflag_text</td>"
+        append html "<td>[htmlquote $heiab]</td>"
+        append html "<td>[htmlquote $heibis]</td>"
+        append html "<td>[htmlquote $at]</td>"
+        append html "<td>[htmlquote $ist]</td>"
+        append html "</tr>\n"
+    }
+    append html "</table>\n"
+    return $html
+}
+
 proc render_hkgliste {val} {
     set entries [split $val ";"]
     if {[llength $entries] == 0 || [string equal $val ""]} {
@@ -360,6 +422,8 @@ proc render_table {varlist} {
         set display_val [mask_if_sensitive $name $val]
         if {[string equal $name "HK1-Schaltliste"]} {
             set cell [render_schaltliste $display_val]
+        } elseif {[string equal $name "HK2-Schaltliste"]} {
+            set cell [render_hk2schaltliste $display_val]
         } elseif {[string equal $name "HK1-R-Liste"]} {
             set cell [render_rliste $display_val]
         } elseif {[string equal $name "HK2-HKG-Liste"]} {
@@ -573,9 +637,15 @@ puts {<fieldset><legend>Kalender (HK1-*)</legend>}
 puts [render_table $vars_hk1]
 puts {</fieldset>}
 
-puts {<fieldset><legend>Schalten (HK2-*)</legend>}
+puts {<fieldset><legend>Schaltzeiten (HK2-*)</legend>}
 puts [render_table $vars_hk2]
 puts {</fieldset>}
+
+if {[llength $vars_hk3] > 0} {
+    puts {<fieldset><legend>Schalten (HK3-*)</legend>}
+    puts [render_table $vars_hk3]
+    puts {</fieldset>}
+}
 
 puts "<fieldset><legend>R&auml;ume (HKG-Raum-*) <a href=\"${doc_dev}#hkg-raum-\" target=\"_blank\" class=\"hk-doc-link\" title=\"Dokumentation\">&#x24D8;</a></legend>"
 # HK2-Grundtemperatur aus den HK2-Variablen extrahieren

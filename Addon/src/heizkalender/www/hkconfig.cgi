@@ -52,7 +52,7 @@ set rega_script {
     result = result # "===KAL===\n";
 
     string ev;
-    foreach(ev, "HK-Logging;HK1-Logging;HK2-Logging;HK-LoggingHeizkurvenkontrolle;HK2-Hand-Grundtemp;HK2-Hand-Temp;HK2-Grundtemperatur;HK2-A.Temp.Grenze;HK2-VorzeitAus;HK2-Kurvenversatz;HK2-Kurve".Split(";")) {
+    foreach(ev, "HK-Logging;HK1-Logging;HK2-Logging;HK3-Logging;HK-LoggingHeizkurvenkontrolle;HK2-Hand-Grundtemp;HK2-Hand-Temp;HK2-Grundtemperatur;HK2-A.Temp.Grenze;HK2-VorzeitAus;HK2-Kurvenversatz;HK2-Kurve".Split(";")) {
         var o = dom.GetObject(ev);
         if (o) { result = result # "EINST\t" # ev # "\t" # o.Value() # "\n"; }
     }
@@ -362,7 +362,8 @@ puts {<div class="hk-table-scroll"><table class="hk-config-table-auto">}
 foreach {var label} {
     HK-Logging                    "Allgemeine Protokollierung"
     HK1-Logging                   "Skript 1 (Termindaten einlesen)"
-    HK2-Logging                   "Skript 2 (Heizung schalten)"
+    HK2-Logging                   "Skript 2 (Schaltzeiten berechnen)"
+    HK3-Logging                   "Skript 3 (Schalten)"
     HK-LoggingHeizkurvenkontrolle "Heizkurvenkontrolle"
 } {
     if {[info exists einstval($var)]} {

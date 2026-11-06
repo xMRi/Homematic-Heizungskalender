@@ -50,6 +50,8 @@ foreach param [split $query_string "&"] {
     if {[string equal $key "filter"]} {
         if {[string equal $val "hk1"]}   { set filter "hk1" }
         if {[string equal $val "hk2"]}   { set filter "hk2" }
+        if {[string equal $val "hk3"]}   { set filter "hk3" }
+        if {[string equal $val "hka"]}   { set filter "hka" }
         if {[string equal $val "hkl"]}   { set filter "hkl" }
         if {[string equal $val "hkk"]}   { set filter "hkk" }
         if {[string equal $val "nacht"]} { set filter "nacht" }
@@ -115,22 +117,25 @@ if {$has_file_param} {
 set filter_is_hk1   0
 set filter_is_hk2   0
 set filter_is_hk3   0
+set filter_is_hka   0
 set filter_is_hkl   0
 set filter_is_hkk   0
 set filter_is_nacht 0
 if {[string equal $filter "hk1"]}   { set filter_is_hk1   1 }
 if {[string equal $filter "hk2"]}   { set filter_is_hk2   1 }
 if {[string equal $filter "hk3"]}   { set filter_is_hk3   1 }
+if {[string equal $filter "hka"]}   { set filter_is_hka   1 }
 if {[string equal $filter "hkl"]}   { set filter_is_hkl   1 }
 if {[string equal $filter "hkk"]}   { set filter_is_hkk   1 }
 if {[string equal $filter "nacht"]} { set filter_is_nacht 1 }
 
-if {$filter_is_hk1 || $filter_is_hk2 || $filter_is_hk3 || $filter_is_hkl || $filter_is_hkk || $filter_is_nacht} {
+if {$filter_is_hk1 || $filter_is_hk2 || $filter_is_hk3 || $filter_is_hka || $filter_is_hkl || $filter_is_hkk || $filter_is_nacht} {
     set filtered {}
     set nacht_block 0
     set pat_hk1 "*HK1-Log*"
     set pat_hk2 "*HK2-Log*"
     set pat_hk3 "*HK3-Log*"
+    set pat_hka "*HK2-Aussentemperatur*"
     set pat_hkl "HK-Log"
     set pat_hkk "HK-LogHeizkurvenkontrolle"
     foreach line $log_lines {
@@ -145,16 +150,19 @@ if {$filter_is_hk1 || $filter_is_hk2 || $filter_is_hk3 || $filter_is_hkl || $fil
             if {[string match $pat_hk2 $src]} { lappend filtered $line }
         } elseif {$filter_is_hk3} {
             if {[string match $pat_hk3 $src]} { lappend filtered $line }
+        } elseif {$filter_is_hka} {
+            if {[string match $pat_hka $src]} { lappend filtered $line }
         } elseif {$filter_is_hkk} {
             if {[string equal $src $pat_hkk]} { lappend filtered $line }
         } elseif {$filter_is_hkl} {
             if {[string equal $src $pat_hkl]} { lappend filtered $line }
         } elseif {$filter_is_nacht} {
-            if {[string match "*HK3-Log*" $src] && [string match "Beginn Nachtabschaltung*" $msg]} {
+            set is_hk_log [expr {[string match "*HK2-Log*" $src] || [string match "*HK3-Log*" $src]}]
+            if {$is_hk_log && [string match "Beginn Nachtabschaltung*" $msg]} {
                 set nacht_block 1
             }
             if {$nacht_block} { lappend filtered $line }
-            if {[string match "*HK3-Log*" $src] && [string match "Ende Nachtabschaltung*" $msg]} {
+            if {$is_hk_log && [string match "Ende Nachtabschaltung*" $msg]} {
                 set nacht_block 0
             }
         }
@@ -208,11 +216,12 @@ foreach opt {50 100 200 500 1000 2000} {
 }
 puts "        </select></label> &nbsp;"
 puts "        <label>Quelle: <select name=\"filter\">"
-foreach fopt {alle hk1 hk2 hk3 hkk hkl nacht} {
+foreach fopt {alle hk1 hk2 hk3 hkl hka hkk nacht} {
     set flabel "Alle"
     if {[string equal $fopt "hk1"]}   { set flabel "Nur HK1 (Kalender)" }
-    if {[string equal $fopt "hk2"]}   { set flabel "Nur HK2 (Berechnen)" }
+    if {[string equal $fopt "hk2"]}   { set flabel "Nur HK2 (Schaltzeiten)" }
     if {[string equal $fopt "hk3"]}   { set flabel "Nur HK3 (Schalten)" }
+    if {[string equal $fopt "hka"]}   { set flabel "Nur Au&szlig;entemperatur" }
     if {[string equal $fopt "hkk"]}   { set flabel "Nur Heizkurvenkontrolle" }
     if {[string equal $fopt "hkl"]}   { set flabel "Nur HK-Log (System)" }
     if {[string equal $fopt "nacht"]} { set flabel "Nur Nachtabschaltung" }
@@ -262,13 +271,12 @@ if {$count == 0} {
 } else {
     puts "  <p class=\"hk-log-info\">[htmlquote $source_label] &mdash; $count Eintr&auml;ge</p>"
     puts {  <div class="hk-table-scroll"><table class="hk-table hk-log-table hk-has-header">}
-    puts {    <colgroup><col class="col-log-ts"><col class="col-log-src"><col class="col-log-msg"></colgroup>}
     puts {    <tr><th>Zeitstempel</th><th>Quelle</th><th>Meldung</th></tr>}
     set pat_err "*ERROR*"
     set pat_hk1 "*HK1-Log*"
     set pat_hk2 "*HK2-Log*"
     set pat_hk3 "*HK3-Log*"
-    set pat_hkl "*HK-Log*"
+    set pat_hkl "HK-Log"
     foreach line $log_lines {
         set uline $line
         set parts [split $uline "\t"]

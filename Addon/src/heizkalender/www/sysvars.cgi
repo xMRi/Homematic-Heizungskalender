@@ -115,7 +115,6 @@ set doc_dev_vlz1    "${doc_dev}#hk1-vorlaufzeit"
 set doc_dev_vlz2    "${doc_dev}#hk2-schaltzeiten"
 set doc_dev_kurve   "${doc_dev}#hk2-kurve"
 set doc_dev_raeume_hkk "${doc_dev}#hk-raumeheizkurvenkontrolle"
-set doc_dev_kalibrierung "${doc_dev}#hk-kalibrierung"
 set doc_dev_sl2    "${doc_dev}#hk2-schaltliste"
 
 set doc_links [list \
@@ -138,6 +137,8 @@ set doc_links [list \
     HK1-Vorlaufzeit               $doc_dev_vlz1 \
     HK2-Log                       $doc_skripte_log \
     HK2-Logging                   $doc_skripte_log \
+    HK3-Log                       $doc_skripte_log \
+    HK3-Logging                   $doc_skripte_log \
     HK2-A.Temp.Grenze             $doc_skripte_s2 \
     HK2-Aussentemperatur          $doc_skripte_s2 \
     HK2-Grundtemperatur           $doc_skripte_s2 \
@@ -150,7 +151,6 @@ set doc_links [list \
     HK2-Schaltliste               $doc_dev_sl2 \
     HK2-Schaltzeiten              $doc_dev_vlz2 \
     HK2-HKK-Zieltemperatur        $doc_awh_kurve \
-    HK-Kalibrierung               $doc_dev_kalibrierung \
 ]
 
 proc lookup_doc_url {name doc_links_var} {
@@ -637,13 +637,15 @@ puts {<fieldset><legend>Kalender (HK1-*)</legend>}
 puts [render_table $vars_hk1]
 puts {</fieldset>}
 
-puts {<fieldset><legend>Berechnen (HK2-*)</legend>}
+puts {<fieldset><legend>Schaltzeiten (HK2-*)</legend>}
 puts [render_table $vars_hk2]
 puts {</fieldset>}
 
-puts {<fieldset><legend>Schalten (HK3-*)</legend>}
-puts [render_table $vars_hk3]
-puts {</fieldset>}
+if {[llength $vars_hk3] > 0} {
+    puts {<fieldset><legend>Schalten (HK3-*)</legend>}
+    puts [render_table $vars_hk3]
+    puts {</fieldset>}
+}
 
 puts "<fieldset><legend>R&auml;ume (HKG-Raum-*) <a href=\"${doc_dev}#hkg-raum-\" target=\"_blank\" class=\"hk-doc-link\" title=\"Dokumentation\">&#x24D8;</a></legend>"
 # HK2-Grundtemperatur aus den HK2-Variablen extrahieren

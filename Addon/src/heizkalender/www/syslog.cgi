@@ -116,7 +116,7 @@ if {$count == 0} {
 } else {
     puts "  <div class=\"hk-table-scroll\">"
     puts "    <table class=\"hk-table hk-log-table hk-has-header\">"
-    puts "      <colgroup><col class=\"col-log-ts\"><col class=\"col-log-src\"><col class=\"col-log-msg\"></colgroup>"
+    puts ""
     puts "      <tr><th>Zeitstempel</th><th>Quelle</th><th>Meldung</th></tr>"
     foreach line $tail_lines {
         set uline $line

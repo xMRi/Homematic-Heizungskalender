@@ -196,20 +196,42 @@ fieldset > .hk-table-scroll:last-child {
   background-color: #fffbe6 !important;
 }
 
+.hk-log-hk tr:nth-child(even) td,
+.hk-log-table .hk-log-hk:nth-child(even) td {
+  background-color: #fff5c0 !important;
+}
+
 .hk-log-error td {
   background-color: #fde8e8 !important;
+}
+
+.hk-log-error tr:nth-child(even) td,
+.hk-log-table .hk-log-error:nth-child(even) td {
+  background-color: #fbd0d0 !important;
 }
 
 .hk-log-hk1 td {
   background-color: #e8f4fd !important;
 }
 
+.hk-log-table .hk-log-hk1:nth-child(even) td {
+  background-color: #cce6f8 !important;
+}
+
 .hk-log-hk2 td {
   background-color: #e8fde8 !important;
 }
 
+.hk-log-table .hk-log-hk2:nth-child(even) td {
+  background-color: #ccf5cc !important;
+}
+
 .hk-log-hk3 td {
-  background-color: #fdf3e8 !important;
+  background-color: #fff0e0 !important;
+}
+
+.hk-log-table .hk-log-hk3:nth-child(even) td {
+  background-color: #ffe0c0 !important;
 }
 
 .hk-schaltliste-table,

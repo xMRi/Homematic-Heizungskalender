@@ -261,7 +261,7 @@ if {$count == 0} {
     }
 } else {
     puts "  <p class=\"hk-log-info\">[htmlquote $source_label] &mdash; $count Eintr&auml;ge</p>"
-    puts {  <div class="hk-table-scroll"><table class="hk-table hk-log-table">}
+    puts {  <div class="hk-table-scroll"><table class="hk-table hk-log-table hk-has-header">}
     puts {    <colgroup><col class="col-log-ts"><col class="col-log-src"><col class="col-log-msg"></colgroup>}
     puts {    <tr><th>Zeitstempel</th><th>Quelle</th><th>Meldung</th></tr>}
     set pat_err "*ERROR*"

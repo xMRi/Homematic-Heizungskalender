@@ -164,6 +164,14 @@ legend {
   color: #333;
 }
 
+fieldset > legend + * {
+  margin-top: 0;
+}
+
+fieldset > .hk-table-scroll:last-child {
+  margin-bottom: 0;
+}
+
 .hk-download-link {
   color: #0066cc;
   text-decoration: underline;

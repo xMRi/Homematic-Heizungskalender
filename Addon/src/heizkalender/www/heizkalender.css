@@ -262,12 +262,16 @@ fieldset > .hk-table-scroll:last-child {
   padding: 0.3em 0.8em;
 }
 
-.hk-sl-status-aktiv {
+.hk-sl-status-aktiv span {
   color: #cc0000;
+  font-size: 0.75em;
+  vertical-align: top;
 }
 
-.hk-sl-status-inaktiv {
+.hk-sl-status-inaktiv span {
   color: #888;
+  font-size: 0.75em;
+  vertical-align: middle;
 }
 
 /* Heizkurvenkontrolle-Seite */
@@ -362,4 +366,31 @@ body {
 
   /* Hint-Box: kleinere Schrift */
   .hk-hint { font-size: 0.88em; }
+}
+
+/* -----------------------------------------------------------------------
+   Termin-Spalte: mehrere Termine untereinander bündig ausrichten
+   ----------------------------------------------------------------------- */
+.hk-table td.col-sl-termin,
+.col-sl-termin details {
+  text-align: right;
+}
+.col-sl-termin details {
+  display: inline;
+}
+.col-sl-termin details > summary {
+  display: inline;
+  list-style: none;
+}
+.col-sl-termin details > div {
+  font-weight: normal;
+}
+.col-sl-termin details > summary::-webkit-details-marker {
+  display: none;
+}
+.col-sl-termin details > summary::before {
+  content: "▸ ";
+  font-size: 0.75em;
+  vertical-align: top;
+  font-weight: normal;
 }

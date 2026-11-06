@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    05.11.2026
+!// Stand:    06.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,8 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// MRi: 2026-11-06 Diverse Fixes Aufgrund einer statischen Code-Analyse
+!// MRi: 2026-11-06 Alter Schaltliste wird nicht korrekt übernommen
 !// MRi: 2026-11-03 Optimierungen Sonderschaltungen und Außentemperaturgrenze
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// MRi: 2026-11-02 Alte Changelogs entfernt
@@ -40,7 +42,7 @@
 string vrp="";
 
 !//Debug Ausgaben Ein und Aus schalten. 0 = Aus, 1 = Ein
-boolean DEBUG=1;
+boolean DEBUG=0;
 
 !// Logging in "Log" mit 1 zwingend einschalten oder mit -1 zwingend Ausschalten
 !// Mit 0 wird die Einstellunge aus der HKx-Logging übernommen
@@ -53,31 +55,6 @@ real SollIstTemperaturAnpassung = 0.95;
 !//Im Folgenden Hier keine Veränderungen vornehmen!
 
 !//-------------------------------------------------------------
-!// Schaltparameter Varablen
-
-!// IP- Thermostate-Aktoren-Gerätetyp (Kanal 1)
-!//   BWTH_V1, BWTH_V2, TRVB_V1, TRV-C_V1, TRV, TRV-V1, TRV-V2, TRV-V3, TRV-V4, C_V2, WTH-2_V1, WTH-2_V2, WTH2_V3, WTH-BV1, WTH_V1, WT-V1
-string AGFParamIP="SET_POINT_TEMPERATURE";
-
-!// RT- Kennung Kanal Klassik-Thermostate-Aktoren-Gerätetyp (Kanal 4)
-!//   HM-CC-RT-DN HM-CC-RT-DN
-string AGFParamRT="SET_TEMPERATURE";
-
-!// TC- Kennung Kanal Klassik-Thermostate-Aktoren-Gerätetyp (Kanal 2)
-!//   HM-CC-TC
-string AGFParamTC="SETPOINT";
-
-!// IT- Kennung Kanal Klassik-Thermostate-Aktoren-Gerätetyp (Kanal 2)
-!//   HM-TC-IT-WM-W-EU
-string AGFParamIT="SET_TEMPERATURE";
-
-!// SW- Kennung Kanal Klassik-Schalter-Aktoren-Gerätetyp (Kanal 1 bzw. 2)
-!//   HM-LC-Sw1-FM HM-LC-Sw1PBU-FM, HM-LC-Sw2-FM, HM-ES-PMSw1-DR HM-LC-Sw1-PCB
-!// Kennung Kanal IP-Schalter-Aktoren-Gerätetyp (Kanal 1)
-!//   SW  Noch unerprobt
-string AGFParamSW="STATE";
-
-!//-------------------------------------------------------------
 integer NOW=system.Date().ToTime().ToInteger();
 string  OffsetAT=dom.GetObject(vrp # "HK2-Kurve").State();
 integer GrundOffsetRaumAus=dom.GetObject(vrp # "HK2-VorzeitAus").State();
@@ -86,8 +63,6 @@ string TerminListe=dom.GetObject(vrp # "HK1-Schaltliste").State();
 string VarNamen=dom.GetObject(vrp # "HK2-HKG-Liste").State();
 string RIDI=dom.GetObject(vrp # "HK1-R-Liste").State();
 real ATG=dom.GetObject(vrp # "HK2-A.Temp.Grenze").State().ToFloat();
-boolean Flag_Hand_Temp=dom.GetObject(vrp # "HK2-Hand-Temp").State();
-boolean Flag_Hand_Grundtemp=dom.GetObject(vrp # "HK2-Hand-Grundtemp").State();
 real AT=dom.GetObject(vrp # "HK2-Aussentemperatur").State().ToFloat();
 real GTStandard=dom.GetObject(vrp # "HK2-Grundtemperatur").State().ToFloat();
 real GT=GTStandard;
@@ -95,9 +70,6 @@ string AktAktor;
 string AktorenListe;
 object objAktor;
 object objDP;
-string AGF;
-string AGFParam;
-string Param;
 string HK2VLZListe="";
 string SchaltListeAlt=dom.GetObject(vrp # "HK2-Schaltliste").State();
 string SchaltListeNeu="";
@@ -133,7 +105,7 @@ if (!logObj){
 string RIDINamen=VarNamen.Replace("HKG-Raum-","").Replace("HKG-","");
 
 if(log){logObj.State("Beginn Berechnung der Schaltzeiten==============");}
-WriteLine("Beginn Schaltskriptlauf");
+WriteLine("Beginn Berechnung der Schaltzeiten");
 if(TerminListe!=""){
   !// Log nur, wenn es auch was zu tun gibt
   !if(log) {logObj.State("Vollständige Raumliste: " # VarNamen);}
@@ -146,9 +118,6 @@ if(TerminListe!=""){
 !// alle Räume die wir Schalten. Um evtl. Räume zu finden, die noch die im Heizzustand sind
 !// aber eigentlich keinen Schaltlisten Eintrag mehr haben. (Passiert wenn ein AUS Zeitpunkt
 !// verpasst wird).
-
-!// In dieser Variable sammeln wir Räume, die wie einschalten
-string  RVNListeAn;
 
 !// Index um über die Schaltliste mit jeweils 5 Einträgen zu schleifen
 integer iPos = 0;
@@ -269,7 +238,7 @@ foreach(TLEintrag,TerminListe){
     !// wollen, bereits in unserer neuen Schalliste vorhanden ist, weil der Termin mit einem
     !// anderen Schallisten Eintrag bereits bearbeitet wurde.
     string SchaltListenIndex = RVN # ";" # EIN_Org # ";" # AUS_Org # ";" # SDFlag_Org # ";";
-    if(DEBUG) {WriteLine(RVN # " SchaltListenIndex=" # SchaltListenIndex);}
+    if(DEBUG) {WriteLine("SchaltListenIndex=" # SchaltListenIndex);}
     if (("#" # SchaltListeNeu).Contains("#" # SchaltListenIndex)) {
       continue;
     }
@@ -293,7 +262,13 @@ foreach(TLEintrag,TerminListe){
     integer SDFlag  = SDFlag_Org.ToInteger();
 
     if(DEBUG){WriteLine("RVN=" # RVN);}
-    string RVI=dom.GetObject(RVN).State();
+    object objRVN = dom.GetObject(RVN);
+    if (!objRVN){
+      if(log) {logObj.State("Raumvariable " # RVN # " wurde nicht gefunden!");}
+      if(DEBUG)  {WriteLine("Raumvariable " # RVN # " wurde nicht gefunden!");}
+      continue;
+    }    
+    string RVI=objRVN.State();
     if(DEBUG){WriteLine("RVI=" # RVI);}
 
     !//Aktoren und Raumtemp setzen, und bestimmen ob Heizen oder Schalten oder beides
@@ -304,13 +279,15 @@ foreach(TLEintrag,TerminListe){
     !// bereits in der Schalphase ist, wen dies so ist wird er unverndert übernommen
     integer iPos = ("#" # SchaltListeAlt).Find("#" # SchaltListenIndex);
     if (iPos>=0) {
+      if(DEBUG) {WriteLine("SchaltlistenIndex gefunden!")};
       string strAlterListenEintrag = SchaltListeAlt.Substr(iPos);
       integer iLen = strAlterListenEintrag.Find("#");
       if (iLen<0){
         iLen = strAlterListenEintrag.Length();
       }
       strAlterListenEintrag = strAlterListenEintrag.Substr(0,iLen);
-
+      if(DEBUG) {WriteLine("strAlterListenEintrag=" # strAlterListenEintrag);}
+      
       !// Alte berechnete Schaltzeiten bestimmen
       SDFlag  = strAlterListenEintrag.StrValueByIndex(";",3).ToTime().ToInteger();
       EIN     = strAlterListenEintrag.StrValueByIndex(";",4).ToTime().ToInteger();
@@ -365,30 +342,6 @@ foreach(TLEintrag,TerminListe){
     !// wir berechnen nun die Schaltzeiten neu.
     if(log){logObj.State(AktSRName # " Raumvariable: " # RVN # "=" # RVI);}
     
-    !// DUP: AktorenListe-Block (Referenz-Implementierung). Identisch bei Z.806, Z.932
-    !//      und in HK-Test-Skript.hsc. Aenderungen an allen Stellen nachziehen.
-    !// AktorenListe aufbauen. Das ist alles ab der siebte Eintrag der Raumliste. Das dient dazu
-    !// Die Liste für spätere Schaltvorgänge bereit zu halten. Der alte Code hat damit gerechnet
-    !// Das ein Aktorname eine Mindestlänge hatte.
-    iPos = 0;
-    iEntry = 1;
-    integer iMaxEntry=6;
-    if (HSFlag=="HS"){
-      !// Im Modus Heizen/Schalten ist der erste Aktor ein Thermostat, alle weitere Aktoren
-      !// sind Schaltaktoren. Mit dem Thermostat können wir nichts Schalten. Es dient nur als Datenquelle.
-      !// Deshalb überspringen wir das.
-      iMaxEntry = iMaxEntry+1;
-    }
-    AktorenListe = "";
-    while (iPos<RVI.Length()) {
-      if (iEntry>iMaxEntry){
-        AktorenListe = AktorenListe # RVI.Substr(iPos,1);
-      } elseif (RVI.Substr(iPos,1)==";"){
-        iEntry=iEntry+1;
-      }
-      iPos = iPos+1;
-    }
-
     !// Schaltverzögerung berechnen
     integer offsetRaumAn=0;
     integer offsetRaumAus=0;
@@ -431,14 +384,6 @@ foreach(TLEintrag,TerminListe){
       if((HSFlag=="H") || (HSFlag=="HS")){
         !// HEIZEN / HEIZEN+SCHALTEN
             
-        !// Parameter bestimmen für Temperatur
-        AGF=RVI.StrValueByIndex(";",2);
-        AGFParam = "AGFParam"#AGF.ToUpper();
-        Param = AGFParamIP;
-        if (system.IsVar(AGFParam)){
-          Param = system.GetVar(AGFParam);
-        }
-
         real ux=0.0;
         real uy=0.0;
         real lx=0.0;
@@ -659,4 +604,4 @@ if(objVLZ) {
 }
 
 if(log){logObj.State("Ende Berechnung der Schaltzeiten==============");}
-WriteLine("Ende Schaltskriptlauf");
+WriteLine("Ende Berechnung der Schaltzeiten");

@@ -21,6 +21,8 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// MRi: 2026-11-06 Diverse Fixes Aufgrund einer statischen Code-Analyse
+!// MRi: 2026-11-06 Nachtschaltung berücksichtigt Dauer-Ein/Aus falsch.
 !// MRi: 2026-11-03 Optimierungen Sonderschaltungen und Außentemperaturgrenze
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// MRi: 2026-11-02 Alte Changelogs entfernt
@@ -39,7 +41,7 @@
 string vrp="";
 
 !//Debug Ausgaben Ein und Aus schalten. 0 = Aus, 1 = Ein
-boolean DEBUG=1;
+boolean DEBUG=0;
 
 !// Logging in "Log" mit 1 zwingend einschalten oder mit -1 zwingend Ausschalten
 !// Mit 0 wird die Einstellunge aus der HKx-Logging übernommen
@@ -79,7 +81,6 @@ string SListe=dom.GetObject(vrp # "HK2-Schaltliste").State();
 string VarNamen=dom.GetObject(vrp # "HK2-HKG-Liste").State();
 boolean Flag_Hand_Temp=dom.GetObject(vrp # "HK2-Hand-Temp").State();
 boolean Flag_Hand_Grundtemp=dom.GetObject(vrp # "HK2-Hand-Grundtemp").State();
-real AT=dom.GetObject(vrp # "HK2-Aussentemperatur").State().ToFloat();
 real GTStandard=dom.GetObject(vrp # "HK2-Grundtemperatur").State().ToFloat();
 real GT=GTStandard;
 string AktAktor;
@@ -138,7 +139,11 @@ string SLEintrag;
 if(DEBUG){WriteLine("SListe=" # SListe);}
 foreach(SLEintrag,SListe.Split("#")){
   if(DEBUG){WriteLine("SLEintrag=" # SLEintrag);}
-
+  if (SLEintrag=="") 
+  {
+    continue; 
+  }
+  
   !// Listenelement auslesen
   !// Parameter für aktuellen Schaltvorgang. 
   string  RVN     = SLEintrag.StrValueByIndex(";",0);
@@ -152,7 +157,13 @@ foreach(SLEintrag,SListe.Split("#")){
   !// Anzeigename fürs Log. 
   string RaumLogName = RVNName;  
   if(DEBUG){WriteLine("RVN=" # RVN);}
-  string RVI=dom.GetObject(RVN).State();
+  object objRVN = dom.GetObject(RVN);
+  if (!objRVN){
+    if(log) {logObj.State("Raumvariable " # RVN # " wurde nicht gefunden!");}
+    if(DEBUG)  {WriteLine("Raumvariable " # RVN # " wurde nicht gefunden!");}
+    continue;
+  }
+  string RVI=objRVN.State();
   if(DEBUG){WriteLine("RVI=" # RVI);}
 
   if(log){logObj.State(RaumLogName # " Raumvariable: " # RVN # "=" # RVI);}
@@ -188,7 +199,7 @@ foreach(SLEintrag,SListe.Split("#")){
     Param="STATE";
   }
   
-  !// DUP: AktorenListe-Block (Referenz-Implementierung). Identisch bei Z.806, Z.932
+  !// DUP: AktorenListe-Block (Referenz-Implementierung). 
   !//      und in HK-Test-Skript.hsc. Aenderungen an allen Stellen nachziehen.
   !// AktorenListe aufbauen. Das ist alles ab der siebte Eintrag der Raumliste. Das dient dazu
   !// Die Liste für spätere Schaltvorgänge bereit zu halten. Der alte Code hat damit gerechnet
@@ -220,7 +231,7 @@ foreach(SLEintrag,SListe.Split("#")){
     }elseif(SDFlag==-2){
       strTemp1 = "Sonderfunktion \"EIN\": " # RTemp.ToString(1);
     }else{
-      strTemp1 = "Sonderfunktion \"RSESET\": " # GT.ToString(1);
+      strTemp1 = "Sonderfunktion \"RESET\": " # GT.ToString(1);
     }
   }else{
     string strTemp1 = "Schalten";
@@ -400,8 +411,6 @@ foreach(SLEintrag,SListe.Split("#")){
   !//Liegt der Einschaltzeitpunkt in der Vergangenheit UND Ausschaltzeitpunkt in der Zukunft Heizung einschalten WENN diese noch nicht eingeschaltet ist.
   if(SDFlag>=0){
     !// Sollte die Außentemperatur über unserem Schwellenwert liegen, Heizen wir nicht.
-    !// Nur die Heizmodi (H/HS) sind temperaturabhängig — Schalten (S) und Variable (V)
-    !// werden immer ausgeführt, unabhängig von der Außentemperatur.
     !// Und wir schalten nur ein wenn die Einschaltzeit mehr als 5min beträgt
     if(((EIN+300)<AUS) && (EIN<=NOW) && (AUS>NOW)){
       !// Da wir die Heizung einschalten, setzen wir den Raum in die Heizliste
@@ -496,7 +505,13 @@ if((Flag_Hand_Grundtemp!=false) && (NOW.ToTime().Format("%H%M")>="0057") && (NOW
     if(DEBUG) {WriteLine(RaumLogName # ": Nachtschaltung prüfen");}
 
     !// Raum Parameter bestimmen
-    RVI = dom.GetObject(RVN).State();
+    object objRVN = dom.GetObject(RVN);
+    if (!objRVN){
+      if(log) {logObj.State("Raumvariable " # RVN # " wurde nicht gefunden!");}
+      if(DEBUG)  {WriteLine("Raumvariable " # RVN # " wurde nicht gefunden!");}
+      continue;
+    }
+    string RVI=objRVN.State();
     HSFlag = RVI.StrValueByIndex(";",1);
     AGF = RVI.StrValueByIndex(";",2);
 
@@ -524,7 +539,8 @@ if((Flag_Hand_Grundtemp!=false) && (NOW.ToTime().Format("%H%M")>="0057") && (NOW
     if (aktuellerSchaltZustand!=1){
       !// Bestimme den passenden Zustand für 0=Aus, 2=Dauer AUS, 3=Dauer EIN
       integer sollZustand = 1;
-      if ((aktuellerSchaltZustand==0) || (aktuellerSchaltZustand==3)){
+      if ((aktuellerSchaltZustand==0) || (aktuellerSchaltZustand==2)){
+        !// Einstellungen für 0=Aus, 2=Dauer AUS      
         !// Grundtemperatur individuell bestimmen
         GT=RVI.StrValueByIndex(";",3).StrValueByIndex("/",1).ToFloat();
         if(GT==0){
@@ -532,6 +548,10 @@ if((Flag_Hand_Grundtemp!=false) && (NOW.ToTime().Format("%H%M")>="0057") && (NOW
         }
         RTemp = GT;
         sollZustand = 0;
+      }elseif(aktuellerSchaltZustand==3) {
+        !// Einstellungen für 3=Dauer EIN
+        RTemp=RVI.StrValueByIndex(";",3).StrValueByIndex("/",0).ToFloat();
+        sollZustand = 1;
       }
 
       !// DUP: AktorenListe-Block, siehe Referenz oben. Aenderungen dort mitziehen.
@@ -645,7 +665,13 @@ foreach(RVN,RVNListe.Split(";")) {
   !// name zur Verfuegung, daher nur der Raumname ohne Praefix.
   string RaumLogName = RVN.Replace(vrp#"HKG-Raum-","");
   !// Raum Parameter bestimmen
-  RVI = dom.GetObject(RVN).State();
+  object objRVN = dom.GetObject(RVN);
+  if (!objRVN){
+    if(log) {logObj.State("Raumvariable " # RVN # " wurde nicht gefunden!");}
+    if(DEBUG)  {WriteLine("Raumvariable " # RVN # " wurde nicht gefunden!");}
+    continue;
+  }
+  string RVI=objRVN.State();
   HSFlag = RVI.StrValueByIndex(";",1);
   AGF = RVI.StrValueByIndex(";",2);
 
@@ -711,7 +737,7 @@ foreach(RVN,RVNListe.Split(";")) {
         }
         if (objDP){
           if(HSFlag=="H"){
-            !// SCHALTEN
+            !// HEIZEN
             real istTemperatur = objDP.State();
             objDP.State(GT);
             if(log){logObj.State("Kein Schaltlisten Eintrag vorhanden für " # RVN # "- Ist: " # istTemperatur.ToString(1) # " Neu: " # GT.ToString(1) #" Parameter: " # Param);}

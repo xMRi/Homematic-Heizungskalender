@@ -19,7 +19,7 @@
 !// meiner Gemeinde anzupassen.
 !//
 
-!// Dieses Skript erstellt die nötigen Systemvariablen des Heizkalender für Skript 1 ChurchDesk
+!// Dieses Skript erstellt die nötigen Systemvariablen des Heizkalender für Skript 1 Churchtools
 !// Hinweis: Ein erneutes Ausführen dieses Programms ändert bestehende Variablen und ihren Inhalt nicht
 !// Tipp: Sie sollten unbedingt die Variablen organizationId und apiToken vorbelegen, weil dann
 !// automatisch alle benötigten Variablen automatisch erzeugt.

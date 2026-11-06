@@ -111,7 +111,7 @@ oSDST.DestinationValueType(20);
 oSDST.DestinationChannel(65535);
 oSDST.DestinationDP(65535);
 oSDST.DestinationValueParamType(28);
-oSDST.DestinationValueParam(@2026-01-07 00:00:20@);
+oSDST.DestinationValueParam(@2026-01-07 00:00:40@);
 oSDST.DestinationValue("%3%");
 oPRG.Active (true);
 dom.RTUpdate (0);

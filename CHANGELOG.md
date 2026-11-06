@@ -17,6 +17,15 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ### Geändert
 
+- Skript2: Anpassung der Kürzung der Vorheiztemperatur Aufgrund der erreichten Isttemperatur. Wir schaffen hier eine Näherung an eine logarithmische Sättigungskurve. Der Kurvenbauch kann angepasst werden.
+- Skript3: Nachtschaltung berücksichtigt Dauer-Ein/Aus falsch.
+- Skripte: Code Hardening
+- Skripte: Diverse Fixes Aufgrund einer statischen Code-Analyse
+
+## [2026-11-05]
+
+### Geändert
+
 - Skript3: Starke Optimierung der Sonderbefehle (nur noch ein Schaltblock).
 - Skript2+3: Außentemperaturgrenze wird nun in Skript2 behandelt und nicht mehr im Schaltteil.
 - Skript2+3: Logging verbessert und vereinfacht.

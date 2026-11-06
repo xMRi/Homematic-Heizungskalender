@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// MRi: 2026-11-06 Anpassung der Temperaturberechnung aus Ist- und Zieltemperatur
 !// MRi: 2026-11-06 Diverse Fixes Aufgrund einer statischen Code-Analyse
 !// MRi: 2026-11-06 Alter Schaltliste wird nicht korrekt übernommen
 !// MRi: 2026-11-03 Optimierungen Sonderschaltungen und Außentemperaturgrenze
@@ -48,8 +49,9 @@ boolean DEBUG=0;
 !// Mit 0 wird die Einstellunge aus der HKx-Logging übernommen
 integer log=0;
 
-!// Temperaturanpassung (1=100% Berücksichtigung Ist/Soll Temperatur Differenz 0.5=50%, 0=0%)
-real SollIstTemperaturAnpassung = 0.95;
+!// Kurvenanpassung an eine logarithmische Sättigungskurve. 
+!// Ersetzt die Kurve durch 2 Geraden, Wert<=1, bei 1==Gerade, 0.9==Gute Näherung, 0.8==Sicherheit (mehr Bauch in der Mitte)
+real Kurvenanpassung = 0.8;
 
 !//#######---Ende Variabler Bereich---#############################################################
 !//Im Folgenden Hier keine Veränderungen vornehmen!
@@ -493,13 +495,20 @@ foreach(TLEintrag,TerminListe){
           continue;
         }
 
-        !// Die SollIstTemperaturAnpassung begrenzt die Anrechnung weil diese bei einer Fussbodenheizung zu
-        !// stark begrenzt. Schutz vor Division durch 0.
+        !// Hier berechnen wir mit Hilfe von zwei Geraden eine Näherung an die logarithmische Sättigungskurve.
+        !// Ziel ist es die vorgegebene maximale Vorheizzeit von GT /Grundtemperatur) auf RTemp (Wohlfühltemperatur)
+        !// zu kürzen weil wir evtl. eine von GT abweichende ISTTemperatur haben.
+        !// Die Kurvenanpassung gibt an um wieviel der Bauch der Kurve von der Gerade entfernt sein soll (0.9 Ist
+        !// ca. 10%). D.h. genau zwischen GT und RTemp haben wir eine höhere Vorheiztemperatur als 50%.
         real faktor2 = 1.0;
         if ((RTemp-GT)!=0){
-          !// Minderungsfaktor für bereits erreichte Temperatur > GT, oder Vergrößerungsfaktor wenn
-          !// ISTTemperatur<GT
-          faktor2 = 1.0-(SollIstTemperaturAnpassung*((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
+          if (ISTTemperatur<((GT+(RTemp-GT)/2))) {
+            faktor2 = 1.0-(Kurvenanpassung*((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
+            if(DEBUG) {WriteLine("faktor2:" # faktor2);}
+          } else {
+            faktor2 = (2.0-Kurvenanpassung)*(1.0-((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
+            if(DEBUG) {WriteLine("faktor2:" # faktor2);}
+          }
         }
 
         if(DEBUG)  {WriteLine("Vor Korrektur: offsetRaumAn=" # offsetRaumAn.ToInteger() # " offsetTempAn=" # offsetTempAn.ToInteger());}

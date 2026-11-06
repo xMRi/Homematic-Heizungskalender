@@ -223,11 +223,8 @@ foreach fopt {alle hk1 hk2 hk3 hkk hkl nacht} {
     }
 }
 puts "        </select></label> &nbsp;"
-if {$has_file_param} {
-    puts "        <label><a href=\"hklogdownload.cgi?file=[htmlquote $file_param]\" class=\"hk-download-link\">Log-Datei:</a> <select name=\"file\">"
-} else {
-    puts "        <label>Log-Datei: <select name=\"file\">"
-}
+set dl_file [expr {$has_file_param ? $file_param : [lindex $log_files 0]}]
+puts "        <label><a id=\"hklog-dl\" href=\"hklogdownload.cgi?file=[htmlquote $dl_file]\" class=\"hk-download-link\">Log-Datei:</a> <select id=\"hklog-file\" name=\"file\">"
 foreach lf $log_files {
     if {[string equal $lf $file_param]} {
         puts "          <option value=\"[htmlquote $lf]\" selected>[htmlquote $lf]</option>"
@@ -239,6 +236,17 @@ puts "        </select></label> &nbsp;"
 puts "        <button type=\"submit\">Anzeigen</button>"
 puts {      </fieldset>}
 puts "    </form>"
+puts {  <script>
+    (function() {
+      var sel = document.getElementById("hklog-file");
+      var dl  = document.getElementById("hklog-dl");
+      if (sel && dl) {
+        sel.addEventListener("change", function() {
+          dl.href = "hklogdownload.cgi?file=" + encodeURIComponent(sel.value);
+        });
+      }
+    })();
+  </script>}
 puts {  </div>}
 
 if {[llength $log_files] == 0} {

@@ -361,7 +361,7 @@ proc lookup_isttemp {rname ist_temps_var} {
 
 # ---------------------------------------------------------------------------
 # HK2-Schaltzeiten parsen: RaumVarName -> Liste aller {VorlaufMin HeizenAb}-Einträge
-# Format: RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;NachlaufMin~...
+# Format: RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;VorlaufzeitAusMin~...
 # Pro Raum können mehrere Einträge vorkommen; lookup_vlz wählt den nächsten.
 # ---------------------------------------------------------------------------
 set vlz_raw [string trim $vlz_raw]

@@ -467,7 +467,7 @@ puts {</fieldset>}
 set deg "&deg;"
 puts {<fieldset><legend>R&auml;ume</legend>}
 puts {<div class="hk-table-scroll"><table class="hk-config-table-auto hk-nowrap hk-has-header">}
-puts "  <tr><th>Raum</th><th>Modus</th><th>Wohlf&uuml;hltemp.</th><th>Abw. Grundtemp.</th><th>Vorzeitiger Heizbeginn</th><th>Vorzeitiges Heizende</th><th>Faktor Heizkurve</th><th>Thermostat / Sensor</th><th>Schaltaktor</th><th>Ger&auml;tetyp</th></tr>"
+puts "  <tr><th>Raum</th><th>Modus</th><th>Wohlf&uuml;hltemp.</th><th>Abw. Grundtemp.</th><th>Vorzeitiger Heiz-/Schaltbeginn</th><th>Vorzeitiges Heiz-/Schaltende</th><th>Faktor Heizkurve</th><th>Thermostat / Sensor</th><th>Schaltaktor</th><th>Ger&auml;tetyp</th></tr>"
 foreach raum $raeume {
     set rname [string range [lindex $raum 0] 9 end]
     set felder [split [lindex $raum 1] ";"]

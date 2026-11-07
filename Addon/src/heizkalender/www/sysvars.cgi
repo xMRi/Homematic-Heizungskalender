@@ -365,7 +365,7 @@ proc render_vlzliste {val} {
     }
     if {[llength $clean] == 0} { return "<em>(leer)</em>" }
     set html "<table class=\"hk-table hk-table-inline\">\n"
-    append html "  <tr><th>Raum</th><th>Vorlauf (min)</th><th>Heizen ab</th><th>Termin ab</th><th>Termin bis</th><th>Nachlauf (min)</th></tr>\n"
+    append html "  <tr><th>Raum</th><th>Vorlauf (min)</th><th>Heizen ab</th><th>Termin ab</th><th>Termin bis</th><th>Vorlaufzeit Aus (min)</th></tr>\n"
     foreach entry $clean {
         set fields [split $entry ";"]
         set rvar   [lindex $fields 0]
@@ -466,7 +466,7 @@ proc render_hk_raeume_hkk {val} {
     if {[llength $clean] == 0} { return "<em>(leer)</em>" }
     set tooltip "Bit 0=Heizung an, Bit 1=Zieltemperatur erreicht, Bit 2=Heizung aus, Bit 3=kein Sensor (geloggt)"
     set html "<table class=\"hk-table hk-table-inline\">\n"
-    append html "  <tr><th>Raumvariable</th><th title=\"[htmlquote $tooltip]\">Status &#x24D8;</th><th>Ist-Temperatur (&deg;C)</th></tr>\n"
+    append html "  <tr><th>Raumvariable</th><th>Status</th><th>Ist-Temperatur (&deg;C)</th></tr>\n"
     foreach entry $clean {
         set parts [split $entry ";"]
         set rvar  [lindex $parts 0]

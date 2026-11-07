@@ -337,7 +337,7 @@ Wird von HK-Skript 2 am Ende jedes Skriptlaufs geschrieben (sofern die Variable 
 Einträge sind durch `~` getrennt, Felder innerhalb eines Eintrags durch `;`:
 
 ```txt
-RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;NachlaufMin~...
+RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;VorlaufzeitAusMin~...
 ```
 
 | Feld | Typ | Bedeutung |
@@ -347,7 +347,7 @@ RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;NachlaufMin~...
 | HeizenAb | Zeitstempel | Berechneter Einschaltzeitpunkt (`YYYY-MM-DD HH:MM:SS`) |
 | TerminAb | Zeitstempel | Terminbeginn (ohne Vorlaufverschiebung) |
 | TerminBis | Zeitstempel | Terminende |
-| NachlaufMin | Integer | Nachlaufzeit in Minuten (derzeit immer 0) |
+| VorlaufzeitAusMin | Integer | Vorlaufzeit Aus in Minuten (vorzeitiges Heizende; 0 wenn nicht konfiguriert) |
 
 Bei Multi-Raum-Zuordnungen (mehrere Räume je Ressource) enthält die Variable einen eigenen Eintrag pro Raum mit der jeweils individuell berechneten Vorheizzeit.
 

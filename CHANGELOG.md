@@ -15,6 +15,13 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [2026-11-06]
 
+### Geändert 
+
+- HeizkalenderInstallation: Maximum und Minimum für Vor- und Nachlauf auf 16h erweitert.
+- HeizkalenderInstallation: Version 5.0.3
+
+## [2026-11-06]
+
 ### Geändert
 
 - Skript2: Anpassung der Kürzung der Vorheiztemperatur Aufgrund der erreichten Isttemperatur. Wir schaffen hier eine Näherung an eine logarithmische Sättigungskurve. Der Kurvenbauch kann angepasst werden.

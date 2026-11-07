@@ -366,7 +366,7 @@ proc lookup_isttemp {rname ist_temps_var} {
 # ---------------------------------------------------------------------------
 set vlz_raw [string trim $vlz_raw]
 if {[string equal $vlz_raw "???"] || [string equal $vlz_raw ""]} { set vlz_raw "" }
-set has_vlz [expr {$vlz_present && ![string equal $vlz_raw ""]}]
+set has_vlz $vlz_present
 array set vlz_by_room_arr {}
 foreach entry [split $vlz_raw "~"] {
     set entry [string trim $entry]

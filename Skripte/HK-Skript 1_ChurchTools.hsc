@@ -1,6 +1,6 @@
 !// Skript 1 um die Termine aus ChurchTools auszulesen (API)
 !//================================================================================================
-!// Stand:    04.11.2026
+!// Stand:    07.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -22,6 +22,8 @@
 !// Skript sollte alle 30min laufen
 !//
 
+!// MRi: 2026-11-07 Schaltliste bis 30 Minuten nach dem spätesten raumbezogenen Ausschaltzeitpunkt halten.
+!// MRi: 2026-11-07 Alte Changelogs entfernt
 !// MRi: 2026-10-19 Neuen Modus "V" für das setzen einer Variable eingebaut
 !// TT:  2026-10-18 HK1-Vorlaufzeit: zeitVorlauf aus optionaler Systemvariable lesen (Default 12h)
 !// TT:  2026-10-01 DIVERGENZ-Hinweis entfernt: alle Skript-1-Varianten nutzen jetzt 12h Vorlauf.
@@ -38,18 +40,6 @@
 !// MRI: 2026-02-05 Leere Raumzuordnung berücksichtigen
 !// MRi: 2026-01-13 HK1-R-Liste erhält nun auch den Namen der Resource getrennt mit Gleichheitszeichen
 !// MRi: 2026-01-01 Skript gegen fehlende Raumvariablen gesichert
-!// MRi: 2025-12-10 Neue Sonderbefehle #GT# #NH# #NS#
-!// MRi: 2025-12-08 Altes Skript komplett überarbeitet
-!// MRi: 2025-11-29 Alte Schaltliste wird nicht mehr übernommen um Schalttermine abbrechen zu können.
-!// MRi: 2025-11-26 HK1-R-ListeNamen fest eingebaut für verbessertes Logging
-!// MRi: 2025-11-24	Anpassung Doku. Doppelte Schaltlisteneinträge
-!// MRi: 2025-11-16	Fehlerbehandlung eingebaut
-!// MRi: 2025-11-14	MultiRaumVariante, damit lassen sich mehrere Räume einer Ressource zuordnen.
-!//					        korrektur nochmal für doppelte Schaltlisteneinträge
-!// MRi: 2025-11-12	Optimierung um doppelte Zeiteinträge in der Schaltliste zu verhindern
-!// MRi: 2025-11-11	Logging über System Variablen HK1-Log (Text) und HK1-Logging (boolean) eingebaut.
-!// 				        Damit das Logging korrekt arbeitet müssen beide Variablen vorhanden sein. Beide sollten
-!//					        protokolliert werden. Alle Einträge finden sich dann im System Protokoll.
 
 !//Eingabe eines Namens Präfix
 !//Dies ist nur erforderlich wenn die Namensvorgabe beim erstellen den Systemvariablen geändert wurde.
@@ -68,7 +58,6 @@ object objVorlaufzeit = dom.GetObject(vrp#"HK1-Vorlaufzeit");
 if(objVorlaufzeit) {
   zeitVorlauf = objVorlaufzeit.State().ToInteger();
 }
-integer zeitNachlauf=30;		!// 30 Minuten
 
 !// Logging in "Log" mit 1 zwingend einschalten oder mit -1 zwingend Ausschalten
 !// Mit 0 wird die Einstellunge aus der HKx-Logging übernommen
@@ -126,6 +115,27 @@ string gemeindeName = dom.GetObject(vrp # "HK1-CT-Gemeindename").State();
 !// Filter für Resourcen setzen
 string RIdListe=dom.GetObject(vrp#"HK1-R-Liste").State();
 string HKGListe=dom.GetObject(vrp#"HK2-HKG-Liste").State();
+string RaumVar;
+object objVar;
+
+!// Die Raumvariable enthält die individuelle Ausschaltverschiebung in Feld 5.
+!// Ein negativer Wert verschiebt das Ausschalten nach hinten. Die Schaltliste muss
+!// daher bis 30 Minuten nach der spätesten individuellen Ausschaltzeit erhalten bleiben.
+integer minRaumNachlauf=0;
+integer raumNachlauf;
+foreach(RaumVar, HKGListe.Replace("+",";").Split(";")){
+  if(RaumVar!=""){
+    objVar=dom.GetObject(RaumVar);
+    if(objVar){
+      raumNachlauf=objVar.State().StrValueByIndex(";",5).ToInteger();
+      if(raumNachlauf<minRaumNachlauf){
+        minRaumNachlauf=raumNachlauf;
+      }
+    }
+  }
+}
+integer zeitNachlauf=30-minRaumNachlauf;
+if(DEBUG){WriteLine("Schaltliste-Nachlauf: " # zeitNachlauf # " Minuten");}
 
 !// Suche alle Ids der Ressourcen. Achtung es kann ein mit = abgetrennter Name vorhanden sein.
 string filter="";

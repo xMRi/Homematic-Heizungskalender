@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    06.11.2026
+!// Stand:    07.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// MRi: 2026-11-07 Lösung falls keine aktuelle Raumtemperatur ermittelt werden kann.
 !// TT:  2026-11-06 SDFlag-Parsing in Freeze-Wiederherstellung: ToTime() entfernt (war falsch fuer Integer-Werte)
 !// MRi: 2026-11-06 Anpassung der Temperaturberechnung aus Ist- und Zieltemperatur
 !// MRi: 2026-11-06 Diverse Fixes Aufgrund einer statischen Code-Analyse
@@ -280,10 +281,11 @@ foreach(TLEintrag,TerminListe){
     !// Nun suchen wir in der alten Schaliste den gleichen Termin.
     !// Dieser Termin ist in der Schalliste. Wir müssen nun kontrollieren ob dieser Eintrag
     !// bereits in der Schalphase ist, wen dies so ist wird er unverndert übernommen
+    string strAlterListenEintrag="";
     integer iPos = ("#" # SchaltListeAlt).Find("#" # SchaltListenIndex);
     if (iPos>=0) {
       if(DEBUG) {WriteLine("SchaltlistenIndex gefunden!")};
-      string strAlterListenEintrag = SchaltListeAlt.Substr(iPos);
+      strAlterListenEintrag = SchaltListeAlt.Substr(iPos);
       integer iLen = strAlterListenEintrag.Find("#");
       if (iLen<0){
         iLen = strAlterListenEintrag.Length();
@@ -333,7 +335,8 @@ foreach(TLEintrag,TerminListe){
       }
 
       !// Wenn wir hierher kommen, dann ist der Eintrag noch nicht in der Heizphase. In dem
-      !// Fall berechnen wir die Daten des Schalteintrages wieder neu.
+      !// Fall berechnen wir die Daten des Schalteintrages wieder neu. Der alte Schaltlisteeintrag
+      !// strAlterListenEintrag wird evtl. benutzt um einen Thermostatausfall auszugleichen.
     }
 
     !// Originaldaten noch mal laden
@@ -471,6 +474,29 @@ foreach(TLEintrag,TerminListe){
           if(DEBUG) {WriteLine(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " existiert nicht!");}
         }
 
+        !// Wenn wir keine IstTemperatur gemeldet bekommen (also 0°C), dann übernehmen wir einfach den alten Schaltlisten 
+        !// Eintrag. Eine Berechnung mit 0°C würde eine utopische Vorheizzeit auslösen. 
+        if (ISTTemperatur==0){
+          !// Log schreiben, das wir keine Temperaturdaten haben
+          if(log){logObj.State(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " liefert aktuell keine Daten!");}
+          if(DEBUG) {WriteLine(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " liefert aktuell keine Daten!");}
+          
+          !// Wir suchen den vorherigen Schaltlisten Eintrag. 
+          if (strAlterListenEintrag!=""){
+            !// Wir haben ja alles schon berechnet. Es wird sich kaum etwas geändert haben, also behalten wir vorerst diese 
+            !// alten Daten.
+            SchaltListeNeu = SchaltListeNeu # strAlterListenEintrag # "#";
+            if(log){logObj.State(RaumLogName # ": Alter Schaltlisteneintrag wird übernommen, es erfolgt vorerst keine Neuberechnung!");}
+            if(DEBUG) {WriteLine(RaumLogName # ": Alter Schaltlisteneintrag wird übernommen, es erfolgt vorerst keine Neuberechnung!");}
+          }else{
+            !// Wir haben scheinbar noch nie Berechnung durchgeführt. In diesem Fall hoffen wir, dass der nächste Zyklus
+            !// Erfolg hat. SOnst wird die Heizungnie eingeschaltet!!!
+            if(log){logObj.State(RaumLogName # ": Neuberechnung verschoben auf den nächsten Berechnungszyklus!");}
+            if(DEBUG) {WriteLine(RaumLogName # ": Neuberechnung verschoben auf den nächsten Berechnungszyklus!");}
+          }
+          continue;
+        }
+        
         !// Luftfeuchte optional auslesen (nur wenn Datenpunkt vorhanden und Wert > 0).
         !// Wert 0 bedeutet: kein Sensor vorhanden (z.B. IP-Thermostat ohne Feuchtigkeitssensor).
         string HUMText = "";

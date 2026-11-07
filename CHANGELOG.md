@@ -13,12 +13,16 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
-## [2026-11-06]
+## [2026-11-07]
 
 ### Geändert 
 
 - HeizkalenderInstallation: Maximum und Minimum für Vor- und Nachlauf auf 16h erweitert.
 - HeizkalenderInstallation: Version 5.0.3
+- Systemprotokoll sichern: Verwendung von Single Quotes um eine Ersetzung durch die Shell zu vermeiden.
+- Skript1: Alle Nachlaufzeiten werden nun automatisch berechnet berechnet und das Einlesen (verleiben der Termine) werden automatisch berücksichtigt.
+- Skript2: Fallback auf den vorherigen Berechnungswert oder warten auf korrekte Neuberechnung, wenn keine Isttemperatur ermittelt werden kann.
+
 
 ## [2026-11-06]
 

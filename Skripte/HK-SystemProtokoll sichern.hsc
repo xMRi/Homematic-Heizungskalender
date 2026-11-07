@@ -58,7 +58,7 @@ if (!stdout) {
 }
 
 !// Cleanup. Lösche so viele Dateien, biss nur noch die entsprechende Anzahl übrig sind.
-cmd = "ls -w 1 -r \"" # pfad # prefix #"\"*.log";
+cmd = "ls -w 1 -r '" # pfad # prefix #"'*.log";
 !if(DEBUG){WriteLine(cmd);}
 system.Exec(cmd,&stdout,&stderr);
 !if(DEBUG){WriteLine(stdout);}
@@ -68,7 +68,7 @@ integer cnt=0;
 foreach(dateiname,stdout.Trim().Split("\n")) {
   if (cnt>=AnzahlDateien){
     if(DEBUG){WriteLine("Löschen=" # dateiname);}
-    cmd = "rm \"" # dateiname #"\" &";
+    cmd = "rm '" # dateiname #"' &";
     !if(DEBUG){WriteLine(cmd);}
     system.Exec(cmd);
   }
@@ -84,7 +84,7 @@ if (cnt==0){
 integer rCount;
 integer start=0;
 !// Suche die letzte Datei, die wir haben
-cmd = "ls -w 1 \"" # pfad # prefix #"\"*.log | tail -n 1";
+cmd = "ls -w 1 '" # pfad # prefix #"'*.log | tail -n 1";
 !if(DEBUG){WriteLine(cmd);}
 stdout = "";
 system.Exec(cmd,&stdout,&stderr);
@@ -188,7 +188,7 @@ while (true){
           !// Zeilenschaltung entfernen, denn den haben wir schon
           if(DEBUG){WriteLine("Dateiname="#dateiname);}
           if(DEBUG){WriteLine("Daten schreiben 1: " # dateiname # " Bytes: " # zuSchreiben.Length());}
-          cmd = "echo -n \"" # zuSchreiben # "\" >> '" # dateiname # "' &";
+          cmd = "echo -n '" # zuSchreiben # "' >> '" # dateiname # "' &";
           if (!DEBUG){
             system.Exec(cmd);
           }
@@ -421,7 +421,7 @@ while (true){
       if (zuSchreiben.Length()>10000){
         !// Zeilenschaltung entfernen, denn den haben wir schon
         if(DEBUG){WriteLine("Daten schreiben 2: " # dateiname # " Bytes: " # zuSchreiben.Length());}
-        string cmd = "echo -n \"" # zuSchreiben # "\" >> '" # dateiname # "' &";
+        string cmd = "echo -n '" # zuSchreiben # "' >> '" # dateiname # "' &";
         if (!DEBUG){
           system.Exec(cmd);
         }
@@ -449,7 +449,7 @@ while (true){
 if (zuSchreiben.Length()>0){
   !// Zeilenschaltung entfernen, denn den haben wir schon
   if(DEBUG){WriteLine("Daten schreiben 3: " # dateiname # " Bytes: " # zuSchreiben.Length());}
-  string cmd = "echo -n \"" # zuSchreiben # "\" >> '" # dateiname # "' &";
+  string cmd = "echo -n '" # zuSchreiben # "' >> '" # dateiname # "' &";
   if (!DEBUG){
     system.Exec(cmd);
   }

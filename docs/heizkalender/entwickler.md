@@ -181,7 +181,7 @@ Status;Modus;Heiztyp;Wohlfühltemp[/Grundtemp];Vorheizzeit[*Faktor];VorzeitAus[;
 | Modus | 1 | String | `H` = Heizen, `S` = Schalten, `HS` = Heizen + Schalten, `V` = Variable setzen |
 | Heiztyp | 2 | String | `IP`, `RT`, `TC`, `IT` (Thermostate), `SW` (Schalt-Aktor) |
 | Wohlfühltemp | 3 | Float | Zieltemperatur in °C; optional `/Grundtemp` für raumindividuelle Grundtemperatur |
-| Vorheizzeit | 4 | Integer | Individuelle Vorheizzeit in Minuten; optional `*Faktor` (Float, 0,20–5,0) |
+| Vorheizzeit | 4 | Integer | Individuelle Vorheizzeit in Minuten; optional `*faktor1HK2Kurve` (Float, 0,20–5,0): raumspezifischer Multiplikator auf die HK2-Kurve |
 | VorzeitAus | 5 | Integer | Minuten vor Terminende, nach denen abgeschaltet wird |
 | Thermostat | 6 | String | Nur bei Modus `HS`: CCU-Kanaladresse des Thermostats, der als Temperatursensor dient |
 | Schaltaktor(en) | 7+ | String | Nur bei Modus `HS`: CCU-Kanaladdresse(n) der Schaltaktoren; mehrere Aktoren werden durch weitere `;`-Felder angehängt |
@@ -215,7 +215,7 @@ Steuert einen Thermostat (z.B. HmIP-eTRV) über dessen Solltemperatur.
 | :--- | :--- |
 | Aktor-Typ | Thermostat (Feld 7); Ansteuerung über `DPByHssDP` mit Thermostat-Parameter (`SET_POINT_TEMPERATURE`, `SET_TEMPERATURE` etc. je nach Heiztyp) |
 | Sensor (Feld 6) | Optional; CCU-Gerätekanal für IST-Temperatur und Luftfeuchte |
-| Vorheizzeit | Vollständig wirksam: Offset + Faktor × HK2-Kurve(AT), skaliert mit faktor2 (IST-Temperatur-Korrektur) |
+| Vorheizzeit | Vollständig wirksam: Offset + Faktor × HK2-Kurve(AT), skaliert mit faktor2HeizBedarf (IST-Temperatur-Korrektur) |
 | AT-Schwelle | Heizvorgang wird unterdrückt wenn Außentemperatur ≥ `HK2-A.Temp.Grenze` |
 | Einschalten | Setzt Solltemperatur (Wohlfühltemp) am Thermostat |
 | Ausschalten | Setzt Grundtemperatur am Thermostat |
@@ -231,7 +231,7 @@ separatem Stellantrieb.
 | :--- | :--- |
 | Aktor-Typ | Thermostat an Feld 6 (nur als Sensor), Schaltaktor(en) ab Feld 7; Ansteuerung über `DPByHssDP("STATE")` |
 | Sensor (Feld 6) | CCU-Gerätekanal des Thermostats — wird für IST-Temperatur gelesen |
-| Vorheizzeit | Wie `H`: Offset + Faktor × HK2-Kurve(AT), skaliert mit faktor2 |
+| Vorheizzeit | Wie `H`: Offset + Faktor × HK2-Kurve(AT), skaliert mit faktor2HeizBedarf (IST-Temperatur-Korrektur) |
 | AT-Schwelle | Wie `H`: Heizvorgang wird unterdrückt wenn AT ≥ Grenze |
 | Einschalten | Setzt Solltemperatur am Thermostat (Feld 6) **und** schaltet Aktoren ein (Feld 7+) |
 | Ausschalten | Setzt Grundtemperatur am Thermostat **und** schaltet Aktoren aus |
@@ -246,7 +246,7 @@ Temperatursteuerung.
 | :--- | :--- |
 | Aktor-Typ | Schaltaktor (Feld 7); Ansteuerung über `DPByHssDP("STATE")` |
 | Sensor (Feld 6) | Nicht verwendet (leer lassen) |
-| Vorheizzeit | Nur der feste Offset (Feld 4) wird verwendet; kein Faktor, kein faktor2, keine HK2-Kurve |
+| Vorheizzeit | Nur der feste Offset (Feld 4) wird verwendet; kein faktor1HK2Kurve, kein faktor2HeizBedarf, keine HK2-Kurve |
 | AT-Schwelle | **Keine** — Schaltvorgang wird immer ausgeführt, unabhängig von der Außentemperatur |
 | Einschalten | `State(1)` auf dem Schaltaktor |
 | Ausschalten | `State(0)` auf dem Schaltaktor |
@@ -262,7 +262,7 @@ Systemvariablen reagieren (z.B. Lüftung, Beschattung, Benachrichtigungen).
 | :--- | :--- |
 | Aktor-Typ | CCU-Systemvariable (Feld 7); **kein** `DPByHssDP` — das Variablen-Objekt wird direkt über `State()` gesetzt |
 | Sensor (Feld 6) | Nicht verwendet; darf einen Variablennamen enthalten, wird aber von der Sensorik **nicht** über `DPByHssDP` gelesen |
-| Vorheizzeit | Nur der feste Offset (Feld 4); kein Faktor, kein faktor2, keine HK2-Kurve |
+| Vorheizzeit | Nur der feste Offset (Feld 4); kein faktor1HK2Kurve, kein faktor2HeizBedarf, keine HK2-Kurve |
 | AT-Schwelle | **Keine** — Variable wird immer gesetzt, unabhängig von der Außentemperatur |
 | Einschalten | `State(1)` auf der Systemvariable |
 | Ausschalten | `State(0)` auf der Systemvariable |

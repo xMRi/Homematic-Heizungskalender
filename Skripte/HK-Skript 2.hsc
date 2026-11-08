@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    07.11.2026
+!// Stand:    08.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-11-08 faktor1/faktor2 umbenannt in faktor1HK2Kurve/faktor2HeizBedarf für bessere Lesbarkeit
 !// MRi: 2026-11-07 Lösung falls keine aktuelle Raumtemperatur ermittelt werden kann.
 !// TT:  2026-11-06 SDFlag-Parsing in Freeze-Wiederherstellung: ToTime() entfernt (war falsch fuer Integer-Werte)
 !// MRi: 2026-11-06 Anpassung der Temperaturberechnung aus Ist- und Zieltemperatur
@@ -438,13 +439,12 @@ foreach(TLEintrag,TerminListe){
           offsetTempAn = 0;
         }
 
-        !// Bestimme den Verschiebungsfaktor zur Temperaturverschiebung. maximal 500%
-        !// minimal 20%. Andere Werte setzen den Faktor auf
-        real faktor1 = RVI.StrValueByIndex(";",4).StrValueByIndex("*",1).ToFloat();
-        if (faktor1==0){
-          faktor1 = 1.0;
+        !// faktor1HK2Kurve: Raumspezifischer Multiplikator auf die HK2-Kurve (aus Feld 4 der Raumvariable, Default 1.0, Bereich 0.20-5.0)
+        real faktor1HK2Kurve = RVI.StrValueByIndex(";",4).StrValueByIndex("*",1).ToFloat();
+        if (faktor1HK2Kurve==0){
+          faktor1HK2Kurve = 1.0;
         }
-        faktor1 = faktor1.Max(0.20).Min(5.0);
+        faktor1HK2Kurve = faktor1HK2Kurve.Max(0.20).Min(5.0);
 
         !// Bestimme nun einen weiteren Faktor aus der ISTTemperatur und der Solltemperatur RTemp
         !// und der Grundtemperatur für den Raum (in diesem Fall wird nur die Temperatur, des ersten
@@ -527,22 +527,24 @@ foreach(TLEintrag,TerminListe){
         !// zu kürzen weil wir evtl. eine von GT abweichende ISTTemperatur haben.
         !// Die Kurvenanpassung gibt an um wieviel der Bauch der Kurve von der Gerade entfernt sein soll (0.9 Ist
         !// ca. 10%). D.h. genau zwischen GT und RTemp haben wir eine höhere Vorheiztemperatur als 50%.
-        real faktor2 = 1.0;
+        !// faktor2HeizBedarf: Dämpfungsfaktor nach Zwei-Geraden-Modell; reduziert die gesamte VLZ proportional zum verbleibenden Heizbedarf.
+        !// Kurvenanpassung steuert die Krümmung. Bei IST=GT: 1.0 (volle VLZ), bei IST=Ziel: 0.0 (keine VLZ)
+        real faktor2HeizBedarf = 1.0;
         if ((RTemp-GT)!=0){
           if (ISTTemperatur<((GT+(RTemp-GT)/2))) {
-            faktor2 = 1.0-(Kurvenanpassung*((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
-            if(DEBUG) {WriteLine("faktor2:" # faktor2);}
+            faktor2HeizBedarf = 1.0-(Kurvenanpassung*((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
+            if(DEBUG) {WriteLine("faktor2HeizBedarf:" # faktor2HeizBedarf);}
           } else {
-            faktor2 = (2.0-Kurvenanpassung)*(1.0-((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
-            if(DEBUG) {WriteLine("faktor2:" # faktor2);}
+            faktor2HeizBedarf = (2.0-Kurvenanpassung)*(1.0-((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
+            if(DEBUG) {WriteLine("faktor2HeizBedarf:" # faktor2HeizBedarf);}
           }
         }
 
         if(DEBUG)  {WriteLine("Vor Korrektur: offsetRaumAn=" # offsetRaumAn.ToInteger() # " offsetTempAn=" # offsetTempAn.ToInteger());}
-        offsetRaumAn = (offsetRaumAn.ToFloat()*faktor2).ToInteger();
-        offsetTempAn = (0.0-(faktor1*faktor2*offsetTempAn).ToInteger()*60).ToInteger();
-        if(DEBUG)  {WriteLine("Korrektur: faktor1=" # faktor1.ToString(2) # " faktor2=" # faktor2.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "/" # RTemp.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
-        !//if(log) {logObj.State("faktor2=" # faktor2.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
+        offsetRaumAn = (offsetRaumAn.ToFloat()*faktor2HeizBedarf).ToInteger();
+        offsetTempAn = (0.0-(faktor1HK2Kurve*faktor2HeizBedarf*offsetTempAn).ToInteger()*60).ToInteger();
+        if(DEBUG)  {WriteLine("Korrektur: faktor1HK2Kurve=" # faktor1HK2Kurve.ToString(2) # " faktor2HeizBedarf=" # faktor2HeizBedarf.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "/" # RTemp.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
+        !//if(log) {logObj.State("faktor2HeizBedarf=" # faktor2HeizBedarf.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
 
         !// Reale Schaltzeiten berechnen
         string logText = RaumLogName # " - Heizen - AT " # AT.ToString(1) # "°C / GT " # GT.ToString(1) # "°C / IST " # ISTTemperatur.ToString(1) # "°C / ZIEL " # RTemp.ToString(1) # "°C" # HUMText # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " ";

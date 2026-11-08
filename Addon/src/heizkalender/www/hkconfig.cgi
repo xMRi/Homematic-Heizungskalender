@@ -467,7 +467,7 @@ puts {</fieldset>}
 set deg "&deg;"
 puts {<fieldset><legend>R&auml;ume</legend>}
 puts {<div class="hk-table-scroll"><table class="hk-config-table-auto hk-nowrap hk-has-header">}
-puts "  <tr><th>Raum</th><th>Modus</th><th>Wohlf&uuml;hltemp.</th><th>Abw. Grundtemp.</th><th>Vorzeitiger Heiz-/Schaltbeginn</th><th>Vorzeitiges Heiz-/Schaltende</th><th>Faktor Heizkurve</th><th>Thermostat / Sensor</th><th>Schaltaktor</th><th>Ger&auml;tetyp</th></tr>"
+puts "  <tr><th>Raum</th><th>Modus</th><th>Wohlf&uuml;hltemp.</th><th>Abw. Grundtemp.</th><th>Vorzeitiger Heiz-/Schaltbeginn</th><th>Vorzeitiges Heiz-/Schaltende</th><th>Faktor Heizkurve</th><th>Mindest-Vorlauf (min)</th><th>Thermostat / Sensor</th><th>Schaltaktor</th><th>Ger&auml;tetyp</th></tr>"
 foreach raum $raeume {
     set rname [string range [lindex $raum 0] 9 end]
     set felder [split [lindex $raum 1] ";"]
@@ -487,14 +487,22 @@ foreach raum $raeume {
         set gtemp  ""
     }
     set gtemp_str [expr {[string equal $gtemp ""] ? "&ndash;" : "[format_num $gtemp]&nbsp;${deg}C"}]
+    set mindest ""
     set stern [string first "*" $vorlauf]
     if {$stern >= 0} {
-        set faktor  [string range $vorlauf [expr {$stern+1}] end]
-        set vorlauf [string range $vorlauf 0 [expr {$stern-1}]]
+        set vparts [split $vorlauf "*"]
+        set faktor  [lindex $vparts 1]
+        set mindest [lindex $vparts 2]
+        set vorlauf [lindex $vparts 0]
     } else {
         set faktor "1.0"
     }
-    puts "  <tr><td>[htmlquote $rname]</td><td>[format_modus $modus]</td><td>[format_num $wtemp]&nbsp;${deg}C</td><td>$gtemp_str</td><td>[format_num $vorlauf 0]&nbsp;min</td><td>[format_num $vorzaus 0]&nbsp;min</td><td>[format_num $faktor]</td><td>[htmlquote $thermostat]</td><td>[htmlquote $schaltaktor]</td><td>[format_heiztyp $heiztyp]</td></tr>"
+    if {[string equal $mindest ""]} {
+        set mindest_str "<i>15</i>&nbsp;min"
+    } else {
+        set mindest_str "[format_num $mindest 0]&nbsp;min"
+    }
+    puts "  <tr><td>[htmlquote $rname]</td><td>[format_modus $modus]</td><td>[format_num $wtemp]&nbsp;${deg}C</td><td>$gtemp_str</td><td>[format_num $vorlauf 0]&nbsp;min</td><td>[format_num $vorzaus 0]&nbsp;min</td><td>[format_num $faktor]</td><td>$mindest_str</td><td>[htmlquote $thermostat]</td><td>[htmlquote $schaltaktor]</td><td>[format_heiztyp $heiztyp]</td></tr>"
 }
 puts {</table></div>}
 puts {</fieldset>}

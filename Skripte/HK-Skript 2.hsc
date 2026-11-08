@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-11-08 Konfigurierbare Mindest-Vorlaufzeit pro Raum (Feld 4: Vorheizzeit*Faktor*MindestMin, Default 15min)
 !// TT:  2026-11-08 faktor1/faktor2 umbenannt in faktor1HK2Kurve/faktor2HeizBedarf für bessere Lesbarkeit
 !// MRi: 2026-11-07 Lösung falls keine aktuelle Raumtemperatur ermittelt werden kann.
 !// TT:  2026-11-06 SDFlag-Parsing in Freeze-Wiederherstellung: ToTime() entfernt (war falsch fuer Integer-Werte)
@@ -446,6 +447,15 @@ foreach(TLEintrag,TerminListe){
         }
         faktor1HK2Kurve = faktor1HK2Kurve.Max(0.20).Min(5.0);
 
+        !// MindestVorlaufzeit: Untergrenze für die Gesamtvorlaufzeit in Minuten (aus Feld 4, dritter *-Wert, Default 15min, Bereich 1-480)
+        !// Wert 0 oder fehlendes Feld gilt als nicht konfiguriert und setzt den Default.
+        !// Der Clamp ist nicht deaktivierbar: er verhindert, dass faktor2HeizBedarf die Vorlaufzeit bei IST nahe ZIEL auf null wegrechnet.
+        integer MindestVorlaufzeit = RVI.StrValueByIndex(";",4).StrValueByIndex("*",2).ToInteger();
+        if (MindestVorlaufzeit==0){
+          MindestVorlaufzeit = 15;
+        }
+        MindestVorlaufzeit = MindestVorlaufzeit.Max(1).Min(480);
+
         !// Bestimme nun einen weiteren Faktor aus der ISTTemperatur und der Solltemperatur RTemp
         !// und der Grundtemperatur für den Raum (in diesem Fall wird nur die Temperatur, des ersten
         !// Aktors verwendet). Dadurch wird ein bereits warmer Raum nur so lange vorgeheizt, wie das
@@ -547,12 +557,21 @@ foreach(TLEintrag,TerminListe){
         !//if(log) {logObj.State("faktor2HeizBedarf=" # faktor2HeizBedarf.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
 
         !// Reale Schaltzeiten berechnen
+        !// Mindest-Vorlaufzeit: Obergrenze für den (negativen) Gesamtoffset; Offsets sind negativ (Vorverschiebung).
+        !// MindestSekunden ist negativ, .Min() wählt den betragsmäßig größeren Wert (weiter in der Vergangenheit).
+        integer gesamtOffset = offsetRaumAn + offsetTempAn;
+        integer MindestSekunden = 0 - (MindestVorlaufzeit * 60);
+        integer gesamtOffsetKorr = gesamtOffset.Min(MindestSekunden);
+        string mindestHinweis = "";
+        if (gesamtOffsetKorr < gesamtOffset) {
+          mindestHinweis = " [Mindest]";
+        }
         string logText = RaumLogName # " - Heizen - AT " # AT.ToString(1) # "°C / GT " # GT.ToString(1) # "°C / IST " # ISTTemperatur.ToString(1) # "°C / ZIEL " # RTemp.ToString(1) # "°C" # HUMText # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
         logText = logText # (offsetRaumAn/60) #"min ";
         if (offsetTempAn==0){ logText=logText#" - "; }
-        logText = logText # (offsetTempAn/60) # "min = ";
-        EIN = EIN + offsetRaumAn + offsetTempAn;
+        logText = logText # (offsetTempAn/60) # "min" # mindestHinweis # " = ";
+        EIN = EIN + gesamtOffsetKorr;
         logText = logText # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAus>0){ logText=logText#"+"; }elseif(offsetRaumAus==0){ logText=logText#"-"; }
         AUS = AUS + offsetRaumAus;

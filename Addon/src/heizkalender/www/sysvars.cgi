@@ -489,7 +489,7 @@ proc render_room_table {varlist {gt_default ""}} {
     append html "  <colgroup>\n"
     append html "    <col class=\"col-room\"><col class=\"col-status\"><col class=\"col-modus\">\n"
     append html "    <col class=\"col-heiztyp\"><col class=\"col-wtemp\"><col class=\"col-gtemp\">\n"
-    append html "    <col class=\"col-vzeit\"><col class=\"col-faktor\"><col class=\"col-vaus\">\n"
+    append html "    <col class=\"col-vzeit\"><col class=\"col-faktor\"><col class=\"col-mindest\"><col class=\"col-vaus\">\n"
     append html "    <col class=\"col-thermostat\"><col class=\"col-schaltaktor\">\n"
     append html "  </colgroup>\n"
     append html "  <tr>"
@@ -501,6 +501,7 @@ proc render_room_table {varlist {gt_default ""}} {
     append html "<th>Grundtemp (&deg;C)</th>"
     append html "<th>Vorheizzeit (min)</th>"
     append html "<th>Faktor</th>"
+    append html "<th>Mindest-Vorlauf (min)</th>"
     append html "<th>Vorlaufzeit Aus (min)</th>"
     append html "<th>Thermostat / Sensor</th>"
     append html "<th>Schaltaktor(en)</th>"
@@ -529,13 +530,15 @@ proc render_room_table {varlist {gt_default ""}} {
             set gtemp [lindex $tparts 1]
         }
 
-        # Vorheizzeit / Faktor trennen
+        # Vorheizzeit / Faktor / Mindest-Vorlaufzeit trennen
         set vzeit $vorheiz
         set faktor ""
+        set mindest ""
         if {[string first "*" $vorheiz] >= 0} {
             set vparts [split $vorheiz "*"]
             set vzeit  [lindex $vparts 0]
             set faktor [lindex $vparts 1]
+            set mindest [lindex $vparts 2]
         }
 
         # Abkürzungen übersetzen
@@ -574,6 +577,11 @@ proc render_room_table {varlist {gt_default ""}} {
             append html "<td><i>1.0</i></td>"
         } else {
             append html "<td>[htmlquote $faktor]</td>"
+        }
+        if {[string equal $mindest ""]} {
+            append html "<td><i>15</i>&nbsp;min</td>"
+        } else {
+            append html "<td>[htmlquote $mindest] min</td>"
         }
         if {[string equal $vorzeitaus ""]} {
             append html "<td></td>"

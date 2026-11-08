@@ -1,6 +1,6 @@
 !// Skript 1 um die Termine aus ChurchDesk auszulesen (API)
 !//================================================================================================
-!// Stand:    25.10.2026
+!// Stand:    07.11.2026
 !// Autoren:  Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -17,6 +17,7 @@
 !// "öffentlich" werden aktuell von der API zurückgegegeben.
 !// ***********************************************************************************************
 
+!// MRi: 2026-11-07 Schaltliste bis 30 Minuten nach dem spätesten raumbezogenen Ausschaltzeitpunkt halten.
 !// TT:  2026-10-25 Bugfix: Fehlendes quit; bei HTTP-Fehler. Ohne quit; lief das Skript mit
 !//                 leerem stdout weiter und ueberschrieb die Schaltliste mit leerem String.
 !// MRi: 2026-10-19 Neuen Modus "V" für das setzen einer Variable eingebaut
@@ -43,14 +44,13 @@ boolean DEBUG=0;
 
 !// Zeitfenster fuer Termine: von (Terminstart minus zeitVorlauf) bis
 !// (Terminende plus zeitNachlauf). Die Haltezeit zeitNachlauf haelt einen beendeten Termin
-!// so lange in der Schaltliste, dass HK-Skript 2 ihn noch ausschalten kann.
+!// so lange in der Schaltliste, dass HK-Skript 3 ihn noch ausschalten kann.
 !// Kein Heiz-Nachlauf.
 integer zeitVorlauf=12*60;		!// 12 Stunden (Default, falls HK1-Vorlaufzeit nicht gesetzt)
 object objVorlaufzeit = dom.GetObject(vrp#"HK1-Vorlaufzeit");
 if(objVorlaufzeit) {
   zeitVorlauf = objVorlaufzeit.State().ToInteger();
 }
-integer zeitNachlauf=30;		!// 30 Minuten
 
 !// Logging in "Log" mit 1 zwingend einschalten oder mit -1 zwingend Ausschalten
 !// Mit 0 wird die Einstellunge aus der HKx-Logging übernommen
@@ -92,6 +92,27 @@ string organizationId = dom.GetObject(vrp#"HK1-CD-OrganisationsId").State();
 !// Filter für Resourcen setzen
 string RIdListe=dom.GetObject(vrp#"HK1-R-Liste").State();
 string HKGListe=dom.GetObject(vrp#"HK2-HKG-Liste").State();
+string RaumVar;
+object objVar;
+
+!// Die Raumvariable enthält die individuelle Ausschaltverschiebung in Feld 5.
+!// Ein negativer Wert verschiebt das Ausschalten nach hinten. Die Schaltliste muss
+!// daher bis 30 Minuten nach der spätesten individuellen Ausschaltzeit erhalten bleiben.
+integer minRaumNachlauf=0;
+integer raumNachlauf;
+foreach(RaumVar, HKGListe.Replace("+",";").Split(";")){
+  if(RaumVar!=""){
+    objVar=dom.GetObject(RaumVar);
+    if(objVar){
+      raumNachlauf=objVar.State().StrValueByIndex(";",5).ToInteger();
+      if(raumNachlauf<minRaumNachlauf){
+        minRaumNachlauf=raumNachlauf;
+      }
+    }
+  }
+}
+integer zeitNachlauf=30-minRaumNachlauf;
+if(DEBUG){WriteLine("Schaltliste-Nachlauf: " # zeitNachlauf # " Minuten");}
 
 !// Suche alle Ids der Ressourcen. Achtung es kann ein mit = abgetrennter Name vorhanden sein.
 string filter="";

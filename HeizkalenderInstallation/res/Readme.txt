@@ -1,7 +1,7 @@
 SYSVARS-InitValues.hsc
 	Backup mit SDV. Direkt nach erzeugen mit den Init Skripten
 		HK-Init-Variablen Logging.hsc
-		HK-Init-Skript 2.hsc
+		HK-Init-Skript 2+3.hsc
 	Anpassungen
 		bupdate = false		Wenn die Variable existiert, wird sienicht ver‰ndert
 		barchive = true		Archive Flag immer setzen
@@ -30,6 +30,7 @@ Create_HK-Auﬂentemperatur_Open_Meteo
 Create_HK-Heizkurvenkontrolle		
 Create_HK-Skript_1					
 Create_HK-Skript_2					
+Create_HK-Skript_3					
 Create_HK-Systemprotokoll_sichern	
 	Backup Skripte der Programme aus meinem Livesyste mit den korrekten 
 	Zeitprogrammen und Bedingungen. Ersetz werden im Namen und im Skript 

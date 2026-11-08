@@ -600,7 +600,7 @@ Die folgenden Werte haben sich in der Praxis bewährt.
 | Variable | Bedeutung | Wert/Empfehlung | Beschreibung |
 | :--- | :--- | :--- | :--- |
 | `HK2-Grundtemperatur` | Temperatur außerhalb der Nutzungszeit | **16 °C**|Nicht zu niedrig, sonst kühlen die Wände aus; einzelne Räume können abweichen)<br>Eine abweichende Grundtemperatur kann je Raum individuell eingestellt werden. |
-| `HK2-A.Temp.Grenze` | Außentemperatur, ab der nicht mehr geheizt wird | **19-20 °C**|Zum Testen einen utopisch hohen Wert (z.B. 50 °C) setzen und danach nicht vergessen zurückzustellen |
+| `HK2-A.Temp.Grenze` | Außentemperatur, ab der nicht mehr geheizt wird | **19-20 °C**|Zum Testen einen sehr niedrigen Wert (z.B. 0 °C) setzen und danach nicht vergessen zurückzustellen |
 | `HK2-Hand-Grundtemp` | Nächtliche Rückstellung auf Grundtemperatur um 01:00 Uhr | **Wahr (1) / True**|Thermostate, die nicht auf Grundtemperatur stehen, werden zurückgestellt (außer in einer aktiven Heizphase). Das gilt auch für Schaltungen. Ist der Schalter *Falsch (0)/False* bleiben alle Schaltungen und Thermostate unverändert.|
 | `HK2-Hand-Temp` | Manuelle Temperatur hat beim Terminende Vorrang | **Falsch (0) / False**|Ist der Schalter *Falsch (0) / False* wird eine manuell eingestellte Temperatur nicht beibehalten und die Grundtemperatur eingestellt. Ist der Schalter *Wahr (1) / True*, wird eine manuell abweichende Temperatur von Thermostaten beibehalten. |
 | `HK2-VorzeitAus` | Globale Minuten, um die vor Terminende abgeschaltet wird | **0**|Besser je Raum einstellen; nicht gleichzeitig mit der raumbezogenen VorzeitAus nutzen (beide Werte addieren sich). Das vorzeitige Heizende kann besser je Raum individuell gesteuert werden. Dieser Wert gilt nur für Heizvorgänge, nicht beim reinen Schalten.<br>**Dieser Wert sollte nicht verwendet werden er existiert nur noch aus Gründen der Rückwärtskompatibilität.** |
@@ -736,6 +736,8 @@ Diese Sonderbefehle können eine Heizung dauerhaft ein oder dauerhaft ausschalte
 | `#GT#` | Wohlfühltemperatur ignorieren, stattdessen die Grundtemperatur schalten |
 | `#NS#` / `#NH#` | Nicht schalten / nicht heizen: der Termin wird nicht in die Schaltliste aufgenommen |
 | `#<Zahl>...#` | Setzt die gewünschte Temperatur (0 bis 30 °C, begrenzt durch den Aktor) |
+
+**Bei den Sonderbefehlen `#EIN#`, `#AUS#` und `#RESET#`/`#NORMAL#` spielt die Dauer eines Termins keine Rolle. Relevant ist alleine der Terminstart. Der entsprechende Befehl wird genau und nur zu diesem Zeitpunkt ausgeführt.**
 
 **Anwendungsbeispiel `#NS#`/`#NH#`:** Reinigt eine Firma die Räume, soll die
 Ressource als belegt gelten, aber nicht geheizt werden. Mit `#NS#` oder `#NH#`

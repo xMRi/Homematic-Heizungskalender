@@ -151,7 +151,7 @@ public:
 	//  - HK-Init-Variablen Logging.hsc
 	//	- HK-Init-Skript 1_ChurchDesk.hsc
 	//  - HK-Init-Skript 1_CurchTools.hsc	
-	//  - HK-Init-Skript 2.hsc
+	//  - HK-Init-Skript 2+3.hsc
 	CListSystemVariables	m_lstSysVarsDefault; // Id=0, Keine Prefixe, geladen bei Programmstart
 
 	// Map aller Skripte, die wir nutzen, Code ist bereits Latin. Das sind die Skripte, die im 
@@ -162,6 +162,7 @@ public:
 	//		HK-Skript 1_ChurchDeskiCal
 	//		HK-Skript 1_ChurchTools
 	//		HK-Skript 2
+	//		HK-Skript 3
 	//		HK-Systemprotokoll sichern
 	COleDateTime	m_dateMaxPrograms;
 	CListPrograms   m_lstAppPrograms;		 // Id = 0, Keine Prefixe, geladen bei Programmstart (HK-Skripte)

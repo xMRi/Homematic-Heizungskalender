@@ -40,11 +40,12 @@ flowchart TD
     end
 
     subgraph CCU["CCU3"]
-        SysVar[("Systemvariablen\nHK1-*, HK2-*, HK1-Schaltliste, HKG-Raum-*")]
-        Programme[("Programme\nHK-Skript 1, HK-Skript 2, HK-*")]
+        SysVar[("Systemvariablen\nHK1-*, HK2-*, HK1-Schaltliste, HK2-Schaltliste, HKG-Raum-*")]
+        Programme[("Programme\nHK-Skript 1, HK-Skript 2, HK-Skript 3, HK-*")]
         Skript1["HK-Skript 1\n(alle 30 min)"]
         ATSkript["HK-Außentemp.-Skript\n(stündlich)"]
-        Skript2["HK-Skript 2\n(alle 5 min)"]
+        Skript2["HK-Skript 2\nBerechnet Heiz-/Schaltzeiten\n(alle 5 min)"]
+        Skript3["HK-Skript 3\nSchaltskript\n(alle 5 min)"]
         Aktoren["Thermostate / Aktoren"]
     end
 
@@ -54,9 +55,13 @@ flowchart TD
     Skript1 -->|"schreibt HK1-Schaltliste"| SysVar
     OpenMeteo -->|"Außentemperatur"| ATSkript
     ATSkript -->|"schreibt HK2-Aussentemperatur"| SysVar
-    SysVar --> Skript2
-    Skript2 -->|"konfiguriert / schaltet"| Aktoren
-    Skript2 -->|"schreibt HKG-Raum-* Status"| SysVar
+    SysVar -->|"liest HK1-Schaltliste"| Skript2
+    Skript1 --> Skript2
+    Skript2 --> Skript3
+    Skript2 -->|"schreibt HK2-Schaltliste"| SysVar
+    SysVar -->|"liest HK2-Schaltliste"| Skript3
+    Skript3 -->|"konfiguriert / schaltet"| Aktoren
+    Skript3 -->|"schreibt HKG-Raum-* Status"| SysVar
     Aktoren -.->|"Ist-Temperatur"| Skript2
     SysVar -.->|"liest"| Addon
 ```
@@ -67,13 +72,18 @@ Der Laufzeit-Ablauf:
 1. Eine **Skript-1-Variante** liest Termine aus einer externen Quelle
    (ChurchTools, ChurchDesk, iCal oder Google) und schreibt sie in die
    Systemvariable `HK1-Schaltliste`.
-2. **HK-Skript 2** läuft alle 5 Minuten, liest `HK1-Schaltliste` und schaltet die
+2. **HK-Skript 2** läuft alle 5 Minuten, liest `HK1-Schaltliste` berechnet die Schaltzeiten und speichert diese in der Systemvariable `HK1-Schaltliste`.
+3. **HK-Skript 3** läuft alle 5 Minuten, liest `HK2-Schaltliste` und schaltet die
    Thermostate entsprechend.
-3. Das **Addon** liest dieselben Systemvariablen lesend aus und stellt sie im
+4. Das **Addon** liest dieselben Systemvariablen lesend aus und stellt sie im
    Browser dar; es schreibt nichts in die Skript-Variablen zurück.
 
 Es wird immer nur eine Skript-1-Variante eingesetzt. Alle Skripte eines
 Release-Standes gehören zusammen und müssen gemeinsam eingespielt werden.
+
+`HK-Skript 1` läuft alle 30 Minuten. `HK-Skript 2` und `HK-Skript 3` laufen beide alle 5 Minuten.  
+Dadurch kann es zu gleichzeitigen Laufzeiten kommen. Alle Skripte sind über Verzögerungen so eingestellt dass die Reihenfolge immer `HK-Skript 1` ->`HK-Skript 2` -> `HK-Skript 3` garantiert ist.
+
 
 ## Systemvariablen-Formate
 
@@ -171,7 +181,7 @@ Status;Modus;Heiztyp;Wohlfühltemp[/Grundtemp];Vorheizzeit[*Faktor];VorzeitAus[;
 | Modus | 1 | String | `H` = Heizen, `S` = Schalten, `HS` = Heizen + Schalten, `V` = Variable setzen |
 | Heiztyp | 2 | String | `IP`, `RT`, `TC`, `IT` (Thermostate), `SW` (Schalt-Aktor) |
 | Wohlfühltemp | 3 | Float | Zieltemperatur in °C; optional `/Grundtemp` für raumindividuelle Grundtemperatur |
-| Vorheizzeit | 4 | Integer | Individuelle Vorheizzeit in Minuten; optional `*Faktor` (Float, 0,20–5,0) |
+| Vorheizzeit | 4 | Integer | Individuelle Vorheizzeit in Minuten; optional `*faktor1HK2Kurve` (Float, 0,20–5,0): raumspezifischer Multiplikator auf die HK2-Kurve |
 | VorzeitAus | 5 | Integer | Minuten vor Terminende, nach denen abgeschaltet wird |
 | Thermostat | 6 | String | Nur bei Modus `HS`: CCU-Kanaladresse des Thermostats, der als Temperatursensor dient |
 | Schaltaktor(en) | 7+ | String | Nur bei Modus `HS`: CCU-Kanaladdresse(n) der Schaltaktoren; mehrere Aktoren werden durch weitere `;`-Felder angehängt |
@@ -205,7 +215,7 @@ Steuert einen Thermostat (z.B. HmIP-eTRV) über dessen Solltemperatur.
 | :--- | :--- |
 | Aktor-Typ | Thermostat (Feld 7); Ansteuerung über `DPByHssDP` mit Thermostat-Parameter (`SET_POINT_TEMPERATURE`, `SET_TEMPERATURE` etc. je nach Heiztyp) |
 | Sensor (Feld 6) | Optional; CCU-Gerätekanal für IST-Temperatur und Luftfeuchte |
-| Vorheizzeit | Vollständig wirksam: Offset + Faktor × HK2-Kurve(AT), skaliert mit faktor2 (IST-Temperatur-Korrektur) |
+| Vorheizzeit | Vollständig wirksam: Offset + Faktor × HK2-Kurve(AT), skaliert mit faktor2HeizBedarf (IST-Temperatur-Korrektur) |
 | AT-Schwelle | Heizvorgang wird unterdrückt wenn Außentemperatur ≥ `HK2-A.Temp.Grenze` |
 | Einschalten | Setzt Solltemperatur (Wohlfühltemp) am Thermostat |
 | Ausschalten | Setzt Grundtemperatur am Thermostat |
@@ -221,7 +231,7 @@ separatem Stellantrieb.
 | :--- | :--- |
 | Aktor-Typ | Thermostat an Feld 6 (nur als Sensor), Schaltaktor(en) ab Feld 7; Ansteuerung über `DPByHssDP("STATE")` |
 | Sensor (Feld 6) | CCU-Gerätekanal des Thermostats — wird für IST-Temperatur gelesen |
-| Vorheizzeit | Wie `H`: Offset + Faktor × HK2-Kurve(AT), skaliert mit faktor2 |
+| Vorheizzeit | Wie `H`: Offset + Faktor × HK2-Kurve(AT), skaliert mit faktor2HeizBedarf (IST-Temperatur-Korrektur) |
 | AT-Schwelle | Wie `H`: Heizvorgang wird unterdrückt wenn AT ≥ Grenze |
 | Einschalten | Setzt Solltemperatur am Thermostat (Feld 6) **und** schaltet Aktoren ein (Feld 7+) |
 | Ausschalten | Setzt Grundtemperatur am Thermostat **und** schaltet Aktoren aus |
@@ -236,7 +246,7 @@ Temperatursteuerung.
 | :--- | :--- |
 | Aktor-Typ | Schaltaktor (Feld 7); Ansteuerung über `DPByHssDP("STATE")` |
 | Sensor (Feld 6) | Nicht verwendet (leer lassen) |
-| Vorheizzeit | Nur der feste Offset (Feld 4) wird verwendet; kein Faktor, kein faktor2, keine HK2-Kurve |
+| Vorheizzeit | Nur der feste Offset (Feld 4) wird verwendet; kein faktor1HK2Kurve, kein faktor2HeizBedarf, keine HK2-Kurve |
 | AT-Schwelle | **Keine** — Schaltvorgang wird immer ausgeführt, unabhängig von der Außentemperatur |
 | Einschalten | `State(1)` auf dem Schaltaktor |
 | Ausschalten | `State(0)` auf dem Schaltaktor |
@@ -252,7 +262,7 @@ Systemvariablen reagieren (z.B. Lüftung, Beschattung, Benachrichtigungen).
 | :--- | :--- |
 | Aktor-Typ | CCU-Systemvariable (Feld 7); **kein** `DPByHssDP` — das Variablen-Objekt wird direkt über `State()` gesetzt |
 | Sensor (Feld 6) | Nicht verwendet; darf einen Variablennamen enthalten, wird aber von der Sensorik **nicht** über `DPByHssDP` gelesen |
-| Vorheizzeit | Nur der feste Offset (Feld 4); kein Faktor, kein faktor2, keine HK2-Kurve |
+| Vorheizzeit | Nur der feste Offset (Feld 4); kein faktor1HK2Kurve, kein faktor2HeizBedarf, keine HK2-Kurve |
 | AT-Schwelle | **Keine** — Variable wird immer gesetzt, unabhängig von der Außentemperatur |
 | Einschalten | `State(1)` auf der Systemvariable |
 | Ausschalten | `State(0)` auf der Systemvariable |
@@ -264,7 +274,7 @@ Systemvariablen reagieren (z.B. Lüftung, Beschattung, Benachrichtigungen).
 
 ### HK1-Schaltliste
 
-Übergabepuffer von Skript 1 an Skript 2. Wird automatisch befüllt und
+Übergabepuffer von `HK-Skript 1` an `HK-Skript 2`. Wird automatisch befüllt und
 ausgelesen; niemals manuell verändern.
 
 Mehrere Einträge stehen direkt hintereinander ohne zusätzliches Trennzeichen;
@@ -330,9 +340,38 @@ Beispielkurven und Berechnungshintergrund:
 [Anwenderhandbuch](anwenderhandbuch.md#die-heizkurve-hk2-kurve),
 [Heizsteuerung-Vorheizzeit.md](heizsteuerung-vorheizzeit.md)
 
+### HK2-Schaltliste
+
+Übergabepuffer von `HK-Skript 2` an `HK-Skript 3`. Wird automatisch befüllt und
+ausgelesen; niemals manuell verändern.
+
+Einzelne Einträge werden durch # (Raute) getrennt, einzelne Felder durch ; (Semikolon).
+
+```txt
+Raumvariable;Terminstartzeit;Terminende;Sonderbefehl;Heiz-/Schaltstart;Heiz-/Schaltende;Außentemperatur;Isttemperatur#...
+```
+
+| Feld | Index | Typ | Bedeutung |
+| ---- | ----- | --- | --------- |
+| Raumvariable | 0 | String | HKG-Raum Variable für diesen Termin |
+| Terminstartzeit | 1 | Zeitstempel | Original Startzeit des Termins aus `HK1-Schaltliste` |
+| Terminende | 2 | Zeitstempel | Original Endzeit des Termins aus `HK1-Schaltliste` |
+| Sonderbefehl | 3 | String | Sonderbefehl aus `HK1-Schaltliste` (Dauer-Ein/Dauer-Aus/Raumtemperatur abweichend definiert) |
+| Heiz-/Schaltstart | 4 | Zeitstempel | In `HK-Skript 2` berechnete Startzeit für Heizen/Schalten unter Berücksichtigung der Vorheizzeit und Raumparameter |
+| Heiz-/Schaltende | 5 | Zeitstempel | In `HK-Skript 2` berechnete Startzeit für Heizen/Schalten unter Berücksichtigung der Raumparameter |
+| Außentemperatur | 6 |  String | Außentemperatur bei der letzten Aktualisierung  |
+| Isttemperatur | 7 |  String | Isttemperatur bei der letzten Aktualisierung (damit Temperatur bei Heizstart) |
+
+Beispiel:
+
+```txt
+HKG-Raum-Küche;2026-11-04 10:00:00;2026-11-04 12:00:00;0;2026-11-04 09:02:00;2026-11-04 11:30:00;8.1;18.4#HKG-Raum-Küche;2026-11-04 18:00:00;2026-11-04 20:30:00;0;2026-11-04 17:02:00;2026-11-04 20:00:00;8.1;18.4#HKG-Raum-Foyer;2026-11-04 18:30:00;2026-11-04 20:30:00;0;2026-11-04 17:32:00;2026-11-04 20:00:00;8.1;16.0#HKG-Raum-KlSaal;2026-11-04 18:30:00;2026-11-04 20:30:00;0;2026-11-04 17:32:00;2026-11-04 20:00:00;8.1;20.0#HKG-Raum-WCs;2026-11-04 18:30:00;2026-11-04 20:30:00;0;2026-11-04 17:32:00;2026-11-04 20:00:00;8.1;16.0#
+```
+
+
 ### HK2-Schaltzeiten
 
-Wird von HK-Skript 2 am Ende jedes Skriptlaufs geschrieben (sofern die Variable auf der CCU vorhanden ist). Enthält die berechneten Schaltzeiten aller Ressourcen des letzten Skriptlaufs. Die Variable ist rein informativ und wird vom Benutzer nicht manuell gesetzt.
+Wird von `HK-Skript 2` am Ende jedes Skriptlaufs geschrieben (sofern die Variable auf der CCU vorhanden ist). Enthält die berechneten Schaltzeiten aller Ressourcen des letzten Skriptlaufs. Die Variable ist rein informativ und wird vom Benutzer nicht manuell gesetzt.
 
 Einträge sind durch `~` getrennt, Felder innerhalb eines Eintrags durch `;`:
 

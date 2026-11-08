@@ -95,7 +95,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,264,96,50,14,WS_GROUP
 END
 
-IDD_PAGE_CONNECT DIALOGEX 0, 0, 421, 244
+IDD_PAGE_CONNECT DIALOGEX 0, 0, 421, 256
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Verbinden"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
@@ -135,78 +135,80 @@ BEGIN
     PUSHBUTTON      "",IDC_BT_LOGO,344,7,22,20
 END
 
-IDD_PAGE_SETTINGS DIALOGEX 0, 0, 421, 240
+IDD_PAGE_SETTINGS DIALOGEX 0, 0, 421, 256
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Einstellungen"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "&Protokollierung im Systemprotokoll",IDC_STATIC,7,7,407,78
+    GROUPBOX        "&Protokollierung im Systemprotokoll",IDC_STATIC,7,7,407,94
     CONTROL         "Allgemeine Protokollierung der Heizkalenderfunktionen",IDC_CH_LOG,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,21,346,10
     CONTROL         "Protokollierung für Skript 1 (Termindaten lesen und in Schaltliste eintragen) ",IDC_CH_LOG1,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,37,346,10
-    CONTROL         "Protokollierung für Skript 2 (Heizung nach erzeugter Schalliste schalten)",IDC_CH_LOG2,
+    CONTROL         "Protokollierung für Skript 2 (Schaltzeiten bestimmen)",IDC_CH_LOG2,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,53,346,10
-    CONTROL         "Protokollierung für die Heizkurvenkontrolle",IDC_CH_LOG_HEIZKURVE,
+    CONTROL         "Protokollierung für Skript 3 (Heizung nach erzeugten Schaltzeiten schalten)",IDC_CH_LOG3,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,69,346,10
-    GROUPBOX        "Rückstellungsverhalten",IDC_STATIC,7,89,407,46
+    CONTROL         "Protokollierung für die Heizkurvenkontrolle",IDC_CH_LOG_HEIZKURVE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,85,346,10
+    GROUPBOX        "Rückstellungsverhalten",IDC_STATIC,7,105,407,46
     CONTROL         "Alle Räume Nachts um 01:00 Uhr auf Grundtemperatur zurückgestellt werden",IDC_CH_HANDGRUNDTEMP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,103,346,10
-    CONTROL         "Am Ende eines Termines eine manuell eingestellte/abweichende Temperatur für den Raum beibehalten",IDC_CH_HANDTEMP,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,119,346,10
-    GROUPBOX        "Temperatureinstellungen",IDC_STATIC,7,139,407,46
-    LTEXT           "Grundtemperatur für alle Räume, wenn kein Heizvorgang läuft:",IDC_STATIC,12,153,258,8
-    EDITTEXT        IDC_ED_GRUNDTEMP,289,151,40,12,ES_AUTOHSCROLL
-    LTEXT           "°C",IDC_STATIC,338,153,12,8
-    LTEXT           "Außentemperaturgrenze ab der kein Heizvorgang mehr ausgeführt werden soll:",IDC_STATIC,11,169,260,8
-    EDITTEXT        IDC_ED_ATEMPGRENZE,289,167,40,12,ES_AUTOHSCROLL
+    CONTROL         "Am Ende eines Termines eine manuell eingestellte/abweichende Temperatur für den Raum beibehalten",IDC_CH_HANDTEMP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,135,346,10
+    GROUPBOX        "Temperatureinstellungen",IDC_STATIC,7,155,407,46
+    LTEXT           "Grundtemperatur für alle Räume, wenn kein Heizvorgang läuft:",IDC_STATIC,12,169,258,8
+    EDITTEXT        IDC_ED_GRUNDTEMP,289,167,40,12,ES_AUTOHSCROLL
     LTEXT           "°C",IDC_STATIC,338,169,12,8
-    GROUPBOX        "Heizkurve / Vorlaufzeiten bei entsprechenden Außentemperaturen",IDC_STATIC,7,187,407,46
-    RTEXT           "-10 °C",IDC_STATIC,12,202,35,8
-    RTEXT           "-5 °C",IDC_STATIC,59,202,35,8
-    RTEXT           "0 °C",IDC_STATIC,106,202,35,8
-    RTEXT           "8°C",IDC_STATIC,153,202,35,8
-    RTEXT           "10 °C",IDC_STATIC,200,202,35,8
-    RTEXT           "12 °C",IDC_STATIC,247,202,35,8
-    RTEXT           "15 °C",IDC_STATIC,294,202,35,8
-    RTEXT           "17.5°C",IDC_STATIC,341,202,35,8
-    EDITTEXT        IDC_ED_KURVE_1,12,212,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_ED_KURVE_2,59,212,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_ED_KURVE_3,106,212,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_ED_KURVE_4,153,212,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_ED_KURVE_5,200,212,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_ED_KURVE_6,247,212,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_ED_KURVE_7,294,212,35,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_ED_KURVE_8,341,212,35,14,ES_AUTOHSCROLL
+    LTEXT           "Außentemperaturgrenze ab der kein Heizvorgang mehr ausgeführt werden soll:",IDC_STATIC,11,185,260,8
+    EDITTEXT        IDC_ED_ATEMPGRENZE,289,183,40,12,ES_AUTOHSCROLL
+    LTEXT           "°C",IDC_STATIC,338,185,12,8
+    GROUPBOX        "Heizkurve / Vorlaufzeiten bei entsprechenden Außentemperaturen",IDC_STATIC,7,203,407,46
+    RTEXT           "-10 °C",IDC_STATIC,12,218,35,8
+    RTEXT           "-5 °C",IDC_STATIC,59,218,35,8
+    RTEXT           "0 °C",IDC_STATIC,106,218,35,8
+    RTEXT           "8°C",IDC_STATIC,153,218,35,8
+    RTEXT           "10 °C",IDC_STATIC,200,218,35,8
+    RTEXT           "12 °C",IDC_STATIC,247,218,35,8
+    RTEXT           "15 °C",IDC_STATIC,294,218,35,8
+    RTEXT           "17.5°C",IDC_STATIC,341,218,35,8
+    EDITTEXT        IDC_ED_KURVE_1,12,228,35,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ED_KURVE_2,59,228,35,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ED_KURVE_3,106,228,35,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ED_KURVE_4,153,228,35,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ED_KURVE_5,200,228,35,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ED_KURVE_6,247,228,35,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ED_KURVE_7,294,228,35,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_ED_KURVE_8,341,228,35,14,ES_AUTOHSCROLL
 END
 
-IDD_PAGE_PROGRAMS DIALOGEX 0, 0, 421, 244
+IDD_PAGE_PROGRAMS DIALOGEX 0, 0, 421, 256
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Programme"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     LTEXT           "Programme des Heizkalenders:",IDC_STATIC,7,11,173,8
-    CONTROL         "",IDC_LC_DATA,"SysListView32",LVS_REPORT | LVS_SORTASCENDING | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,26,340,205
+    CONTROL         "",IDC_LC_DATA,"SysListView32",LVS_REPORT | LVS_SORTASCENDING | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,26,340,220
     PUSHBUTTON      "&Änderungen...",IDC_BT_WINMERGE,354,26,60,14
 END
 
-IDD_PAGE_SYSVARS DIALOGEX 0, 0, 421, 240
+IDD_PAGE_SYSVARS DIALOGEX 0, 0, 421, 256
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Systemvariablen"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     LTEXT           "Liste der Systemvariablen im Heizkalender:",IDC_STATIC,7,11,173,8
-    CONTROL         "",IDC_LC_DATA,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SORTASCENDING | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,7,26,340,205
+    CONTROL         "",IDC_LC_DATA,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SORTASCENDING | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,7,26,340,220
     PUSHBUTTON      "&Änderungen...",IDC_BT_INFO,356,26,60,14
 END
 
-IDD_PAGE_ROOMS DIALOGEX 0, 0, 421, 244
+IDD_PAGE_ROOMS DIALOGEX 0, 0, 421, 256
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Räume"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     LTEXT           "Räume im Heizkalenders:",IDC_STATIC,7,14,173,8
-    CONTROL         "",IDC_LC_DATA,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SORTASCENDING | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,7,28,340,204
+    CONTROL         "",IDC_LC_DATA,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SORTASCENDING | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,7,28,340,220
     PUSHBUTTON      "&Neu...",IDC_BT_NEW,360,29,50,14
     PUSHBUTTON      "&Ändern...",IDC_BT_MODIFY,360,49,50,14
     PUSHBUTTON      "Löschen...",IDC_BT_DELETE,360,69,50,14
@@ -266,13 +268,13 @@ BEGIN
     PUSHBUTTON      "Test",IDC_BT_TEST,187,184,50,14
 END
 
-IDD_PAGE_RESOURCES DIALOGEX 0, 0, 421, 244
+IDD_PAGE_RESOURCES DIALOGEX 0, 0, 421, 256
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Kalenderzuordnung"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     LTEXT           "Zuordnungen der Räume zu den Resourcekalendern:",IDC_STATIC,7,14,173,8
-    CONTROL         "",IDC_LC_DATA,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,28,340,204
+    CONTROL         "",IDC_LC_DATA,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,28,340,220
     PUSHBUTTON      "&Ändern...",IDC_BT_MODIFY,364,29,50,14
     PUSHBUTTON      "Löschen...",IDC_BT_DELETE,364,49,50,14
 END
@@ -317,8 +319,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,3,0,0
- PRODUCTVERSION 4,3,0,0
+ FILEVERSION 5,0,2,0
+ PRODUCTVERSION 5,0,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -335,12 +337,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "xMRi-Software"
             VALUE "FileDescription", "Heizkalender Installations- und Updateprogramm"
-            VALUE "FileVersion", "4.3.0.0"
+            VALUE "FileVersion", "5.0.2.0"
             VALUE "InternalName", "HeizkalenderInstallation.exe"
             VALUE "LegalCopyright", "Copyright 2026 by xMRi-Software (Martin Richter) "
             VALUE "OriginalFilename", "HeizkalenderInstallation.exe"
             VALUE "ProductName", "Heizkalender"
-            VALUE "ProductVersion", "4.3.0.0"
+            VALUE "ProductVersion", "5.0.2.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -378,7 +380,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 414
         TOPMARGIN, 7
-        BOTTOMMARGIN, 233
+        BOTTOMMARGIN, 249
     END
 
     IDD_PAGE_PROGRAMS, DIALOG
@@ -386,6 +388,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 415
         TOPMARGIN, 7
+        BOTTOMMARGIN, 244
     END
 
     IDD_PAGE_SYSVARS, DIALOG
@@ -393,13 +396,14 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 287
         TOPMARGIN, 7
-        BOTTOMMARGIN, 153
+        BOTTOMMARGIN, 169
     END
 
     IDD_PAGE_ROOMS, DIALOG
     BEGIN
         LEFTMARGIN, 7
         TOPMARGIN, 7
+        BOTTOMMARGIN, 244
     END
 
     IDD_ABOUTBOX, DIALOG
@@ -420,6 +424,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 377
         TOPMARGIN, 7
+        BOTTOMMARGIN, 244
     END
 
     IDD_RESSOURCE, DIALOG

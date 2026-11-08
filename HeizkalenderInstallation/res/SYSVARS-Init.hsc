@@ -241,7 +241,7 @@ if (oSV) {
 		oSV.Variable ("");}
 } elseif (bcreate) {
 	neu=neu+1;oSV = dom.CreateObject (1089); rSV.Add (oSV.ID()); oSV.Name (svName); oSV.ValueType (20); oSV.ValueSubType (11);
-	oSV.DPInfo("Schaltliste. Hier bitte nichts verändern!"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
+	oSV.DPInfo("Gelesene Termine aus Skript 1. Hier bitte nichts verändern!"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
 	oSV.DPArchive (true && barchive);
 		oSV.Variable ("");
 	WriteLine (svName # neut);}
@@ -289,7 +289,7 @@ if (oSV) {
 		oSV.Variable ("");}
 } elseif (bcreate) {
 	neu=neu+1;oSV = dom.CreateObject (1089); rSV.Add (oSV.ID()); oSV.Name (svName); oSV.ValueType (20); oSV.ValueSubType (11);
-	oSV.DPInfo("Berechnete Schaltzeiten pro Raum (wird von Skript 2 geschrieben)"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
+	oSV.DPInfo("Berechnete Schaltzeiten pro Raum von Skript 2 für das Addon. Hier bitte nichts verändern!"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
 	oSV.DPArchive (false && barchive); !// Keine Protokollierung
 		oSV.Variable ("");
 	WriteLine (svName # neut);}
@@ -304,6 +304,43 @@ if (oSV) {
 	oSV.DPInfo("Heizkurvenkontrolle Zieltemperatur: Kritisch-vor;Perfekt-von;Perfekt-bis;Kritisch-nach"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
 	oSV.DPArchive (true && barchive);
 		oSV.Variable ("-90;-60;-30;-15");
+	WriteLine (svName # neut);}
+!------------
+svName= "%1%HK3-Log"; oSV=rSV.Get (svName);
+if (oSV) {
+	if ((oSV.ValueType()==20) && (oSV.ValueSubType()==11) && bupdate && (oSV.Type()!=OT_ALARMDP)) {
+		WriteLine (svName # altt);act=act+1;
+		oSV.Variable ("");}
+} elseif (bcreate) {
+	neu=neu+1;oSV = dom.CreateObject (1089); rSV.Add (oSV.ID()); oSV.Name (svName); oSV.ValueType (20); oSV.ValueSubType (11);
+	oSV.DPInfo("Variable um ein einfaches Log im System Protokoll zu erzeugen"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
+	oSV.DPArchive (true && barchive);
+		oSV.Variable ("");
+	WriteLine (svName # neut);}
+!------------
+svName= "%1%HK3-Logging"; oSV=rSV.Get (svName);
+if (oSV) {
+	if ((oSV.ValueType()==2) && (oSV.ValueSubType()==2) && bupdate && (oSV.Type()!=OT_ALARMDP)) {
+		WriteLine (svName # altt);act=act+1;
+		oSV.Variable (true);}
+} elseif (bcreate) {
+	neu=neu+1;oSV = dom.CreateObject (1089); rSV.Add (oSV.ID()); oSV.Name (svName); oSV.ValueType (2); oSV.ValueSubType (2);
+	oSV.DPInfo("Flag um das Logging für Skript 3 ein- und auszuschalten"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
+	oSV.DPArchive (true && barchive);
+	oSV.ValueName0 ("Logging ausgeschaltet"); oSV.ValueName1 ("Logging eingeschaltet");
+	oSV.Variable (true);
+	WriteLine (svName # neut);}
+!------------
+svName= "%1%HK2-Schaltliste"; oSV=rSV.Get (svName);
+if (oSV) {
+	if ((oSV.ValueType()==20) && (oSV.ValueSubType()==11) && bupdate && (oSV.Type()!=OT_ALARMDP)) {
+		WriteLine (svName # altt);act=act+1;
+		oSV.Variable ("");}
+} elseif (bcreate) {
+	neu=neu+1;oSV = dom.CreateObject (1089); rSV.Add (oSV.ID()); oSV.Name (svName); oSV.ValueType (20); oSV.ValueSubType (11);
+	oSV.DPInfo("Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
+	oSV.DPArchive (true && barchive); 
+		oSV.Variable ("");
 	WriteLine (svName # neut);}
 !------------
 dom.RTUpdate(0);

@@ -662,6 +662,7 @@ void CPageSettings::DoDataExchange(CDataExchange* pDX)
 			IDC_CH_LOG,				_T("HK-Logging"),
 			IDC_CH_LOG1,			_T("HK1-Logging"),
 			IDC_CH_LOG2,			_T("HK2-Logging"),
+			IDC_CH_LOG3,			_T("HK3-Logging"),
 			IDC_CH_LOG_HEIZKURVE,	_T("HK-LoggingHeizkurvenkontrolle"),
 			IDC_CH_HANDTEMP,		_T("HK2-Hand-Temp"),
 			IDC_CH_HANDGRUNDTEMP,	_T("HK2-Hand-Grundtemp"),

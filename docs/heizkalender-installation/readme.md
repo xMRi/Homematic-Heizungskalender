@@ -222,6 +222,7 @@ Die Programme mit den folgenden Namen sind reserviert und werden von der `Heizka
 - `HK-Heizkurvenkontrolle.hsc`
 - `HK-Skript 1.hsc`
 - `HK-Skript 2.hsc`
+- `HK-Skript 3.hsc`
 - `HK-Systemprotokoll sichern.hsc`
 
 Liegen im Installationsverzeichnis der `HeizkalenderInstallation.exe` auch Dateien mit dem Namen `Tool-*.hsc`, werden gleichnamige Programme in der CCU bei Bedarf ebenfalls aktualisiert. Das normale Installationspaket enthält keine Tools; diese befinden sich im separaten Ordner [Tools](https://github.com/xMRi/Homematic-Heizungskalender/tree/main/Tools).
@@ -251,7 +252,11 @@ Um die Funktionsweise des Heizkalenders transparent zu machen, wird das Systempr
     Dieser Wert wird in der Variable `HK1-Logging` gespeichert.
 
 - **Protokollierung für Skript 2**
-    Das `HK-Skript 2` führt anhand der gelesenen Termine die eigentlichen Schaltvorgänge für die Heizungssteuerung durch. Über diese Option kann die Protokollierung ein- und ausgeschaltet werden.
+    Das `HK-Skript 2` führt anhand der gelesenen Termine eine Berechnung der benötigten Schaltzeiten aus. Über diese Option kann die Protokollierung ein- und ausgeschaltet werden. 
+    Dieser Wert wird in der Variable `HK2-Logging` gespeichert.
+
+- **Protokollierung für Skript 3**
+    Das `HK-Skript 3` führt anhand der errechneten Schaltzeiten die eigentlichen Schaltvorgänge für die Heizungssteuerung durch. Über diese Option kann die Protokollierung ein- und ausgeschaltet werden.
     Dieser Wert wird in der Variable `HK2-Logging` gespeichert.
 
 - **Protokollierung für die Heizkurvenkontrolle**
@@ -263,7 +268,7 @@ Beachten Sie, dass das Systemprotokoll nicht unendlich lang ist. Um das Heizverh
 #### Rückstellungsverhalten
 
 - **Alle Räume Nachts um 01:00 Uhr auf Grundtemperatur zurückgestellt werden**
-    Ist diese Funktion aktiviert, kontrolliert `HK-Skript 2` nachts um 01:00 Uhr (genauer: täglich zwischen 00:57 und 01:03 Uhr), ob ein Heizkörper noch auf Heizen steht, also nicht auf die Grundtemperatur gestellt wurde. Das betrifft alle Räume ohne aktiven Termin. Ist dies der Fall, wird der Heizkörper bzw. die Heizgruppe auf die Raumgrundtemperatur zurückgesetzt.
+    Ist diese Funktion aktiviert, kontrolliert `HK-Skript 3` nachts um 01:00 Uhr (genauer: täglich zwischen 00:57 und 01:03 Uhr), ob ein Heizkörper noch auf Heizen steht, also nicht auf die Grundtemperatur gestellt wurde. Das betrifft alle Räume ohne aktiven Termin. Ist dies der Fall, wird der Heizkörper bzw. die Heizgruppe auf die Raumgrundtemperatur zurückgesetzt.
     Dieser Wert wird in der Variable `HK2-Hand-Grundtemp` gespeichert.
     Details zur Nachtschaltung finden sich im [Anwenderhandbuch](../heizkalender/anwenderhandbuch.md).
     **Diese Option sollte immer eingeschaltet werden.**

@@ -52,7 +52,7 @@ set rega_script {
     result = result # "===KAL===\n";
 
     string ev;
-    foreach(ev, "HK-Logging;HK1-Logging;HK2-Logging;HK-LoggingHeizkurvenkontrolle;HK2-Hand-Grundtemp;HK2-Hand-Temp;HK2-Grundtemperatur;HK2-A.Temp.Grenze;HK2-VorzeitAus;HK2-Kurvenversatz;HK2-Kurve".Split(";")) {
+    foreach(ev, "HK-Logging;HK1-Logging;HK2-Logging;HK3-Logging;HK-LoggingHeizkurvenkontrolle;HK2-Hand-Grundtemp;HK2-Hand-Temp;HK2-Grundtemperatur;HK2-A.Temp.Grenze;HK2-VorzeitAus;HK2-Kurvenversatz;HK2-Kurve".Split(";")) {
         var o = dom.GetObject(ev);
         if (o) { result = result # "EINST\t" # ev # "\t" # o.Value() # "\n"; }
     }
@@ -344,7 +344,7 @@ puts {</fieldset>}
 # Programme
 # ===========================================================================
 puts {<fieldset><legend>Programme</legend>}
-puts {<div class="hk-table-scroll"><table class="hk-config-table-auto">}
+puts {<div class="hk-table-scroll"><table class="hk-config-table-auto hk-has-header">}
 puts {  <tr><th>Programm</th><th>Aktiv</th></tr>}
 foreach prog $programme {
     puts "  <tr><td>[htmlquote [lindex $prog 0]]</td><td>[bool_label [lindex $prog 1]]</td></tr>"
@@ -362,7 +362,8 @@ puts {<div class="hk-table-scroll"><table class="hk-config-table-auto">}
 foreach {var label} {
     HK-Logging                    "Allgemeine Protokollierung"
     HK1-Logging                   "Skript 1 (Termindaten einlesen)"
-    HK2-Logging                   "Skript 2 (Heizung schalten)"
+    HK2-Logging                   "Skript 2 (Schaltzeiten berechnen)"
+    HK3-Logging                   "Skript 3 (Schalten)"
     HK-LoggingHeizkurvenkontrolle "Heizkurvenkontrolle"
 } {
     if {[info exists einstval($var)]} {
@@ -449,7 +450,7 @@ puts {</fieldset>}
 # Kalenderzuordnung
 # ===========================================================================
 puts {<fieldset><legend>Kalenderzuordnung</legend>}
-puts {<div class="hk-table-scroll"><table class="hk-config-table-auto">}
+puts {<div class="hk-table-scroll"><table class="hk-config-table-auto hk-nowrap hk-has-header">}
 puts {  <tr><th>Id</th><th>Ressource</th><th>Zugeordnete R&auml;ume</th></tr>}
 foreach z $zuordnungen {
     set rid     [htmlquote [lindex $z 0]]
@@ -465,8 +466,8 @@ puts {</fieldset>}
 # ===========================================================================
 set deg "&deg;"
 puts {<fieldset><legend>R&auml;ume</legend>}
-puts {<div class="hk-table-scroll"><table class="hk-config-table-auto hk-table-rooms">}
-puts "  <tr><th>Raum</th><th>Modus</th><th>Wohlf&uuml;hltemp.</th><th>Abw. Grundtemp.</th><th>Vorzeitiger Heizbeginn</th><th>Vorzeitiges Heizende</th><th>Faktor Heizkurve</th><th>Thermostat / Sensor</th><th>Schaltaktor</th><th>Ger&auml;tetyp</th></tr>"
+puts {<div class="hk-table-scroll"><table class="hk-config-table-auto hk-nowrap hk-has-header">}
+puts "  <tr><th>Raum</th><th>Modus</th><th>Wohlf&uuml;hltemp.</th><th>Abw. Grundtemp.</th><th>Vorzeitiger Heiz-/Schaltbeginn</th><th>Vorzeitiges Heiz-/Schaltende</th><th>Faktor Heizkurve</th><th>Thermostat / Sensor</th><th>Schaltaktor</th><th>Ger&auml;tetyp</th></tr>"
 foreach raum $raeume {
     set rname [string range [lindex $raum 0] 9 end]
     set felder [split [lindex $raum 1] ";"]

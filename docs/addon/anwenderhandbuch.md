@@ -155,13 +155,13 @@ Das HK-Log zeigt die auf dem USB-Stick archivierten Protokolleinträge des Heizk
 
 | Filter | Bedeutung |
 | ------ | --------- |
-| Filter | Alle Einträge oder nur eine Quelle (HK1, HK2, Heizkurvenkontrolle, HK-Log, Nachtabschaltung) |
+| Quelle | Alle Einträge oder nur eine Quelle (HK1, HK2, Heizkurvenkontrolle, HK-Log, Nachtabschaltung) |
 | Log-Datei | Auswahl der Tagesdatei |
 | Letzte Zeilen | Anzahl der angezeigten Zeilen (Standard: 50, max. 5000) |
 
 Die Anzeige entspricht einem `tail`: die letzten N Zeilen der Datei, älteste oben, neueste unten.
 
-Über den **Download**-Link kann die gewählte Logdatei heruntergeladen werden.
+Über das **Log-Datei:**-Label (als Link) kann die gewählte Logdatei heruntergeladen werden.
 
 ---
 

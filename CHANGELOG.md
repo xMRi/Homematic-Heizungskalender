@@ -69,11 +69,17 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Addon: H1 Überschriften entfernt, da doppelt zu Menüeinträgen
 - Addon: sysvars.cgi: Execute-Bit entfernt (644 statt 755)
 - Addon 0.7.7: Mobile-Responsive CSS
+- Addon: Einheitliches Layout für alle Seiten (Mobile + Desktop)
 - Addon: hkkurve.cgi: Max-Temperatur und Außentemperatur als getrennte Spalten anzeigen (rückwärtskompatibel mit alten Log-Einträgen, die nur Max oder nur AT enthalten)
 - Doku: Thermostat-Regelung bei Übertemperatur präzisiert (#73)
 
 ### Behoben
 
+- Addon: index.cgi: Spalte „Vorlauf" zeigte bei Räumen mit mehreren Einträgen in `HK2-Schaltzeiten` den falschen Wert (Gruppenräume können mehrere Einträge in beliebiger Reihenfolge haben); es wird jetzt der Eintrag mit dem frühesten Einschaltzeitpunkt gewählt
+- Addon: index.cgi: Hinweistext unter der Tabelle zu „Vorlauf" und „Heizen ab" korrigiert
+- Addon: index.cgi: Spalte „Modus" ans Ende der Tabelle verschoben
+- Addon: heizkalender.css: `vertical-align: top` für Tabellenzellen ergänzt
+- Addon: sysvars.cgi: Klasse `hk-nowrap` zur Systemvariablen-Tabelle ergänzt
 - Addon: sysvars.cgi: implizite Defaults für Faktor und Grundtemperatur anzeigen, wenn keine individuellen Werte gesetzt sind
 - Addon: CSS: Navigationsleiste bricht auf schmalen Displays um
 

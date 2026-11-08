@@ -1,6 +1,6 @@
 !// Tool zur Kontrolle der Heizkurve
 !//================================================================================================
-!// Stand:    06.11.2026
+!// Stand:    08.11.2026
 !// Autoren:  Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -13,6 +13,7 @@
 !// Skript sollte alle 5min laufen ca. 30 Sekunden nach dem Schaltskript
 !//
 
+!// MRi: 2026-11-08 Zieltemperatur erreicht wurde evtl. nicht geloggt.
 !// TT:  2026-11-06 Terminende-Doppellog verhindert: Bit 4 (16) als Guard gesetzt.
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// TT:  2026-11-02 AT bei allen 5 Events mitloggen (fuer Regressionstest Saettigungsmodell).
@@ -353,9 +354,9 @@ foreach(SLEintrag,SListe){
       }
       logObj.State          (RaumLogName # " Heizbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", AT: " # AT.ToString(1));
       if (DEBUG) { WriteLine(RaumLogName # " Heizbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", AT: " # AT.ToString(1)); }
-      !// bit 0 setzen und bit 2 zurücksetzen
-      status = status & 251;
-      status = status | 1;
+      !// bit 0 setzen und bit 1+2 zurücksetzen
+      status = status & 249;   !// löscht Bit 1 (Zieltemperatur) und Bit 2 (Heizende)
+      status = status | 1;     !// setzt Bit 0 (Heizbeginn)
     }
 
     !// Prüfen ob Heizende erkannt wird. Nur wenn bit 0 = ein und bit 2 = aus

@@ -56,36 +56,57 @@ _Diese Werte entsprechen der großzügigen Beispielkonfiguration (`451;370;297;1
 
 ## Die Berechnungsformel
 
-Die tatsächliche Vorheizzeit ergibt sich aus dem Kurvenwert multipliziert mit einem
-**Korrekturfaktor**, der die aktuelle Raumtemperatur berücksichtigt:
+Die tatsächliche Vorheizzeit (VLZ) setzt sich aus zwei Teilen zusammen: einem
+raumspezifischen Basisoffset und dem temperaturabhängigen Kurvenwert. Beide werden gemeinsam
+mit einem Dämpfungsfaktor skaliert, der den verbleibenden Heizbedarf widerspiegelt:
 
-```txt
-Vorheizzeit = Kurvenwert(Außentemperatur) × Korrekturfaktor
+$$
+\text{VLZ} = f_2(T_{\text{ist}}) \;\times\; \bigl(\; V \;+\; f_1 \;\times\; \text{HK2}(T_{\text{at}}) \;\bigr)
+$$
 
-Korrekturfaktor = 1 − 0,6 × ( (Raumtemperatur − Grundtemperatur) / (Wohlfühltemperatur − Grundtemperatur) )
-                              └─ Raumtemperatur wird auf max. Wohlfühltemperatur begrenzt ─┘
+| Symbol | Variablenname | Beschreibung |
+| :--- | :--- | :--- |
+| VLZ | | Berechnete Vorheizzeit in Minuten |
+| $f_2$ | `faktor2HeizBedarf` | Temperaturabhängiger Dämpfungsfaktor (0,0 bis 1,0) |
+| $V$ | | Raumspezifische Basisheizzeit in Minuten (aus Raumvariable) |
+| $f_1$ | `faktor1HK2Kurve` | Raumspezifischer Multiplikator auf die HK2-Kurve |
+| $T_{\text{ist}}$ | | Aktuelle Raumtemperatur (°C) |
+| $T_{\text{at}}$ | | Aktuelle Außentemperatur (°C) |
+| HK2 | | Heizzeit als Funktion der Außentemperatur (linear interpoliert) |
 
-Minimum: 0,20 (20 %) — es wird immer mindestens 20 % der Kurvenzeit vorgeheizt
-```
+### faktor2HeizBedarf (Zwei-Geraden-Modell)
 
-**Bedeutung der Parameter:**
+`faktor2HeizBedarf` berechnet, wie viel Heizbedarf noch verbleibt: 1,0 wenn der Raum ganz kalt
+ist (IST = Grundtemperatur), 0,0 wenn er bereits die Zieltemperatur erreicht hat.
 
-| Parameter | Bedeutung |
-| :--- | :--- |
-| Raumtemperatur | Aktuelle Temperatur laut Thermostat im Raum |
-| Grundtemperatur | Absenktemperatur (`HK2-Grundtemperatur`), z. B. 10 °C |
-| Wohlfühltemperatur | Gewünschte Zieltemperatur laut Schaltliste, z. B. 20 °C |
-| Faktor 0,6 | Fixer Anpassungsfaktor (im Skript hardcodiert) |
+$$
+f_2(T_{\text{ist}}) = \begin{cases} 1{,}0 & \text{wenn } T_{\text{ist}} \leq T_G \\[8pt] 1 - K \;\cdot\; \dfrac{T_{\text{ist}} - T_G}{T_W - T_G} & \text{wenn } T_G < T_{\text{ist}} \leq M \\[12pt] (2 - K) \;\cdot\; \left(1 - \dfrac{T_{\text{ist}} - T_G}{T_W - T_G}\right) & \text{wenn } M < T_{\text{ist}} < T_W \\[8pt] 0{,}0 & \text{wenn } T_{\text{ist}} \geq T_W \end{cases}
+$$
 
-**Beispielrechnungen:**
+mit dem Mittelpunkt $M = T_G + \dfrac{T_W - T_G}{2}$
 
-| Raumtemperatur | Korrekturfaktor | Vorheizzeit bei 8 °C Außentemp. (196 min) |
-| ---: | ---: | ---: |
-| 10 °C (= Grundtemperatur) | 1,00 (100 %) | 196 min (3 h 16 min) |
-| 15 °C | 0,70 (70 %) | 137 min (2 h 17 min) |
-| 18 °C | 0,52 (52 %) | 102 min (1 h 42 min) |
-| 20 °C (= Wohlfühltemperatur) | 0,40 (40 %) | 78 min (1 h 18 min) |
-| ≥ 20 °C (wärmer als Ziel) | 0,40 (40 %, gedeckelt) | 78 min (1 h 18 min) |
+| Symbol | Bedeutung | Beispiel |
+| :--- | :--- | :--- |
+| $T_G$ | Grundtemperatur (`HK2-Grundtemperatur`) | 10 °C |
+| $T_W$ | Wohlfühltemperatur (Zieltemperatur laut Schaltliste) | 20 °C |
+| $K$ | Kurvenanpassung (steuert die Krümmung des Zwei-Geraden-Modells) | 0,8 |
+| $M$ | Mittelpunkt (Knickstelle der zwei Geraden) | 15 °C |
+
+### faktor1HK2Kurve (raumspezifischer Multiplikator)
+
+`faktor1HK2Kurve` wird aus Feld 4 der Raumvariable gelesen (Suffix `*Faktor`, z. B. `180*1.4`).
+Er verschiebt den Kurvenwert nach oben oder unten, ohne den Basisoffset $V$ zu beeinflussen.
+Default ist 1,0 (kein Einfluss), erlaubter Bereich 0,20 bis 5,0.
+
+### HK2-Kurve (lineare Interpolation)
+
+$$
+\text{HK2}(T_{\text{at}}) = v_i + (v_{i+1} - v_i) \;\cdot\; \frac{T_{\text{at}} - a_i}{a_{i+1} - a_i}
+$$
+
+wobei $(a_i, v_i)$ und $(a_{i+1}, v_{i+1})$ die zwei benachbarten Stützpunkte sind
+mit $a_i \leq T_{\text{at}} \leq a_{i+1}$. Für Außentemperaturen über dem letzten Stützpunkt
+extrapoliert das Skript über den letzten Abschnitt hinaus (Minimum: 0 Minuten).
 
 ## Die zwei Anteile der Einschaltverschiebung
 

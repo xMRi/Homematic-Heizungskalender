@@ -406,6 +406,25 @@ Beispiel Fußbodenheizung: Fußbodenheizungen reagieren aufgrund ihrer thermisch
 
 Die konkreten Werte müssen an die Eigenschaften des jeweiligen Raums und der Heizungsanlage angepasst werden.
 
+### Mindest-Vorlaufzeit pro Raum
+
+Liegt die Isttemperatur eines Raums kurz vor einem Termin nahe an der Zieltemperatur, reduziert der Heizkalender die berechnete Vorlaufzeit stark, weil kaum noch Heizbedarf besteht. In Räumen, die über Nacht trotzdem etwas abkühlen und eine gewisse Anlaufzeit benötigen, kann die Vorlaufzeit dadurch auf nur wenige Minuten sinken, selbst wenn der Raum in der Realität länger braucht.
+
+Mit dem optionalen dritten Wert im `Vorheizzeit*Faktor`-Feld lässt sich eine Untergrenze für die Gesamtvorlaufzeit in Minuten festlegen:
+
+```text
+Vorheizzeit*Faktor*MindestMinuten
+0*0.5*90    → mindestens 90 Minuten Vorlauf (z.B. UG-Büro)
+480*1.4*15  → mindestens 15 Minuten Vorlauf (Default)
+480*1.4     → kein dritter Wert: Default von 15 Minuten gilt
+```
+
+Der Default von 15 Minuten stellt sicher, dass die Heizung sichtbar läuft, bevor der Raum genutzt wird. Räume mit nachweislich längerer Anlaufzeit trotz warmer Isttemperatur sollten einen höheren Wert erhalten.
+
+Ein Wert von 0 ist nicht erlaubt; der Heizkalender verwendet dann den Default von 15 Minuten. Gültige Werte liegen zwischen 1 und 480 Minuten. Die Mindest-Vorlaufzeit ist bewusst nicht deaktivierbar: sie verhindert, dass die Vorlaufzeit bei einer Isttemperatur nahe der Zieltemperatur auf null weggerechnet wird.
+
+Greift die Mindest-Vorlaufzeit, erscheint im HK-Log ein Hinweis `[Mindest]` in der betreffenden Zeile.
+
 ### Werte der Heizkurve
 
 | Außentemperatur | −10 °C | −5 °C | 0 °C | 8 °C | 10 °C | 12 °C | 15 °C | 17,5 °C |

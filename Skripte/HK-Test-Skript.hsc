@@ -1,6 +1,6 @@
 !// Skript zum Testen der Einstellungen für den Heizkalender.
 !//================================================================================================
-!// Stand:    19.10.2026
+!// Stand:    08.11.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -10,6 +10,7 @@
 !// Es besteht keinerlei Garantie oder Haftung. Nutzung auf eigene Verantwortung.
 !//================================================================================================
 !//
+!// TT:  2026-11-08 Mindest-Vorlaufzeit (dritter *-Wert in Feld 4) wird ausgegeben.
 !// TT:  2026-10-03 Modus HS (Heizen+Schalten) erkannt und korrekt ausgegeben.
 !// TT:  2026-09-18 Syntaxfehler behoben (fehlende Klammern/Semikolon), + auf # umgestellt.
 
@@ -263,6 +264,11 @@ foreach(RName,ListeRaumVariablen.Split(";")){
   if (stemp){
     !// Optionale Kurvenkorrektur
     WriteLine("Kurvenkorr.:\t" # stemp.ToFloat().ToString(2));
+  }
+  string stemp2 = RaumDef.StrValueByIndex(";",4).StrValueByIndex("*",2);
+  if (stemp2){
+    !// Optionale Mindest-Vorlaufzeit
+    WriteLine("Mindest-VLZ:\t" # stemp2.ToInteger().ToString() # " min");
   }
 
   !// Wert #5 Nachlaufzeit

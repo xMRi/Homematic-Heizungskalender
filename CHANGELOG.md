@@ -13,6 +13,17 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-08]
+
+### Hinzugefügt
+
+- Skript2: Konfigurierbare Mindest-Vorlaufzeit pro Raum als dritter Wert im `Vorheizzeit*Faktor`-Feld der Raumvariablen (`Vorheizzeit*Faktor*MindestMinuten`, Default 15 min). Verhindert, dass Räume, deren Isttemperatur nahe an der Zieltemperatur liegt, nur wenige Minuten Vorlaufzeit erhalten. Greift die Untergrenze, erscheint `[Mindest]` im HK-Log.
+- Addon: Neue Spalte "Mindest-Vorlauf (min)" in sysvars.cgi und hkconfig.cgi; Default 15 wird kursiv angezeigt.
+
+### Geändert
+
+- Skript2: `faktor1`/`faktor2` in `faktor1HK2Kurve`/`faktor2HeizBedarf` umbenannt.
+
 ## [2026-11-07]
 
 ### Geändert 

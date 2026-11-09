@@ -13,6 +13,14 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-09]
+
+- Heizkurvenkontrolle: Zieltemperatur wurde evtl. nicht angezeigt
+- Skript2: minimale Vorheizzeit eingebaut
+- HeizkalenderInstallation: Raum Daten um minimale Vorheizzeit erweitert.
+- Anpassung der Doku
+- HeizkalenderInstallation: Version 5.0.4
+
 ## [2026-11-08]
 
 ### Hinzugefügt
@@ -23,6 +31,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 ### Geändert
 
 - Skript2: `faktor1`/`faktor2` in `faktor1HK2Kurve`/`faktor2HeizBedarf` umbenannt.
+- Addon: Version 0.9.0
 
 ## [2026-11-07]
 

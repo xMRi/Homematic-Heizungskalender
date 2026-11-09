@@ -19,6 +19,7 @@ Durch die gesamte Installation führen folgende Dokumente:
 - [Zugangsdaten für Kalender beschaffen](kalender-einrichten.md)
 - [Einrichtung der CCU](ccu-einrichten.md)
 - [Einrichtung des Heizkalenders mir der `HeizkalenderInstallation.exe`-Anleitung](../heizkalender-installation/readme.md).
+- [Informationen zu Updates](updates.md)
 
 > [!WARNING]
 > **In dieser Beschreibung werden Systemvariablen direkt mir Ihrem Namen benannt. Wenn der `HeizkalenderInstallation.exe` verwendet wird, kann dieses Programm für die Einstellung aller hier beschrieben Parameter verwendet werden!**
@@ -206,9 +207,12 @@ ergänzende Bedienoberfläche für die CCU sind folgende Apps geeignet:
 
 Die `HeizkalenderInstallation.exe` ist das zentrale Werkzeug für die Installation und Verwaltung des Heizkalenders. Mit ihr lassen sich alle erforderlichen Skripte und Systemvariablen auf der CCU einrichten sowie die Verbindung zum verwendeten Kalendersystem konfigurieren.
 
-Auch spätere Änderungen an der Konfiguration können bequem über das Programm vorgenommen werden. Stehen Updates zur Verfügung, unterstützt die Anwendung zudem die Aktualisierung des Heizkalenders.
+Auch spätere Änderungen an der Konfiguration können bequem über das Programm vorgenommen werden. Stehen Updates zur Verfügung, unterstützt die Anwendung zudem die Aktualisierung des Heizkalenders.  
+[Weitere Informationen zu Programm-Updates finden sich hier](updates.md).
 
 **Die Bedienung ist bewusst einfach gehalten:** Im Normalfall sind nur wenige manuelle Schritte über die Web-Oberfläche der CCU und deren Bordmittel erforderlich. Dadurch können auch technisch interessierte Anwender ohne tiefgehende Homematic-Kenntnisse die Installation, Konfiguration und Aktualisierung selbst durchführen.
+
+**Grundsätzlich ist die manuelle Installation über die einzelnen *Init-Skripte* auch möglich.** [Informationen finden Sie bei der Erklärung der Skripte](../skripte/readme.md)
 
 ## Namenskonvention
 

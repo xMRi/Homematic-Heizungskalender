@@ -127,7 +127,7 @@ foreach param [split $query_string "&"] {
     if {[string equal $key "raum"]} { set filter_raum $val }
     if {[string equal $key "ereignis"]} { set filter_ereignis $val }
     if {[string equal $key "tage"]} {
-        if {[string equal $val "0"] || [string equal $val "1"] || [string equal $val "7"] || [string equal $val "30"] || [string equal $val "90"]} {
+        if {[string equal $val "0"] || [string equal $val "1"] || [string equal $val "24"] || [string equal $val "7"] || [string equal $val "30"] || [string equal $val "90"]} {
             set filter_tage $val
         }
     }
@@ -138,11 +138,17 @@ foreach param [split $query_string "&"] {
 # ---------------------------------------------------------------------------
 # Bei tage=1 ("Heute"): ab Mitternacht des heutigen Tages, nicht "jetzt minus 24h"
 # Bei tage=0 ("Gestern"): genau der gestrige Tag (datum_ab = gestern, datum_bis = heute)
+# Bei tage=24 ("Letzte 24h"): exakter Timestamp-Vergleich, nicht Tagesgrenze
 set datum_bis ""
+set ts_ab ""
 if {[string equal $filter_tage "0"]} {
     set gestern [expr {[clock seconds] - 86400}]
     set datum_ab  [clock format $gestern -format "%Y-%m-%d"]
     set datum_bis [clock format [clock seconds] -format "%Y-%m-%d"]
+} elseif {[string equal $filter_tage "24"]} {
+    set vor24h [expr {[clock seconds] - 86400}]
+    set datum_ab [clock format $vor24h -format "%Y-%m-%d"]
+    set ts_ab    [clock format $vor24h -format "%Y-%m-%d %H:%M:%S"]
 } elseif {[string equal $filter_tage "1"]} {
     set datum_ab [clock format [clock seconds] -format "%Y-%m-%d"]
 } else {
@@ -159,7 +165,7 @@ if {[string equal $filter_tage "0"]} {
 set usb_dir "/media/usb1"
 set log_files {}
 if {[file isdirectory $usb_dir]} {
-    set tage_fuer_filter [expr {[string equal $filter_tage "0"] ? 1 : int($filter_tage)}]
+    set tage_fuer_filter [expr {[string equal $filter_tage "0"] ? 1 : ([string equal $filter_tage "24"] ? 1 : int($filter_tage))}]
     set datei_filter_ab [clock format [expr {[clock seconds] - ($tage_fuer_filter + 7) * 86400}] -format "%Y-%m-%d"]
     foreach f [lsort -decreasing [glob -nocomplain "$usb_dir/HK-Log_*.log"]] {
         set fname [file tail $f]
@@ -253,7 +259,9 @@ if {$submitted && [llength $log_files] > 0} {
 
         # Datum-Feinfilter
         set datum [string range $ts 0 9]
-        if {![string equal $datum_ab ""] && $datum < $datum_ab} { continue }
+        if {![string equal $ts_ab ""]} {
+            if {$ts < $ts_ab} { continue }
+        } elseif {![string equal $datum_ab ""] && $datum < $datum_ab} { continue }
         if {![string equal $datum_bis ""] && $datum >= $datum_bis} { continue }
 
         set raumname   ""
@@ -372,7 +380,7 @@ puts "    <form method=\"get\" action=\"hkkurve.cgi\">"
 puts {      <fieldset>}
 puts {        <legend>Filter</legend>}
 puts "        <label>Zeitraum: <select name=\"tage\">"
-foreach {tval tlabel} {1 "Heute" 0 "Gestern" 7 "Letzte 7 Tage" 30 "Letzte 30 Tage" 90 "Letzte 90 Tage"} {
+foreach {tval tlabel} {1 "Heute" 0 "Gestern" 24 "Letzte 24 Stunden" 7 "Letzte 7 Tage" 30 "Letzte 30 Tage" 90 "Letzte 90 Tage"} {
     set sel [expr {[string equal $tval $filter_tage] ? " selected" : ""}]
     puts "          <option value=\"$tval\"${sel}>$tlabel</option>"
 }

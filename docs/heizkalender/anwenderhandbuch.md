@@ -246,7 +246,9 @@ Die Raumvariable enthält die Konfigurationsdaten für den jeweiligen Raum. Dazu
 - der Betriebsmodus und der Gerätetyp des verwendeten Aktors,
 - die gewünschte Wohlfühltemperatur,
 - eine gegebenenfalls abweichende Grundtemperatur,
-- individuelle Vorheizzeiten und Korrekturfaktoren für die Heizkurve,
+- individuelle Vorheizzeiten 
+- minimale Heizzeit (default 15min)
+- Korrekturfaktoren für die Heizkurve
 - der Zeitpunkt, zu dem die Heizung vor dem Ende eines Termins abgeschaltet werden soll,
 - die zu steuernde Heizgruppe beziehungsweise das anzusteuernde Gerät.
 
@@ -403,6 +405,25 @@ Der Heizkalender berücksichtigt dabei auch die aktuelle Raumtemperatur: Ist der
 Beispiel Fußbodenheizung: Fußbodenheizungen reagieren aufgrund ihrer thermischen Trägheit besonders langsam. Reicht die normale Vorheizzeit nicht aus, kann sie beispielsweise mit einem Faktor von *3.5 und einem festen Offset von 240 Minuten angepasst werden. So wird der Heizbeginn deutlich vorverlegt, damit die gewünschte Wohlfühltemperatur rechtzeitig erreicht werden kann.
 
 Die konkreten Werte müssen an die Eigenschaften des jeweiligen Raums und der Heizungsanlage angepasst werden.
+
+### Mindest-Vorlaufzeit pro Raum
+
+Liegt die Isttemperatur eines Raums kurz vor einem Termin nahe an der Zieltemperatur, reduziert der Heizkalender die berechnete Vorlaufzeit stark, weil kaum noch Heizbedarf besteht. In Räumen, die über Nacht trotzdem etwas abkühlen und eine gewisse Anlaufzeit benötigen, kann die Vorlaufzeit dadurch auf nur wenige Minuten sinken, selbst wenn der Raum in der Realität länger braucht.
+
+Mit dem optionalen dritten Wert im `Vorheizzeit*Faktor`-Feld lässt sich eine Untergrenze für die Gesamtvorlaufzeit in Minuten festlegen:
+
+```text
+Vorheizzeit*Faktor*MindestMinuten
+0*0.5*90    → mindestens 90 Minuten Vorlauf (z.B. UG-Büro)
+480*1.4*15  → mindestens 15 Minuten Vorlauf (Default)
+480*1.4     → kein dritter Wert: Default von 15 Minuten gilt
+```
+
+Der Default von 15 Minuten stellt sicher, dass die Heizung sichtbar läuft, bevor der Raum genutzt wird. Räume mit nachweislich längerer Anlaufzeit trotz warmer Isttemperatur sollten einen höheren Wert erhalten.
+
+Ein Wert von 0 ist nicht erlaubt; der Heizkalender verwendet dann den Default von 15 Minuten. Gültige Werte liegen zwischen 1 und 480 Minuten. Die Mindest-Vorlaufzeit ist bewusst nicht deaktivierbar: sie verhindert, dass die Vorlaufzeit bei einer Isttemperatur nahe der Zieltemperatur auf null weggerechnet wird.
+
+Greift die Mindest-Vorlaufzeit, erscheint im HK-Log ein Hinweis `[Mindest]` in der betreffenden Zeile.
 
 ### Werte der Heizkurve
 
@@ -600,7 +621,7 @@ Die folgenden Werte haben sich in der Praxis bewährt.
 | Variable | Bedeutung | Wert/Empfehlung | Beschreibung |
 | :--- | :--- | :--- | :--- |
 | `HK2-Grundtemperatur` | Temperatur außerhalb der Nutzungszeit | **16 °C**|Nicht zu niedrig, sonst kühlen die Wände aus; einzelne Räume können abweichen)<br>Eine abweichende Grundtemperatur kann je Raum individuell eingestellt werden. |
-| `HK2-A.Temp.Grenze` | Außentemperatur, ab der nicht mehr geheizt wird | **19-20 °C**|Zum Testen einen utopisch hohen Wert (z.B. 50 °C) setzen und danach nicht vergessen zurückzustellen |
+| `HK2-A.Temp.Grenze` | Außentemperatur, ab der nicht mehr geheizt wird | **19-20 °C**|Zum Testen einen sehr niedrigen Wert (z.B. 0 °C) setzen und danach nicht vergessen zurückzustellen |
 | `HK2-Hand-Grundtemp` | Nächtliche Rückstellung auf Grundtemperatur um 01:00 Uhr | **Wahr (1) / True**|Thermostate, die nicht auf Grundtemperatur stehen, werden zurückgestellt (außer in einer aktiven Heizphase). Das gilt auch für Schaltungen. Ist der Schalter *Falsch (0)/False* bleiben alle Schaltungen und Thermostate unverändert.|
 | `HK2-Hand-Temp` | Manuelle Temperatur hat beim Terminende Vorrang | **Falsch (0) / False**|Ist der Schalter *Falsch (0) / False* wird eine manuell eingestellte Temperatur nicht beibehalten und die Grundtemperatur eingestellt. Ist der Schalter *Wahr (1) / True*, wird eine manuell abweichende Temperatur von Thermostaten beibehalten. |
 | `HK2-VorzeitAus` | Globale Minuten, um die vor Terminende abgeschaltet wird | **0**|Besser je Raum einstellen; nicht gleichzeitig mit der raumbezogenen VorzeitAus nutzen (beide Werte addieren sich). Das vorzeitige Heizende kann besser je Raum individuell gesteuert werden. Dieser Wert gilt nur für Heizvorgänge, nicht beim reinen Schalten.<br>**Dieser Wert sollte nicht verwendet werden er existiert nur noch aus Gründen der Rückwärtskompatibilität.** |
@@ -736,6 +757,8 @@ Diese Sonderbefehle können eine Heizung dauerhaft ein oder dauerhaft ausschalte
 | `#GT#` | Wohlfühltemperatur ignorieren, stattdessen die Grundtemperatur schalten |
 | `#NS#` / `#NH#` | Nicht schalten / nicht heizen: der Termin wird nicht in die Schaltliste aufgenommen |
 | `#<Zahl>...#` | Setzt die gewünschte Temperatur (0 bis 30 °C, begrenzt durch den Aktor) |
+
+**Bei den Sonderbefehlen `#EIN#`, `#AUS#` und `#RESET#`/`#NORMAL#` spielt die Dauer eines Termins keine Rolle. Relevant ist alleine der Terminstart. Der entsprechende Befehl wird genau und nur zu diesem Zeitpunkt ausgeführt.**
 
 **Anwendungsbeispiel `#NS#`/`#NH#`:** Reinigt eine Firma die Räume, soll die
 Ressource als belegt gelten, aber nicht geheizt werden. Mit `#NS#` oder `#NH#`

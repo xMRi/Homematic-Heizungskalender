@@ -13,6 +13,60 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-08]
+
+### Hinzugefügt
+
+- Skript2: Konfigurierbare Mindest-Vorlaufzeit pro Raum als dritter Wert im `Vorheizzeit*Faktor`-Feld der Raumvariablen (`Vorheizzeit*Faktor*MindestMinuten`, Default 15 min). Verhindert, dass Räume, deren Isttemperatur nahe an der Zieltemperatur liegt, nur wenige Minuten Vorlaufzeit erhalten. Greift die Untergrenze, erscheint `[Mindest]` im HK-Log.
+- Addon: Neue Spalte "Mindest-Vorlauf (min)" in sysvars.cgi und hkconfig.cgi; Default 15 wird kursiv angezeigt.
+
+### Geändert
+
+- Skript2: `faktor1`/`faktor2` in `faktor1HK2Kurve`/`faktor2HeizBedarf` umbenannt.
+
+## [2026-11-07]
+
+### Geändert 
+
+- HeizkalenderInstallation: Maximum und Minimum für Vor- und Nachlauf auf 16h erweitert.
+- HeizkalenderInstallation: Version 5.0.3
+- Systemprotokoll sichern: Verwendung von Single Quotes um eine Ersetzung durch die Shell zu vermeiden.
+- Skript1: Alle Nachlaufzeiten werden nun automatisch berechnet berechnet und das Einlesen (verleiben der Termine) werden automatisch berücksichtigt.
+- Skript2: Fallback auf den vorherigen Berechnungswert oder warten auf korrekte Neuberechnung, wenn keine Isttemperatur ermittelt werden kann.
+
+
+## [2026-11-06]
+
+### Geändert
+
+- Skript2: Anpassung der Kürzung der Vorheiztemperatur Aufgrund der erreichten Isttemperatur. Wir schaffen hier eine Näherung an eine logarithmische Sättigungskurve. Der Kurvenbauch kann angepasst werden.
+- Skript3: Nachtschaltung berücksichtigt Dauer-Ein/Aus falsch.
+- Skripte: Code Hardening
+- Skripte: Diverse Fixes Aufgrund einer statischen Code-Analyse
+- Heizkurvenkontrolle: Terminende-Doppellog verhindert. 
+- Skript2: SDFlag-Parsing in der Freeze-Wiederherstellung korrigiert.
+
+## [2026-11-05]
+
+### Geändert
+
+- Skript3: Starke Optimierung der Sonderbefehle (nur noch ein Schaltblock).
+- Skript2+3: Außentemperaturgrenze wird nun in Skript2 behandelt und nicht mehr im Schaltteil.
+- Skript2+3: Logging verbessert und vereinfacht.
+- Doku: Anpassungen
+
+## [2026-11-03]
+
+### Geändert
+
+- Skripte: Aufteilung Skript 2 (Berechnen-Schalten) in neu Skript 2 (Berechnen) und Skript 3 (Schalten) 
+- Skripte: Neue Systemvariable HK3-Log, HK3-Logging, HK2-Schaltliste
+- Init-Skripte: Anpassung für neue Variablen
+- Doku: Anpassung der Doku an neues Skript 3
+- HeizkalenderInstallation: Anpassung an neue Systemvariablen und Skript3
+
+## [2026-11-02]
+
 ### Hinzugefügt
 
 - Doku: RRD4J-Diagrammexport dokumentiert, DumpRRD.java nach Tools verschoben

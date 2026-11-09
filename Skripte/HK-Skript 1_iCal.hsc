@@ -1,6 +1,6 @@
 !// Skript 1 um die Termine aus iCal auszulesen
 !//================================================================================================
-!// Stand:    23.10.2026
+!// Stand:    07.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -22,6 +22,7 @@
 !// Skript sollte alle 30min laufen
 !//
 
+!// MRi: 2026-11-07 Schaltliste bis 30 Minuten nach dem spätesten raumbezogenen Ausschaltzeitpunkt halten.
 !// TT:  2026-10-25 Bugfix: Variable Shadowing bei strTemp. Die innere Deklaration
 !//                 "string strTemp" im DESCRIPTION-Block ueberdeckte die aeussere Variable,
 !//                 sodass Sonderbefehle (#EIN#, #AUS#, #GT# etc.) nie ausgewertet wurden.
@@ -52,14 +53,13 @@ boolean DEBUG=0;
 !// Zeitfenster fuer Termine: bis zeitVorlauf vor Terminstart, und noch die
 !// Haltezeit nach Terminende. Umgesetzt als minDatum = JETZT - zeitNachlauf
 !// (wirkt wie Terminende plus Haltezeit). zeitNachlauf haelt einen beendeten
-!// Termin in der Schaltliste, damit HK-Skript 2 ihn noch ausschalten kann.
+!// Termin in der Schaltliste, damit HK-Skript 3 ihn noch ausschalten kann.
 !// Kein Heiz-Nachlauf.
 integer zeitVorlauf=12*60;   !// 12 Stunden (Default, falls HK1-Vorlaufzeit nicht gesetzt)
 object objVorlaufzeit = dom.GetObject(vrp#"HK1-Vorlaufzeit");
 if(objVorlaufzeit) {
   zeitVorlauf = objVorlaufzeit.State().ToInteger();
 }
-integer zeitNachlauf=30;   !// 30 Minuten
 
 !// Logging in "Log" mit 1 zwingend einschalten oder mit -1 zwingend Ausschalten
 !// Mit 0 wird die Einstellunge aus der HKx-Logging übernommen
@@ -99,6 +99,37 @@ WriteLine("Beginn iCal-Skriptlauf");
 !// Filter für Resourcen setzen
 string RIdListe=dom.GetObject(vrp#"HK1-R-Liste").State();
 string HKGListe=dom.GetObject(vrp#"HK2-HKG-Liste").State();
+string RaumVar;
+object objVar;
+
+!// Die Raumvariable enthält die individuelle Ausschaltverschiebung in Feld 5.
+!// Ein negativer Wert verschiebt das Ausschalten nach hinten. Die Schaltliste muss
+!// daher bis 30 Minuten nach der spätesten individuellen Ausschaltzeit erhalten bleiben.
+integer minRaumNachlauf=0;
+integer raumNachlauf;
+foreach(RaumVar, HKGListe.Replace("+",";").Split(";")){
+  if(RaumVar!=""){
+    objVar=dom.GetObject(RaumVar);
+    if(objVar){
+      raumNachlauf=objVar.State().StrValueByIndex(";",5).ToInteger();
+      if(raumNachlauf<minRaumNachlauf){
+        minRaumNachlauf=raumNachlauf;
+      }
+    }
+  }
+}
+integer zeitNachlauf=30-minRaumNachlauf;
+if(DEBUG){WriteLine("Schaltliste-Nachlauf: " # zeitNachlauf # " Minuten");}
+
+!// Suche alle Ids der Ressourcen. Achtung es kann ein mit = abgetrennter Name vorhanden sein.
+string filter="";
+string RId;
+foreach(RId,RIdListe.Split(";")){
+  if (filter){
+    filter = filter # "|";
+  }
+  filter = filter # RId.StrValueByIndex("=",0);
+}
 
 if(DEBUG){
   WriteLine("HKGListe=" # HKGListe);

@@ -361,12 +361,12 @@ proc lookup_isttemp {rname ist_temps_var} {
 
 # ---------------------------------------------------------------------------
 # HK2-Schaltzeiten parsen: RaumVarName -> Liste aller {VorlaufMin HeizenAb}-Einträge
-# Format: RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;NachlaufMin~...
+# Format: RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;VorlaufzeitAusMin~...
 # Pro Raum können mehrere Einträge vorkommen; lookup_vlz wählt den nächsten.
 # ---------------------------------------------------------------------------
 set vlz_raw [string trim $vlz_raw]
 if {[string equal $vlz_raw "???"] || [string equal $vlz_raw ""]} { set vlz_raw "" }
-set has_vlz [expr {$vlz_present && ![string equal $vlz_raw ""]}]
+set has_vlz $vlz_present
 array set vlz_by_room_arr {}
 foreach entry [split $vlz_raw "~"] {
     set entry [string trim $entry]
@@ -518,9 +518,9 @@ if {[llength $raeume] == 0} {
         set rowclass ""
         if {[string equal $status "1"]} {
             set rowclass " class=\"hk-sl-aktiv\""
-            set status_cell {<span class="hk-sl-status-aktiv">&#9632;</span> Ein}
+            set status_cell {<td class="hk-sl-status-aktiv"><span>&#9632;</span> Ein}
         } else {
-            set status_cell {<span class="hk-sl-status-inaktiv">&#9675;</span> Aus}
+            set status_cell {<td class="hk-sl-status-inaktiv"><span>&#9675;</span> Aus}
         }
         set ein_str ""
         set aus_str ""
@@ -588,9 +588,9 @@ if {[llength $raeume] == 0} {
                     }
                 }
             }
-            puts "    <tr${rowclass}><td>$status_cell</td><td>[htmlquote $rname]</td><td>$isttemp_str</td><td>[htmlquote $humi_str]</td><td>$vorlauf_str</td><td>$heiab_str</td><td class=\"col-sl-termin\">$termin_cell</td><td>$wtemp_str</td><td>[htmlquote $modus_str]</td></tr>"
+            puts "    <tr${rowclass}>$status_cell</td><td>[htmlquote $rname]</td><td>$isttemp_str</td><td>[htmlquote $humi_str]</td><td>$vorlauf_str</td><td>$heiab_str</td><td class=\"col-sl-termin\">$termin_cell</td><td>$wtemp_str</td><td>[htmlquote $modus_str]</td></tr>"
         } else {
-            puts "    <tr${rowclass}><td>$status_cell</td><td>[htmlquote $rname]</td><td>$isttemp_str</td><td>[htmlquote $humi_str]</td><td class=\"col-sl-termin\">$termin_cell</td><td>$wtemp_str</td><td>[htmlquote $modus_str]</td></tr>"
+            puts "    <tr${rowclass}>$status_cell</td><td>[htmlquote $rname]</td><td>$isttemp_str</td><td>[htmlquote $humi_str]</td><td class=\"col-sl-termin\">$termin_cell</td><td>$wtemp_str</td><td>[htmlquote $modus_str]</td></tr>"
         }
     }
     puts {  </table></div>}

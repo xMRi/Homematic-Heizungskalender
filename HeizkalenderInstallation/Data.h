@@ -106,6 +106,7 @@ struct SRaumDaten
 	double m_dblTempG{};
 	int m_iVBegin{};
 	int m_iVEnde{};
+	int m_iVMininum{};
 	double m_dblFaktor{};
 	CString m_strDevTyp;
 	CString m_strAktor;

@@ -212,17 +212,34 @@ CString CDataProgram::GetDataAsLine()
 void SRaumDaten::LoadFromString(CString const &strName, CString const &str)
 {
 	m_strName = strName;
+
+	// <Schaltstatus> ; <Modus> ; <Devicetyp>
 	m_strMode = StrValueByIndex(str,1,_T(';'));
 	m_strDevTyp = StrValueByIndex(str,2,_T(';'));
+
+	// <Wohlfühltemperatur> / [<Grundtemperatur>]
 	m_dblTemp = StringToDouble(StrValueByIndex(StrValueByIndex(str,3,_T(';')),0,_T('/')));
-	m_dblTempG = StringToDouble(StrValueByIndex(StrValueByIndex(str,3,_T(';')),1,_T('/')));
-	if (m_dblTempG==0)
-		m_dblTempG = theApp.GetGrundTemperatur();
+
+	m_dblTempG = theApp.GetGrundTemperatur();
+	CString strTemp = StrValueByIndex(StrValueByIndex(str,3,_T(';')),1,_T('/'));
+	if (!strTemp.IsEmpty())
+		m_dblTempG = StringToDouble(strTemp);
+		
+	// <Vorzeitiger Beginn> * [<Faktor>] * [<Mindestlaufzeit>]
 	m_iVBegin = StringToInt(StrValueByIndex(StrValueByIndex(str,4,_T(';')),0,_T('*')));
-	m_dblFaktor = StringToDouble(StrValueByIndex(StrValueByIndex(str,4,_T(';')),1,_T('*')));
+
+	m_dblFaktor = 1.0;
+	strTemp = StrValueByIndex(StrValueByIndex(str,4,_T(';')),1,_T('*'));
+	if (!strTemp.IsEmpty())
+		m_dblFaktor = StringToDouble(strTemp);
+
+	m_iVMininum = 15;
+	strTemp = StrValueByIndex(StrValueByIndex(str,4,_T(';')),2,_T('*'));
+	if (!strTemp.IsEmpty())
+		m_iVMininum = StringToInt(strTemp);
+
+	// <Vorzeitiges Ende> 
 	m_iVEnde = StringToInt(StrValueByIndex(str,5,_T(';')));
-	if (m_dblFaktor==0)
-		m_dblFaktor = 1.0;
 
 	// Nun müssen wir den 6ten Eintrag schen
 	int iPos = 0;
@@ -240,19 +257,37 @@ void SRaumDaten::LoadFromString(CString const &strName, CString const &str)
 void SRaumDaten::GetAsString(CString &strName, CString &str)
 {
 	strName = m_strName;
+
+	// <Schaltstatus> ; <Modus> ; <Devicetyp>
 	str = _T("0;") +
 		m_strMode + _T(";") +
-		m_strDevTyp + _T(";") +
-		DoubleToString(m_dblTemp,-1);
+		m_strDevTyp + _T(";");
+
+	// <Wohlfühltemperatur> / [<Grundtemperatur>]
+	str += 	DoubleToString(m_dblTemp,-1);
+	str += _T("/");
 	if (m_dblTempG!=theApp.GetGrundTemperatur())
-		str += _T("/") + DoubleToString(m_dblTempG,-1);
-	str += _T(";") +
+		str += DoubleToString(m_dblTempG,-1);
+	// Leer Einträge entfernen.
+	str.TrimRight(_T('/'));
+
+	// <Vorzeitiger Beginn> * [<Faktor>] * [<Mindestlaufzeit>]
+	str += _T(";") + 
 		IntToString(m_iVBegin);
+	str += _T("*");
 	if (m_dblFaktor!=1.0)
-		str += _T("*") + DoubleToString(m_dblFaktor,-1);
-	str += _T(";") +
-		IntToString(m_iVEnde) + _T(";") +
-		m_strAktor;
+		str += DoubleToString(m_dblFaktor,-1);
+	str += _T("*");
+	if (m_iVMininum!=15)
+		str += IntToString(m_iVMininum);
+	// Leer Einträge entfernen.
+	str.TrimRight(_T('*'));
+
+	// <Vorzeitiges Ende> 
+	str += _T(";") + IntToString(m_iVEnde);
+
+	// <Aktorenliste>
+	str += _T(";") + m_strAktor;
 	
 	// Nun müssen wir den 6ten Eintrag schen
 	int iPos = 0;

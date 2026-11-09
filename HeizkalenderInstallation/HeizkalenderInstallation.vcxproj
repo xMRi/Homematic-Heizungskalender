@@ -239,6 +239,7 @@
     <None Include="res\Create_HK-Heizkurvenkontrolle.hsc" />
     <None Include="res\Create_HK-Skript 1.hsc" />
     <None Include="res\Create_HK-Skript 2.hsc" />
+    <None Include="res\Create_HK-Skript 3.hsc" />
     <None Include="res\Create_HK-Systemprotokoll sichern.hsc" />
     <None Include="res\HeizkalenderInstallation.rc2">
       <FileType>Text</FileType>

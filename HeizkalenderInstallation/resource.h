@@ -133,6 +133,7 @@
 #define IDC_ED_RAUMLISTE                1018
 #define IDC_CH_LOG                      1019
 #define IDC_CH_LOG2                     1020
+#define IDC_CH_LOG3                     1021
 #define IDC_CH_LOG_HEIZKURVE            1022
 #define IDC_CH_HANDGRUNDTEMP            1023
 #define IDC_CH_HANDTEMP                 1024
@@ -153,6 +154,7 @@
 #define IDC_ED_KURVE_4                  1030
 #define IDC_BUTTON3                     1030
 #define IDC_BT_DELETE                   1030
+#define IDC_ED_VORZEIT_MINIMUM          1030
 #define IDC_ED_KURVE_5                  1031
 #define IDC_LC_SYSVARS                  1031
 #define IDC_ED_KURVE_6                  1032

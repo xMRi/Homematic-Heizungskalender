@@ -389,7 +389,7 @@ body {
   display: none;
 }
 .col-sl-termin details > summary::before {
-  content: "▸ ";
+  content: "\25B8 ";
   font-size: 0.75em;
   vertical-align: top;
   font-weight: normal;

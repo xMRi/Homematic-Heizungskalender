@@ -546,8 +546,8 @@ foreach(TLEintrag,TerminListe){
             faktor2HeizBedarf = 1.0-(Kurvenanpassung*((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
             if(DEBUG) {WriteLine("faktor2HeizBedarf:" # faktor2HeizBedarf);}
           } else {
-            if(DEBUG) {WriteLine("faktor2HeizBedarf:" # faktor2HeizBedarf);}
             faktor2HeizBedarf = (2.0-Kurvenanpassung)*(1.0-((ISTTemperatur.Min(RTemp)-GT)/(RTemp-GT)));
+            if(DEBUG) {WriteLine("faktor2HeizBedarf:" # faktor2HeizBedarf);}
           }
         }
 
@@ -555,14 +555,6 @@ foreach(TLEintrag,TerminListe){
         offsetRaumAn = (offsetRaumAn.ToFloat()*faktor2HeizBedarf).ToInteger();
         offsetTempAn = (0.0-(faktor1HK2Kurve*faktor2HeizBedarf*offsetTempAn).ToInteger()*60).ToInteger();
         if(DEBUG)  {WriteLine("Korrektur: faktor1HK2Kurve=" # faktor1HK2Kurve.ToString(2) # " faktor2HeizBedarf=" # faktor2HeizBedarf.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "/" # RTemp.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
-
-        !// Minimale Heizzeit berücksichtigen. (offsetTempAn ist negativ)
-        string strTemp = RVI.StrValueByIndex(";",4).StrValueByIndex("*",2);
-        integer iMinimaleHeizzeit = 15;    !// Default 15min
-        if (strTemp!=""){
-          iMinimaleHeizzeit = strTemp.ToInteger();
-        }
-        offsetTempAn = offsetTempAn.Min(0-(iMinimaleHeizzeit*60));
         if(DEBUG)  {WriteLine("Nach Korrektur: offsetRaumAn=" # offsetRaumAn.ToInteger() # " offsetTempAn=" # offsetTempAn.ToInteger());}
 
         !// Mögliche Log-Ausgabe

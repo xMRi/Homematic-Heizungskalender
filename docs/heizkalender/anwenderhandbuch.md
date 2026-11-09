@@ -258,7 +258,8 @@ Das genaue Format und die Bedeutung der einzelnen Felder sind in der [Entwickler
 
 ### Beispiel einer Raumvariablen
 
-`0;H;IP;18;0;30;Heizgruppe-xyz`
+`0;H;IP;21/16;60*1.5*45;30;Heizgruppe-xyz`  
+    wie oben, aber 21 °C Wohlfühltemperatur, 16 °C Grundtemperatur, 60 min Vorheizzeit mit Faktor 1,5, die Vorheizzeit beträgt mindestens 45min
 
 Dieser Beispielwert beschreibt folgende Konfiguration:
 
@@ -267,8 +268,11 @@ Dieser Beispielwert beschreibt folgende Konfiguration:
 | `0` | Kein aktives Heizen |
 | `H` | Betriebsmodus „Heizen“ |
 | `IP` | Homematic-IP-Thermostat |
-| `18` | Wohlfühltemperatur: 18 °C |
-| `0` | Keine zusätzliche individuelle Vorheizzeit |
+| `21` | Wohlfühltemperatur: 18 °C |
+| `16` | Abweichene Grundtemperatur: 16 °C |
+| `60` | 60min zusätzliche Vorheizzeit (wird gekürzt)|
+| `1.5` | Die Vorheizzeit die aus der Heizkurve `HK2-Kurve` berechnet wird, wird um den Faktor 1.5 vergrößert |
+| `45` | Die Vorheizzeit beträgt minimal 45min |
 | `30` | Abschalten 30 Minuten vor Terminende |
 | `Heizgruppe-xyz` | Bezeichnung der anzusteuernden Heizgruppe |
 
@@ -368,6 +372,15 @@ kälter es draußen und je kühler der Raum, desto früher wird eingeschaltet.
 Außentemperatur errechnete Verschiebung skalieren (erlaubt zwischen 0.20 und 5.0;
 ohne oder bei ungültigem Wert gilt Faktor 1.0). Ein Faktor > 1 heizt bei kalter
 Außentemperatur steiler vor, z.B. für träge Fußbodenheizungen.
+
+### Auswirkung der Nachtabsenkung am Heizkessel
+
+> [!WARNING]
+> **Bei vielen Heizkesseln ist eine Nachtabsenkung eingestellt. Sie kann die Vorheizzeit des Heizkalenders beeinträchtigen:** Muss der Heizkalender die Heizung so früh einschalten, dass die Vorheizzeit in die Nachtabsenkung fällt, wird die Heizung in dieser Zeit möglicherweise nicht ausreichend warm.
+>
+> **Dann erreichen die betroffenen Räume ihre gewünschte Temperatur eventuell nicht rechtzeitig.**
+
+**Beispiel:** Ein Raum soll ab 08:00 Uhr genutzt werden. Der Heizkalender berechnet eine Vorheizzeit von fünf Stunden. Die Heizung startet deshalb bereits um 03:00 Uhr. Ist am Heizkessel eine Nachtabsenkung bis 06:00 Uhr eingestellt, heizt der Kessel während der ersten drei Stunden möglicherweise reduziert. Dadurch kann der Raum seine Zieltemperatur bis 08:00 Uhr verfehlen.
 
 ### Rückstellung am Terminende (manuelle Eingriffe)
 

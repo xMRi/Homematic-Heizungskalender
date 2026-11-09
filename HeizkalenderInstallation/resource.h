@@ -154,6 +154,7 @@
 #define IDC_ED_KURVE_4                  1030
 #define IDC_BUTTON3                     1030
 #define IDC_BT_DELETE                   1030
+#define IDC_ED_VORZEIT_MINIMUM          1030
 #define IDC_ED_KURVE_5                  1031
 #define IDC_LC_SYSVARS                  1031
 #define IDC_ED_KURVE_6                  1032

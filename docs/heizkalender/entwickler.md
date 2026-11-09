@@ -180,8 +180,11 @@ Status;Modus;Heiztyp;Wohlfühltemp[/Grundtemp];Vorheizzeit[*Faktor];VorzeitAus[;
 | Status | 0 | Integer | `0` = keine Heizphase, `1` = Heizphase aktiv |
 | Modus | 1 | String | `H` = Heizen, `S` = Schalten, `HS` = Heizen + Schalten, `V` = Variable setzen |
 | Heiztyp | 2 | String | `IP`, `RT`, `TC`, `IT` (Thermostate), `SW` (Schalt-Aktor) |
-| Wohlfühltemp | 3 | Float | Zieltemperatur in °C; optional `/Grundtemp` für raumindividuelle Grundtemperatur |
-| Vorheizzeit | 4 | Integer | Individuelle Vorheizzeit in Minuten; optional `*faktor1HK2Kurve` (Float, 0,20–5,0): raumspezifischer Multiplikator auf die HK2-Kurve |
+| Wohlfühltemp | 3.0 | Float | Zieltemperatur in °C; |
+| Grundtemp | 3.1 | Float | Optional `/Grundtemp` für raumindividuelle Grundtemperatur |
+| Vorheizzeit | 4.0 | Integer | Individuelle Vorheizzeit in Minuten;|
+| FaktorHeizkurve | 4.1 | Integer | Optional `*faktor1HK2Kurve` (Float, 0,20–5,0): raumspezifischer Multiplikator auf die HK2-Kurve|
+| MinimaleVorheizzeit | 4.2 | Integer | Optional `*minimaleVorheizzeit` (Default 15min)|
 | VorzeitAus | 5 | Integer | Minuten vor Terminende, nach denen abgeschaltet wird |
 | Thermostat | 6 | String | Nur bei Modus `HS`: CCU-Kanaladresse des Thermostats, der als Temperatursensor dient |
 | Schaltaktor(en) | 7+ | String | Nur bei Modus `HS`: CCU-Kanaladdresse(n) der Schaltaktoren; mehrere Aktoren werden durch weitere `;`-Felder angehängt |
@@ -191,15 +194,20 @@ Trennzeichen innerhalb eines Wertes:
 | Zeichen | Bedeutung |
 | :--- | :--- |
 | `;` | Trennt die Felder voneinander; bei Modus `HS` auch die Schaltaktoren (Felder 7+) |
-| `/` | Trennt Wohlfühltemperatur und Grundtemperatur (im Feld Wohlfühltemp) |
+| `/` | Trennt Wohlfühltemperatur, Grundtemperatur und minimale Vorheizzeit (im Feld Wohlfühltemp) |
 | `*` | Trennt Vorheizzeit und Faktor (im Feld Vorheizzeit) |
 
 Beispiele:
 
-- `0;H;IP;18;0;30` — Heizmodus, HmIP-Thermostat, 18 °C, keine individuelle Vorheizzeit, 30 min vor Terminende aus
-- `0;H;IP;21/16;60*1.5;30` — wie oben, aber 21 °C Wohlfühltemperatur, 16 °C Grundtemperatur, 60 min Vorheizzeit mit Faktor 1,5
-- `0;HS;SW;21;0;30;BidCoS-RF.ABC12345:1;BidCoS-RF.DEF67890:1` — Heizen + Schalten, Thermostat an Feld 6, ein Schaltaktor an Feld 7
-- `0;V;SW;21;0;0;xyz` — Variable *xyz*, auf true setzen
+- `0;H;IP;18;0;30;...`  
+    Heizmodus, HmIP-Thermostat, 18 °C, keine abweichende Grundtemperatur, keine individuelle Vorheizzeit, 30 min vor Terminende aus, keine abweichende minimale Vorheizzeit (15min Default)
+- `0;H;IP;21/16;60*1.5*45;30;...`  
+    wie oben, aber 21 °C Wohlfühltemperatur, 16 °C Grundtemperatur, 60 min Vorheizzeit mit Faktor 1,5, die Vorheizzeit beträgt mindestens 45min
+- `0;HS;SW;21;0;30;BidCoS-RF.ABC12345:1;BidCoS-RF.DEF67890:1`  
+    Heizen + Schalten, keine abweichende Grundtemperatur, keine individuelle Vorheizzeit, 30 min vor Terminende aus, keine abweichende minimale Vorheizzeit (15min Default)  
+    Thermostat an Feld 6, ein Schaltaktor an Feld 7
+- `0;V;SW;21;0;0;xyz`  
+    Variable *xyz*, auf true setzen
 
 #### Betriebsmodi im Detail
 

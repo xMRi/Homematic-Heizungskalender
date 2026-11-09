@@ -246,7 +246,9 @@ Die Raumvariable enthält die Konfigurationsdaten für den jeweiligen Raum. Dazu
 - der Betriebsmodus und der Gerätetyp des verwendeten Aktors,
 - die gewünschte Wohlfühltemperatur,
 - eine gegebenenfalls abweichende Grundtemperatur,
-- individuelle Vorheizzeiten und Korrekturfaktoren für die Heizkurve,
+- individuelle Vorheizzeiten 
+- minimale Heizzeit (default 15min)
+- Korrekturfaktoren für die Heizkurve
 - der Zeitpunkt, zu dem die Heizung vor dem Ende eines Termins abgeschaltet werden soll,
 - die zu steuernde Heizgruppe beziehungsweise das anzusteuernde Gerät.
 

@@ -93,6 +93,7 @@ void CRaumDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ED_GRUNDTEMP, m_edTempG);
 	DDX_Control(pDX, IDC_ED_VORZEIT_AN, m_edVBegin);
 	DDX_Control(pDX, IDC_ED_VORZEIT_AUS, m_edVEnde);
+	DDX_Control(pDX, IDC_ED_VORZEIT_MINIMUM, m_edVMin);
 	DDX_Control(pDX, IDC_ED_FAKTOR, m_edFaktor);
 	DDX_Control(pDX, IDC_CB_AKTOR1, m_cbChannel1);
 	DDX_Control(pDX, IDC_CB_AKTOR2, m_cbChannel2);
@@ -179,6 +180,7 @@ void CRaumDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_EditInt(pDX,IDC_ED_VORZEIT_AN, m_raum.m_iVBegin);
 	DDX_EditInt(pDX,IDC_ED_VORZEIT_AUS, m_raum.m_iVEnde);
 	DDX_EditDouble(pDX,IDC_ED_FAKTOR, m_raum.m_dblFaktor);
+	DDX_EditInt(pDX,IDC_ED_VORZEIT_MINIMUM, m_raum.m_iVMininum);
 }
 
 BEGIN_MESSAGE_MAP(CRaumDlg, CDialogEx)
@@ -243,6 +245,9 @@ BOOL CRaumDlg::OnInitDialog()
 	m_edVEnde.SetMinMax(-60*16,60*16);
 	m_edVEnde.SetStepValue(5);
 	m_edVEnde.CreateSpinBtnCtrl();
+	m_edVMin.SetMinMax(0,60*2);
+	m_edVMin.SetStepValue(5);
+	m_edVMin.CreateSpinBtnCtrl();
 	m_edFaktor.SetMinMax(0.25,3.0);
 	m_edFaktor.SetPrecision(2);
 	m_edFaktor.CreateSpinBtnCtrl();

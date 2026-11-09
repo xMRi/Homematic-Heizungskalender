@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// MRi: 2026-11-09 Minimale Heizzeit (default 15min) eingeführt
 !// TT:  2026-11-08 faktor1/faktor2 umbenannt in faktor1HK2Kurve/faktor2HeizBedarf für bessere Lesbarkeit
 !// MRi: 2026-11-07 Lösung falls keine aktuelle Raumtemperatur ermittelt werden kann.
 !// TT:  2026-11-06 SDFlag-Parsing in Freeze-Wiederherstellung: ToTime() entfernt (war falsch fuer Integer-Werte)
@@ -544,8 +545,19 @@ foreach(TLEintrag,TerminListe){
         offsetRaumAn = (offsetRaumAn.ToFloat()*faktor2HeizBedarf).ToInteger();
         offsetTempAn = (0.0-(faktor1HK2Kurve*faktor2HeizBedarf*offsetTempAn).ToInteger()*60).ToInteger();
         if(DEBUG)  {WriteLine("Korrektur: faktor1HK2Kurve=" # faktor1HK2Kurve.ToString(2) # " faktor2HeizBedarf=" # faktor2HeizBedarf.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "/" # RTemp.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
-        !//if(log) {logObj.State("faktor2HeizBedarf=" # faktor2HeizBedarf.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
 
+        !// Minimale Heizzeit berücksichtigen. (offsetTempAn ist negativ)
+        string strTemp = RVI.StrValueByIndex(";",4).StrValueByIndex("*",2);
+        integer iMinimaleHeizzeit = 15;    !// Default 15min
+        if (strTemp!=""){
+          iMinimaleHeizzeit = strTemp.ToInteger();
+        }
+        offsetTempAn = offsetTempAn.Min(0-(iMinimaleHeizzeit*60));
+        if(DEBUG)  {WriteLine("Nach Korrektur: offsetRaumAn=" # offsetRaumAn.ToInteger() # " offsetTempAn=" # offsetTempAn.ToInteger());}
+
+        !// Mögliche Log-Ausgabe
+        !//if(log) {logObj.State("faktor2HeizBedarf=" # faktor2HeizBedarf.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
+        
         !// Reale Schaltzeiten berechnen
         string logText = RaumLogName # " - Heizen - AT " # AT.ToString(1) # "°C / GT " # GT.ToString(1) # "°C / IST " # ISTTemperatur.ToString(1) # "°C / ZIEL " # RTemp.ToString(1) # "°C" # HUMText # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }

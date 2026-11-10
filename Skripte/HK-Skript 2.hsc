@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    08.11.2026
+!// Stand:    10.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-11-10 Kurvenanpassungsfaktor ueber optionale Systemvariable HK2-Kurvenanpassung konfigurierbar (0.3..1.0, Vorgabe 0.8)
 !// MRi: 2026-11-09 Minimale Heizzeit (default 15min) eingeführt
 !// TT:  2026-11-08 Konfigurierbare Mindest-Vorlaufzeit pro Raum (Feld 4: Vorheizzeit*Faktor*MindestMin, Default 15min)
 !// TT:  2026-11-08 faktor1/faktor2 umbenannt in faktor1HK2Kurve/faktor2HeizBedarf für bessere Lesbarkeit
@@ -57,6 +58,12 @@ integer log=0;
 !// Kurvenanpassung an eine logarithmische Sättigungskurve.
 !// Ersetzt die Kurve durch 2 Geraden, Wert<=1, bei 1==Gerade, 0.9==Gute Näherung, 0.8==Sicherheit (mehr Bauch in der Mitte)
 real Kurvenanpassung = 0.8;
+var svKA = dom.GetObject(vrp # "HK2-Kurvenanpassung");
+if (svKA) {
+    Kurvenanpassung = svKA.Value().ToFloat();
+    if ((Kurvenanpassung < 0.3)) { Kurvenanpassung = 0.3; }
+    if ((Kurvenanpassung > 1.0)) { Kurvenanpassung = 1.0; }
+}
 
 !//#######---Ende Variabler Bereich---#############################################################
 !//Im Folgenden Hier keine Veränderungen vornehmen!

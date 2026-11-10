@@ -13,6 +13,12 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-10]
+
+### Hinzugefügt
+
+- Skript2: Kurvenanpassungsfaktor über optionale Systemvariable `HK2-Kurvenanpassung` konfigurierbar (0,3..1,0, Vorgabe 0,8). Fehlt die Variable, bleibt das Verhalten unverändert. Empfohlener Wert 0,6 für Brennwertkessel mit schwerer Bausubstanz.
+
 ## [2026-11-08]
 
 ### Hinzugefügt

@@ -100,13 +100,13 @@ if {$has_file_param} {
             lappend all $line
         }
         close $fh
-        if {[string equal $filter "alle"]} {
+        if {[string equal $filter "nacht"]} {
+            set log_lines $all
+        } else {
             set total [llength $all]
             set start [expr {$total - $lines_to_show}]
             if {$start < 0} { set start 0 }
             set log_lines [lrange $all $start end]
-        } else {
-            set log_lines $all
         }
     }
 }
@@ -168,10 +168,6 @@ if {$filter_is_hk1 || $filter_is_hk2 || $filter_is_hk3 || $filter_is_hka || $fil
         }
     }
     set log_lines $filtered
-    set total [llength $log_lines]
-    set start [expr {$total - $lines_to_show}]
-    if {$start < 0} { set start 0 }
-    set log_lines [lrange $log_lines $start end]
 }
 
 # ---------------------------------------------------------------------------
@@ -199,6 +195,7 @@ puts {  <link rel="stylesheet" href="heizkalender.css">
   <nav class="hk-nav">
     <a href="index.cgi">Raum&uuml;bersicht</a>
     <a href="hkkurve.cgi">Heizkurve</a>
+    <a href="hkrechner.cgi">Rechner</a>
     <a href="hkconfig.cgi">Einstellungen</a>
     <a href="hklog.cgi" class="active">HK-Log</a>
     <a href="syslog.cgi">Syslog</a>

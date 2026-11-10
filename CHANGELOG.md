@@ -13,6 +13,11 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+
+- Addon: Neuer Vorheizzeit-Rechner (`hkrechner.cgi`) — simuliert die Vorheizzeitberechnung
+  für einen frei konfigurierbaren Raum; clientseitig in `hkrechner.js` / `hkrechner.css`.
+
 ## [2026-11-08]
 
 ### Hinzugefügt

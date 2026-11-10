@@ -126,8 +126,9 @@ public:
 	CString m_strCCU_password;
 	CString m_strPrefix;
 	struct SMRUEntry {
-		CString m_strName;
+		CString m_strHostName;
 		bool m_bCloudMatic;
+		CString m_strUserName, m_strPassword;
 	};
 	std::list<SMRUEntry> m_lstMRU;
 

@@ -169,9 +169,11 @@ CPageConnect::CPageConnect()
 		{
 			CString strHost = theApp.GetProfileString(_T("MRU"), _T("Host")+IntToString(i+1), _T(""));
 			bool bCloudMatic = theApp.GetProfileInt(_T("MRU"), _T("CloudMatic")+IntToString(i+1), 0) != 0;
+			CString strUser = theApp.GetProfileString(_T("MRU"), _T("UserName")+IntToString(i+1), _T(""));
+			CString strPassword = theApp.GetProfileString(_T("MRU"), _T("Password")+IntToString(i+1), _T(""));	
 			if (!strHost.IsEmpty())
 			{
-				theApp.m_lstMRU.push_back(CHeizkalenderInstallationApp::SMRUEntry{strHost, bCloudMatic});
+				theApp.m_lstMRU.push_back(CHeizkalenderInstallationApp::SMRUEntry{strHost, bCloudMatic, strUser, strPassword});
 			}
 		}
 	}
@@ -213,11 +215,10 @@ void CPageConnect::DoDataExchange(CDataExchange* pDX)
 	if (!pDX->m_bSaveAndValidate)
 	{
 		m_cbHost.ResetContent();
-		for (auto const& e: theApp.m_lstMRU)
+		for (auto & e: theApp.m_lstMRU)
 		{
-			int nIndex = m_cbHost.AddString(e.m_strName);
-			if (nIndex>=0)
-				m_cbHost.SetItemData(nIndex, e.m_bCloudMatic);
+			int nIndex = m_cbHost.AddString(e.m_strHostName);
+			m_cbHost.SetItemDataPtr(nIndex, &e);
 		}
 	}
 
@@ -450,8 +451,13 @@ void CPageConnect::OnCbnSelchangeCbHost()
 	if (nSel<0)
 		return;	
 
-	bool bCloudMatic = m_cbHost.GetItemData(nSel)!=0;
-	CheckDlgButton(IDC_CH_CLOUDMATIC,bCloudMatic);
+	CHeizkalenderInstallationApp::SMRUEntry* pEntry = static_cast<CHeizkalenderInstallationApp::SMRUEntry*>(m_cbHost.GetItemDataPtr(nSel));
+	if (pEntry)
+	{
+		CheckDlgButton(IDC_CH_CLOUDMATIC,pEntry->m_bCloudMatic);
+		SetDlgItemText(IDC_ED_USERNAME,pEntry->m_strUserName);
+		SetDlgItemText(IDC_ED_PASSWORD,pEntry->m_strPassword);
+	}
 }
 
 void CPageConnect::OnCbnSelchangeCbMode()
@@ -594,8 +600,8 @@ void CPageConnect::OnBnClickedBtConnect()
 		theApp.WriteProfileInt(_T("Connection"), _T("CloudMatic"), theApp.m_bCloudMatic);
 
 		// Update MRU list
-		CHeizkalenderInstallationApp::SMRUEntry entry{theApp.m_strCCU_host, theApp.m_bCloudMatic};
-		auto it = std::find_if(theApp.m_lstMRU.begin(), theApp.m_lstMRU.end(), [&](CHeizkalenderInstallationApp::SMRUEntry const& e) { return e.m_strName==entry.m_strName; });	
+		CHeizkalenderInstallationApp::SMRUEntry entry{theApp.m_strCCU_host, theApp.m_bCloudMatic, theApp.m_strCCU_username, theApp.m_strCCU_password};
+		auto it = std::find_if(theApp.m_lstMRU.begin(), theApp.m_lstMRU.end(), [&](CHeizkalenderInstallationApp::SMRUEntry const& e) { return e.m_strHostName==entry.m_strHostName; });	
 		// Alten Eintrag löschen, falls vorhanden und neuen Eintrag vorne einfügen.
 		if (it!=theApp.m_lstMRU.end())
 			theApp.m_lstMRU.erase(it);
@@ -610,10 +616,11 @@ void CPageConnect::OnBnClickedBtConnect()
 		for (auto const &e: theApp.m_lstMRU)
 		{
 			++i;
-			theApp.WriteProfileString(_T("MRU"), _T("Host")+IntToString(i), e.m_strName);
+			theApp.WriteProfileString(_T("MRU"), _T("Host")+IntToString(i), e.m_strHostName);
 			theApp.WriteProfileInt(_T("MRU"), _T("CloudMatic")+IntToString(i), e.m_bCloudMatic);
+			theApp.WriteProfileString(_T("MRU"), _T("UserName")+IntToString(i), e.m_strUserName);
+			theApp.WriteProfileString(_T("MRU"), _T("Password")+IntToString(i), e.m_strPassword);
 		}
-
 	}
 
 	// Modus in combobox setzen.

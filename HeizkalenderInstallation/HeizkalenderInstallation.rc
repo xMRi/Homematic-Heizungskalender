@@ -101,7 +101,7 @@ CAPTION "Verbinden"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     LTEXT           "IP-Adresse der CCU3:",IDC_STATIC,7,10,135,8
-    EDITTEXT        IDC_ED_HOST,167,8,173,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_CB_HOST,167,8,173,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Verbindung über &CloudMatic mit https herstellen:",IDC_CH_CLOUDMATIC,
                     "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,26,170,10
     LTEXT           "Benutzername:",IDC_STATIC,7,46,135,8
@@ -322,8 +322,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,0,4,0
- PRODUCTVERSION 5,0,4,0
+ FILEVERSION 5,0,5,0
+ PRODUCTVERSION 5,0,5,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -340,12 +340,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "xMRi-Software"
             VALUE "FileDescription", "Heizkalender Installations- und Updateprogramm"
-            VALUE "FileVersion", "5.0.4.0"
+            VALUE "FileVersion", "5.0.5.0"
             VALUE "InternalName", "HeizkalenderInstallation.exe"
             VALUE "LegalCopyright", "Copyright 2026 by xMRi-Software (Martin Richter) "
             VALUE "OriginalFilename", "HeizkalenderInstallation.exe"
             VALUE "ProductName", "Heizkalender"
-            VALUE "ProductVersion", "5.0.4.0"
+            VALUE "ProductVersion", "5.0.5.0"
         END
     END
     BLOCK "VarFileInfo"

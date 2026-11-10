@@ -106,7 +106,6 @@
 #define IDP_TEST_VARIABLE               178
 #define IDC_TEST                        1000
 #define IDC_BT_CONNECT                  1000
-#define IDC_ED_HOST                     1001
 #define IDC_ED_USERNAME                 1002
 #define IDC_ED_PASSWORD                 1003
 #define IDC_ED_PREFIX                   1004
@@ -187,6 +186,8 @@
 #define IDC_ED_GOOGLE_APIKEY            1051
 #define IDC_ED_GOOGLE_KALID             1052
 #define IDC_CH_CLOUDMATIC               1053
+#define IDC_COMBO1                      1054
+#define IDC_CB_HOST                     1054
 
 // Next default values for new objects
 // 
@@ -194,7 +195,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        144
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1054
+#define _APS_NEXT_CONTROL_VALUE         1055
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

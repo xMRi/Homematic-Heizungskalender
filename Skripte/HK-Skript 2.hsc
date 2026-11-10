@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    08.11.2026
+!// Stand:    10.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -569,14 +569,14 @@ foreach(TLEintrag,TerminListe){
         string mindestHinweis = "";
         if (gesamtOffsetKorr < gesamtOffset) {
           mindestHinweis = " [Mindest]";
-          offsetTempAn = gesamtOffsetKorr-gesamtOffset+offsetTempAn;
+          offsetTempAn = (gesamtOffsetKorr-gesamtOffset)+offsetTempAn;
         }
         string logText = RaumLogName # " - Heizen - AT " # AT.ToString(1) # "°C / GT " # GT.ToString(1) # "°C / IST " # ISTTemperatur.ToString(1) # "°C / ZIEL " # RTemp.ToString(1) # "°C" # HUMText # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
         logText = logText # (offsetRaumAn/60).ToInteger() #"min ";
         if (offsetTempAn==0){ logText=logText#" - "; }
         logText = logText # (offsetTempAn/60).ToInteger() # "min" # mindestHinweis # " = ";
-        EIN = EIN + gesamtOffsetKorr;
+        EIN = EIN + offsetRaumAn + offsetTempAn;
         logText = logText # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAus>0){ logText=logText#"+"; }elseif(offsetRaumAus==0){ logText=logText#"-"; }
         AUS = AUS + offsetRaumAus;

@@ -46,8 +46,8 @@ public:
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_PAGE_CONNECT };
 #endif
-	CComboBox	m_cbScript1Mode;
-	CEditText	m_edHost, m_edUserName, m_edPassword, m_edPrefix, 
+	CComboBox	m_cbScript1Mode, m_cbHost;
+	CEditText	m_edUserName, m_edPassword, m_edPrefix, 
 				m_edCTChurchName, m_edCTLoginToken, 
 				m_ediCalUrl, m_edGoogleApiKey, m_edGoogleKalId, m_edRaumListe,
 				m_edCDOrgaId, m_edCDApiToken;
@@ -65,6 +65,7 @@ protected:
 	afx_msg void OnBnClickedBtConnect();
 	afx_msg void OnBnClickedAbout();
 	afx_msg void OnCbnSelchangeCbMode();
+	afx_msg void OnCbnSelchangeCbHost();
 	afx_msg void OnBnClickedBtReadres();
 };
 

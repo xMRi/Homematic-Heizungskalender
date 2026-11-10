@@ -6,8 +6,7 @@
 #   HK2-Kurve            - 8 AT-Stuetzwerte (semikolongetrennt)
 #   HK2-Kurvenversatz    - Globaler Einschalt-Versatz in Minuten
 #   HK2-Aussentemperatur - Aktueller AT-Durchschnitt
-#   HK2-HKG-Liste        - Raumliste fuer Dropdown
-#   HKG-Raum-*           - Raumvariablen (Wohlfuehltemp, Grundtemp, VHZ, Faktor, Mindest)
+#   HKG-Raum-*           - Raumvariablen fuer Dropdown (Wohlfuehltemp, Grundtemp, VHZ, Faktor, Mindest)
 #
 # Die Berechnung laeuft clientseitig in hkrechner.js (kein Reload).
 
@@ -95,18 +94,17 @@ array set raeume_werte {}
 
 catch {
     set raw [extract_stdout [rega_script {
-        string eintrag;
-        string raum;
-        var sv;
-        var liste = dom.GetObject("HK2-HKG-Liste");
-        if (liste) {
-            foreach(eintrag, liste.Value().Split(";")) {
-                ! Gruppeneintraege: "HKG-Raum-A+HKG-Raum-B" -> nur ersten Raum verwenden
-                raum = eintrag.StrValueByIndex("+", 0);
-                sv = dom.GetObject(raum);
-                if (sv) { WriteLine(raum # "=" # sv.Value()); }
+        string result = "";
+        string id;
+        foreach(id, dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs()) {
+            var sv = dom.GetObject(id);
+            if (!sv) { continue; }
+            string name = sv.Name();
+            if (name.StartsWith("HKG-Raum-")) {
+                result = result # name # "=" # sv.Value() # "\n";
             }
         }
+        WriteLine(result);
     }]]
     foreach line [split $raw "\n"] {
         set line [string trim $line]

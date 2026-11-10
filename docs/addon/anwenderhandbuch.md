@@ -141,7 +141,7 @@ Die Vorbelegung der Felder stammt direkt aus den Systemvariablen der CCU (`HK2-K
 | :--- | :--- | :--- |
 | Außentemperatur | Aktuelle oder hypothetische Außentemperatur | -40 bis 40 °C |
 | Vorzeitiger Heizbeginn (Global) | Wert aus `HK2-Kurvenversatz`; wird zur raumspezifischen Vorheizzeit *addiert* (nicht überschrieben) | 0 bis 960 min |
-| Individuelle Eigenschaften des Raumes laden | Dropdown zum Übernehmen der Werte aus einer Raumvariable der CCU | |
+| Individuelle Eigenschaften des Raumes laden | Dropdown zum Übernehmen der Werte aus einer Raumvariable der CCU. Es erscheinen nur Räume mit Modus H, HS oder S (nicht Modus V). | |
 | Ist-Temperatur | Aktuelle Raumtemperatur | -40 bis 40 °C |
 | Wohlfühltemperatur | Gewünschte Raumtemperatur zum Terminbeginn | 5 bis 40 °C |
 | Abw. Grundtemperatur | Raumindividuelle Grundtemperatur; Default 10 °C | 5 bis 30 °C |

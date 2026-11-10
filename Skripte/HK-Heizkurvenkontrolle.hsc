@@ -15,7 +15,9 @@
 
 !// TT:  2026-11-10 Doppel-Termine: zweiten Schaltlisteneintrag überspringen solange die Heizphase
 !//                 des ersten noch aktiv ist. Verhindert falsche Offset-Berechnung gegen den
-!//                 späteren Termin (z.B. -659min statt -120min).
+!//                 späteren Termin (z.B. -659min statt -120min). Raum beim Überspringen in
+!//                 bearbeiteteRaeume aufnehmen, damit der Status nicht herausgefiltert wird
+!//                 (verhindert wiederholtes Loggen des Heizbeginn-Events).
 !// MRi: 2026-11-08 Zieltemperatur erreicht wurde evtl. nicht geloggt.
 !// TT:  2026-11-06 Terminende-Doppellog verhindert: Bit 4 (16) als Guard gesetzt.
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
@@ -270,6 +272,8 @@ foreach(SLEintrag,SListe){
       if (((statusCheck & 1)!=0) && ((statusCheck & 4)==0)){
         !// Bit 0 (Heizbeginn) gesetzt, Bit 2 (Heizende) nicht gesetzt = aktive Heizphase
         if(DEBUG) {WriteLine(RaumLogName # " übersprungen: Heizphase aus vorherigem Termin noch aktiv (Status=" # statusCheck # ")");}
+        !// Raum in bearbeiteteRaeume aufnehmen, damit sein Status am Ende nicht herausgefiltert wird
+        bearbeiteteRaeume = bearbeiteteRaeume # RVN # ";";
         continue;
       }
     }

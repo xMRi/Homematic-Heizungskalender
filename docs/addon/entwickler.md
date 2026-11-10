@@ -24,6 +24,9 @@ Addon/
       www/
         index.cgi                  Raumübersicht
         hkkurve.cgi                Heizkurvenkontrolle
+        hkrechner.cgi              Vorheizzeit-Rechner
+        hkrechner.js               Berechnungslogik und Canvas-Visualisierungen (clientseitig)
+        hkrechner.css              Styles für den Vorheizzeit-Rechner
         hklog.cgi                  HK-Log (USB-Stick-Archiv)
         hklogdownload.cgi          HK-Log-Datei-Download
         syslog.cgi                 Syslog (/var/log/messages)
@@ -61,6 +64,9 @@ heizkalender-addon-<Version>.tar.gz
 │   └── www/
 │       ├── index.cgi
 │       ├── hkkurve.cgi
+│       ├── hkrechner.cgi
+│       ├── hkrechner.js
+│       ├── hkrechner.css
 │       ├── hklog.cgi
 │       ├── hklogdownload.cgi
 │       ├── syslog.cgi
@@ -219,6 +225,25 @@ Daraus ergibt sich das Log-Format:
 - **Gruppenfall** (mehrere Räume per `+` verbunden): `EG-Eltern-Kind-Raum(11)-UG-Büro` — der zweite Raum der Gruppe wird als Suffix angehängt; `UG-Büro` ist dabei ebenfalls ein eigenständiger Eintrag in `HK1-R-Liste`
 
 Der Dropdown in `hkkurve.cgi` verwendet `HK1-R-Liste` als Quelle. Eine Substring-Suche auf den gewählten Namen findet damit sowohl den Normalfall (`UG-Büro(22)`) als auch alle Gruppeneinträge, in denen dieser Raum vorkommt (`EG-Eltern-Kind-Raum(11)-UG-Büro`).
+
+### hkrechner.cgi: Vorheizzeit-Rechner
+
+Interaktive Simulationsseite für die Vorheizzeit-Berechnung. Das Tcl-CGI lädt beim Seitenaufruf vier Systemvariablen von der CCU als Vorbelegung (`HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Grundtemperatur`, `HK2-Aussentemperatur`) und gibt eine statische HTML-Seite mit vorausgefüllten Formularfeldern zurück. Fehler beim CCU-Zugriff werden abgefangen; die Felder bleiben dann leer.
+
+Die gesamte Berechnungslogik (Zwei-Geraden-Modell für faktor2HeizBedarf, lineare Interpolation der HK2-Kurve, Mindest-Vorlaufzeit-Clamp) läuft clientseitig in `hkrechner.js`. Die Berechnung wird bei jedem `input`-Event live ausgelöst, ohne Seiten-Reload. Ungültige Felder erhalten die CSS-Klasse `hkr-invalid` (rote Umrandung) und eine einzeilige Fehlermeldung. Berechnung und Canvas werden nur aktualisiert, wenn alle Felder gültig sind.
+
+`hkrechner.js` zeichnet vier `<canvas>`-Elemente:
+
+- **faktor2HeizBedarf-Kurve:** Zeigt das Zwei-Geraden-Modell im Bereich GT bis ZIEL; IST-Wert mit rotem Marker.
+- **Zeitanteile:** Horizontales Balkendiagramm mit fester VHZ (blau), AT-Zeit (orange), Reduktion durch faktor2 (grau gestrichelt), Mindest-Linie (rot vertikal) und effektiver Gesamtvorheizzeit (grün/rot).
+- **Heizkurven-Verlauf:** Zeigt die interpolierte HK2-Kurve über den Außentemperaturbereich sowie die skalierten Zeitanteile.
+- **Temperaturverlauf:** Zeigt den modellierten Temperaturanstieg vom Start bis zur Wohlfühltemperatur über die berechnete Vorheizzeit (inverses Zwei-Geraden-Modell); eingetragen sind Grundtemperatur (blaugrau), Wohlfühltemperatur (grau gestrichelt) und IST-Punkt (roter Marker).
+
+#### Layout-Ansatz: feste Pixelbreiten
+
+Der Rechner arbeitet bewusst mit festen CSS-Breiten (1180 px für Gruppen, 1140 px für Canvas-Elemente) statt mit prozentualen oder fluid-Layouts. Der Grund: Die Canvas-API erfordert konkrete Pixelwerte für Breite und Höhe. Werden diese aus dem gerendereten Layout abgeleitet (z.B. `canvas.offsetWidth`), entstehen Rundungsfehler und die Grafiken stimmen nicht mit den umgebenden Fieldsets überein. Mit festen Werten sind Canvas-Breite, Fieldset-Breite und Grid-Spaltenbreiten exakt aufeinander abgestimmt und die Fieldsets nebeneinander immer gleich breit.
+
+Der Rechner ist für die Nutzung an einem großen Monitor ausgelegt. Idealerweise sind alle Gruppen und Kurven ohne Scrollen auf einem Blick sichtbar. Mobiler Einsatz ist nicht der Fokus; auf kleinen Bildschirmen scrollt die Seite horizontal.
 
 ### hkconfig.cgi: Grundeinstellungen
 

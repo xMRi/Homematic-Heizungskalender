@@ -13,7 +13,17 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-10]
+
+### Geändert
+
+- HeizkalenderInstallation: merkt sich die Verbindungen in einer MRU liste. Vorteilhaft wenn man mehrere CCUs pflegt.
+- Skript2: Wenn die minimale Vorheizzeit greift wird auch die Berechnung angepasst und nicht nur [mindest] angezeigt.
+- Heizkurvenkontrolle: Korrektur bei mehreren Terminen je Tag.
+
 ## [2026-11-09]
+
+### Geändert
 
 - Heizkurvenkontrolle: Zieltemperatur wurde evtl. nicht angezeigt
 - Skript2: minimale Vorheizzeit eingebaut

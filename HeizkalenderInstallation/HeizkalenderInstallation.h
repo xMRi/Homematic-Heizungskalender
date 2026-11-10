@@ -125,6 +125,11 @@ public:
 	CString m_strCCU_username;
 	CString m_strCCU_password;
 	CString m_strPrefix;
+	struct SMRUEntry {
+		CString m_strName;
+		bool m_bCloudMatic;
+	};
+	std::list<SMRUEntry> m_lstMRU;
 
 	// Aktueller mode UI
 	ModeScript1 m_modeScript1;

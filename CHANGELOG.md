@@ -13,6 +13,11 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-10]
+
+### Behoben
+
+- Heizkurvenkontrolle: Doppeltermin-Guard auf `bearbeiteteRaeume` umgestellt (war `RaumListe`). Der alte Guard übersprang Räume fälschlich in Folgeläufen, weil `RaumListe` Bit 0 aus dem letzten Lauf noch gesetzt hatte. Folge: nach Heizbeginn wurden keine Log-Einträge mehr geschrieben. Fix: Guard prüft jetzt nur innerhalb des aktuellen Skriptlaufs.
 ### Hinzugefügt
 
 - Addon: Neuer Vorheizzeit-Rechner (`hkrechner.cgi`) — simuliert die Vorheizzeitberechnung

@@ -228,7 +228,17 @@ Der Dropdown in `hkkurve.cgi` verwendet `HK1-R-Liste` als Quelle. Eine Substring
 
 ### hkrechner.cgi: Vorheizzeit-Rechner
 
-Interaktive Simulationsseite für die Vorheizzeit-Berechnung. Das Tcl-CGI lädt beim Seitenaufruf vier Systemvariablen von der CCU als Vorbelegung (`HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Grundtemperatur`, `HK2-Aussentemperatur`) und gibt eine statische HTML-Seite mit vorausgefüllten Formularfeldern zurück. Fehler beim CCU-Zugriff werden abgefangen; die Felder bleiben dann leer.
+Interaktive Simulationsseite für die Vorheizzeit-Berechnung. Das Tcl-CGI lädt beim Seitenaufruf folgende Systemvariablen von der CCU als Vorbelegung und gibt eine statische HTML-Seite mit vorausgefüllten Formularfeldern zurück. Fehler beim CCU-Zugriff werden abgefangen; die Felder bleiben dann leer.
+
+| Variable | Verwendung |
+| -------- | ---------- |
+| `HK2-Kurve` | Stützwerte der Heizkurve (8 Werte, semikolongetrennt) |
+| `HK2-Kurvenversatz` | Globaler Einschalt-Versatz in Minuten |
+| `HK2-Aussentemperatur` | Aktueller Außentemperatur-Durchschnitt |
+| `HK2-Kurvenanpassung` | Kurvenanpassungsfaktor K (Default 0,8; Bereich 0,3..1,0) |
+| `HK2-HKG-Liste` | Befüllt das Raum-Dropdown; Räume mit Modus `V` werden herausgefiltert |
+
+**Gruppeneinträge in `HK2-HKG-Liste`:** Ein Eintrag kann mehrere Raumvariablen mit `+` verbunden enthalten, z.B. `HKG-Raum-EG-Eltern-Kind-Raum+HKG-Raum-EG-Eltern-Kind-Raum-Schalten`. Der Rechner verwendet nur den ersten Teil (vor dem ersten `+`) als Haupt-Raum und liest dessen Parameter. Die weiteren Räume der Gruppe sind für die Vorheizzeitberechnung nicht relevant.
 
 Die gesamte Berechnungslogik (Zwei-Geraden-Modell für faktor2HeizBedarf, lineare Interpolation der HK2-Kurve, Mindest-Vorlaufzeit-Clamp) läuft clientseitig in `hkrechner.js`. Die Berechnung wird bei jedem `input`-Event live ausgelöst, ohne Seiten-Reload. Ungültige Felder erhalten die CSS-Klasse `hkr-invalid` (rote Umrandung) und eine einzeilige Fehlermeldung. Berechnung und Canvas werden nur aktualisiert, wenn alle Felder gültig sind.
 

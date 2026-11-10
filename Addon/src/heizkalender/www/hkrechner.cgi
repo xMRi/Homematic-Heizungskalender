@@ -95,11 +95,14 @@ array set raeume_werte {}
 
 catch {
     set raw [extract_stdout [rega_script {
+        string eintrag;
         string raum;
         var sv;
         var liste = dom.GetObject("HK2-HKG-Liste");
         if (liste) {
-            foreach(raum, liste.Value().Split(";")) {
+            foreach(eintrag, liste.Value().Split(";")) {
+                ! Gruppeneintraege: "HKG-Raum-A+HKG-Raum-B" -> nur ersten Raum verwenden
+                raum = eintrag.StrValueByIndex("+", 0);
                 sv = dom.GetObject(raum);
                 if (sv) { WriteLine(raum # "=" # sv.Value()); }
             }
@@ -111,9 +114,10 @@ catch {
         if {$eq > 0} {
             set rname [string range $line 0 [expr {$eq - 1}]]
             set rval  [string range $line [expr {$eq + 1}] end]
-            # Nur Raeume mit Heiztyp SW (Schaltwerk/Heizung), Feld 3 = SW
+            # Nur Raeume mit Modus H, HS oder S (nicht V = Variable setzen)
             set fields [split $rval ";"]
-            if {[string equal [lindex $fields 2] "SW"]} {
+            set modus [lindex $fields 1]
+            if {[string equal $modus "H"] || [string equal $modus "HS"] || [string equal $modus "S"]} {
                 lappend raeume_namen $rname
                 set raeume_werte($rname) $rval
             }

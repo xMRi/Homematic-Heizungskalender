@@ -18,6 +18,10 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Addon: Neuer Vorheizzeit-Rechner (`hkrechner.cgi`) — simuliert die Vorheizzeitberechnung
   für einen frei konfigurierbaren Raum; clientseitig in `hkrechner.js` / `hkrechner.css`.
 
+### Behoben
+
+- Addon: Vorheizzeit-Rechner: Raum-Dropdown zeigte keine Räume mit HomeMatic-IP-Geräten und bei Gruppeneinträgen fehlten einzelne Räume. Filter korrigiert auf Modus (H/HS/S), Gruppen-Einträge mit `+`-Trennzeichen werden korrekt aufgelöst.
+
 ## [2026-11-08]
 
 ### Hinzugefügt

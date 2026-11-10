@@ -569,17 +569,18 @@ foreach(TLEintrag,TerminListe){
         string mindestHinweis = "";
         if (gesamtOffsetKorr < gesamtOffset) {
           mindestHinweis = " [Mindest]";
+          offsetTempAn = gesamtOffsetKorr-gesamtOffset+offsetTempAn;
         }
         string logText = RaumLogName # " - Heizen - AT " # AT.ToString(1) # "°C / GT " # GT.ToString(1) # "°C / IST " # ISTTemperatur.ToString(1) # "°C / ZIEL " # RTemp.ToString(1) # "°C" # HUMText # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
-        logText = logText # (offsetRaumAn/60) #"min ";
+        logText = logText # (offsetRaumAn/60).ToInteger() #"min ";
         if (offsetTempAn==0){ logText=logText#" - "; }
-        logText = logText # (offsetTempAn/60) # "min" # mindestHinweis # " = ";
+        logText = logText # (offsetTempAn/60).ToInteger() # "min" # mindestHinweis # " = ";
         EIN = EIN + gesamtOffsetKorr;
         logText = logText # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAus>0){ logText=logText#"+"; }elseif(offsetRaumAus==0){ logText=logText#"-"; }
         AUS = AUS + offsetRaumAus;
-        logText = logText # (offsetRaumAus/60) # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
+        logText = logText # (offsetRaumAus/60).ToInteger() # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
         HK2VLZListe = HK2VLZListe # RVN # ";" # ((EIN_Org.ToTime().ToInteger()-EIN)/60) # ";" # EIN.ToTime() # ";" # EIN_Org # ";" # AUS.ToTime() # ";" # ((AUS_Org.ToTime().ToInteger()-AUS)/60) # "~";
         if(log) {logObj.State(logText);}
         if(DEBUG)  {WriteLine(logText);}
@@ -593,12 +594,12 @@ foreach(TLEintrag,TerminListe){
         !// Reale Schaltzeiten berechnen
         string logText = RaumLogName # strTemp #EIN.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
-        logText = logText # (offsetRaumAn/60) #"min = ";
+        logText = logText # (offsetRaumAn/60).ToInteger() #"min = ";
         EIN = EIN + offsetRaumAn;
         logText = logText # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAus>0){ logText=logText#"+"; }elseif(offsetRaumAus==0){ logText=logText#"-"; }
         AUS = AUS + offsetRaumAus;
-        logText = logText # (offsetRaumAus/60) # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
+        logText = logText # (offsetRaumAus/60).ToInteger() # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
         HK2VLZListe = HK2VLZListe # RVN # ";" # ((EIN_Org.ToTime().ToInteger()-EIN)/60) # ";" # EIN.ToTime() # ";" # EIN_Org # ";" # AUS.ToTime() # ";" # ((AUS_Org.ToTime().ToInteger()-AUS)/60) # "~";
         if(log) {logObj.State(logText);}
         if(DEBUG)  {WriteLine(logText);}

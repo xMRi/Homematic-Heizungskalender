@@ -1,6 +1,6 @@
 !// Tool zur Kontrolle der Heizkurve
 !//================================================================================================
-!// Stand:    08.11.2026
+!// Stand:    10.11.2026
 !// Autoren:  Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -13,6 +13,9 @@
 !// Skript sollte alle 5min laufen ca. 30 Sekunden nach dem Schaltskript
 !//
 
+!// TT:  2026-11-10 Doppel-Termine: zweiten Schaltlisteneintrag überspringen solange die Heizphase
+!//                 des ersten noch aktiv ist. Verhindert falsche Offset-Berechnung gegen den
+!//                 späteren Termin (z.B. -659min statt -120min).
 !// MRi: 2026-11-08 Zieltemperatur erreicht wurde evtl. nicht geloggt.
 !// TT:  2026-11-06 Terminende-Doppellog verhindert: Bit 4 (16) als Guard gesetzt.
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
@@ -247,6 +250,28 @@ foreach(SLEintrag,SListe){
     if ((aktuellerSchaltZustand==3) ||(aktuellerSchaltZustand==2)){
       if(DEBUG)  {WriteLine(RaumLogName # " ist dauerhaft AN/AUS");}
       continue;
+    }
+
+    !// Prüfen ob dieser Raum bereits in einer aktiven Heizphase ist
+    !// (vorheriger Schaltlisteneintrag, z.B. erster von zwei Terminen am selben Tag).
+    !// Wenn ja, diesen späteren Eintrag überspringen, damit die laufende Heizphase
+    !// dem richtigen Termin zugeordnet bleibt und die Offset-Berechnung stimmt.
+    !// Voraussetzung: HK1-Schaltliste muss aufsteigend nach EIN-Zeit sortiert sein.
+    !// Diese Sortierung wird nicht im Code erzwungen, sondern ergibt sich aus der
+    !// Reihenfolge der Quelldaten (iCal-Feed bzw. ChurchTools-API), die in der Praxis
+    !// chronologisch sortiert sind.
+    integer iPosCheck = RaumListe.Find("#" # RVN # ";");
+    if (iPosCheck>=0){
+      string strCheck = RaumListe.Substr(iPosCheck+1,RaumListe.Length()-iPosCheck-1);
+      integer iPosCheck2 = strCheck.Find("#");
+      if (iPosCheck2<0){ iPosCheck2 = strCheck.Length(); }
+      string RaumCheckParam = strCheck.Substr(0,iPosCheck2);
+      integer statusCheck = RaumCheckParam.StrValueByIndex(";",1).ToInteger();
+      if (((statusCheck & 1)!=0) && ((statusCheck & 4)==0)){
+        !// Bit 0 (Heizbeginn) gesetzt, Bit 2 (Heizende) nicht gesetzt = aktive Heizphase
+        if(DEBUG) {WriteLine(RaumLogName # " übersprungen: Heizphase aus vorherigem Termin noch aktiv (Status=" # statusCheck # ")");}
+        continue;
+      }
     }
 
     !// Räume merken, die geschaltet werden

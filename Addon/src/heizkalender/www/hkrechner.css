@@ -1,0 +1,236 @@
+/* Heizkalender-Addon: Vorheizzeit-Rechner */
+
+/* Gruppen-Container: Flex-Wrap, Gruppen nebeneinander wenn Platz vorhanden */
+.hkr-gruppen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: flex-start;
+}
+
+.hkr-gruppen fieldset {
+  margin-bottom: 0;
+}
+
+/* Gruppe 1: Eingabe-Parameter (volle Breite, untereinander) */
+.hkr-gruppe-eingabe {
+  width: 1180px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  box-sizing: border-box;
+}
+
+/* Gruppe 2: Heizkurven-Verlauf (volle Breite) */
+.hkr-gruppe-kurve {
+  width: 1180px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.hkr-gruppe-kurve fieldset,
+.hkr-gruppe-verlauf fieldset {
+  box-sizing: border-box;
+}
+
+/* Gruppe 3: Ergebnis + Legende + Formeln (3 gleiche Spalten) */
+.hkr-gruppe-ergebnis {
+  width: 1180px;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+.hkr-gruppe-ergebnis > fieldset {
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* Gruppe 4: Zeitanteile + Heizbedarf-Kurve (2 gleiche Spalten) */
+.hkr-gruppe-zeitanteile {
+  width: 1180px;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+.hkr-gruppe-zeitanteile > fieldset {
+  width: calc((1180px - 2em) / 2) !important;
+  min-width: calc((1180px - 2em) / 2) !important;
+  max-width: calc((1180px - 2em) / 2) !important;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+/* Gruppe Verlauf: Temperaturverlauf (volle Breite) */
+.hkr-gruppe-verlauf {
+  width: 1180px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+
+
+.hkr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75em 1.2em;
+}
+
+.hkr-grid-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.hkr-grid-4 {
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.hkr-grid-7 {
+  grid-template-columns: repeat(7, minmax(0, 10em));
+}
+
+.hkr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+
+.hkr-field-wide {
+  grid-column: 1 / -1;
+}
+
+.hkr-field-wide2 {
+  grid-column: span 2;
+}
+
+.hkr-field-wide3 {
+  grid-column: 1 / -1;
+}
+
+.hkr-field label {
+  font-size: 0.85em;
+  color: #444;
+  font-weight: 600;
+}
+
+.hkr-field input {
+  padding: 0.3em 0.4em;
+  border: 1px solid #bbb;
+  border-radius: 3px;
+  font-size: 0.95em;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+}
+
+.hkr-field input.hkr-invalid {
+  border-color: #cc2200;
+  background-color: #fff5f5;
+  outline: none;
+}
+
+.hkr-unit {
+  font-size: 0.8em;
+  color: #666;
+}
+
+.hkr-err {
+  font-size: 0.78em;
+  color: #cc2200;
+}
+
+/* Ergebnis-Tabelle */
+#hkr-fs-ergebnis {
+  overflow-x: auto;
+}
+
+.hkr-table th,
+.hkr-table td {
+  text-align: center;
+  padding: 0.25em 0.6em;
+}
+
+/* Vertikale Ergebnis-Tabelle */
+.hkr-table-vertikal th {
+  text-align: left;
+  font-weight: normal;
+  color: #555;
+  white-space: nowrap;
+}
+
+.hkr-table-vertikal td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  min-width: 3em;
+}
+
+.hkr-table-vertikal td.hkr-einheit {
+  text-align: left;
+  color: #888;
+  font-size: 0.85em;
+  min-width: 3em;
+}
+
+.hkr-row-effektiv-tr th,
+.hkr-row-effektiv-tr td {
+  font-weight: 700;
+  font-size: 1.05em;
+  border-top: 2px solid #bbb;
+  padding-top: 0.4em;
+}
+
+.hkr-mindest-aktiv {
+  color: #cc2200;
+}
+
+/* Legende */
+.hkr-legende {
+  margin-top: 0.6em;
+  color: #444;
+  border-collapse: collapse;
+  width: auto;
+}
+
+.hkr-legende td {
+  padding: 0.1em 0.8em 0.1em 0;
+  vertical-align: top;
+}
+
+.hkr-legende td:first-child {
+  white-space: nowrap;
+  padding-right: 0.8em;
+}
+
+.hkr-legende td:last-child {
+  white-space: normal;
+}
+
+/* Canvas-Legende */
+.hkr-canvas-legende {
+  margin: 0.8em 0 0 0;
+  font-size: 0.85em;
+  color: #444;
+}
+
+.hkr-cl-vhz { color: #2e86c1; }
+.hkr-cl-at  { color: #e67e22; }
+
+#hkr-canvas-f2,
+#hkr-canvas-zeit,
+#hkr-canvas-kurven,
+#hkr-canvas-verlauf {
+  display: block;
+  margin-top: 0.4em;
+  max-width: 100%;
+}

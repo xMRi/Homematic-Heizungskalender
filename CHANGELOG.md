@@ -18,6 +18,14 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 ### Behoben
 
 - Heizkurvenkontrolle: Doppeltermin-Guard auf `bearbeiteteRaeume` umgestellt (war `RaumListe`). Der alte Guard übersprang Räume fälschlich in Folgeläufen, weil `RaumListe` Bit 0 aus dem letzten Lauf noch gesetzt hatte. Folge: nach Heizbeginn wurden keine Log-Einträge mehr geschrieben. Fix: Guard prüft jetzt nur innerhalb des aktuellen Skriptlaufs.
+### Hinzugefügt
+
+- Addon: Neuer Vorheizzeit-Rechner (`hkrechner.cgi`) — simuliert die Vorheizzeitberechnung
+  für einen frei konfigurierbaren Raum; clientseitig in `hkrechner.js` / `hkrechner.css`.
+
+### Behoben
+
+- Addon: Vorheizzeit-Rechner: Raum-Dropdown zeigte keine Räume mit HomeMatic-IP-Geräten und bei Gruppeneinträgen fehlten einzelne Räume. Filter korrigiert auf Modus (H/HS/S), Gruppen-Einträge mit `+`-Trennzeichen werden korrekt aufgelöst.
 
 ## [2026-11-08]
 

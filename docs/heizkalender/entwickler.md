@@ -172,7 +172,7 @@ eine semikolongetrennte Liste mit sechs Pflichtfeldern und einem optionalen
 siebten Feld:
 
 ```txt
-Status;Modus;Heiztyp;Wohlfühltemp[/Grundtemp];Vorheizzeit[*Faktor];VorzeitAus[;Thermostat[;Schaltaktor1[;Schaltaktor2...]]]
+Status;Modus;Heiztyp;Wohlfühltemp[/Grundtemp];Vorheizzeit[*Faktor[*MindestMin]];VorzeitAus[;Thermostat[;Schaltaktor1[;Schaltaktor2...]]]
 ```
 
 | Feld | Index | Typ | Werte |
@@ -180,11 +180,11 @@ Status;Modus;Heiztyp;Wohlfühltemp[/Grundtemp];Vorheizzeit[*Faktor];VorzeitAus[;
 | Status | 0 | Integer | `0` = keine Heizphase, `1` = Heizphase aktiv |
 | Modus | 1 | String | `H` = Heizen, `S` = Schalten, `HS` = Heizen + Schalten, `V` = Variable setzen |
 | Heiztyp | 2 | String | `IP`, `RT`, `TC`, `IT` (Thermostate), `SW` (Schalt-Aktor) |
-| Wohlfühltemp | 3.0 | Float | Zieltemperatur in °C; |
-| Grundtemp | 3.1 | Float | Optional `/Grundtemp` für raumindividuelle Grundtemperatur |
-| Vorheizzeit | 4.0 | Integer | Individuelle Vorheizzeit in Minuten;|
-| FaktorHeizkurve | 4.1 | Integer | Optional `*faktor1HK2Kurve` (Float, 0,20–5,0): raumspezifischer Multiplikator auf die HK2-Kurve|
-| MinimaleVorheizzeit | 4.2 | Integer | Optional `*minimaleVorheizzeit` (Default 15min)|
+| Wohlfühltemp | 3 | Float | Zieltemperatur in °C |
+| Grundtemp | 3 | Float | Optional, Suffix `/Grundtemp`: raumindividuelle Grundtemperatur in °C (z.B. `21/16`) |
+| Vorheizzeit | 4 | Integer | Individuelle Vorheizzeit in Minuten (0 = automatisch per Heizkurve) |
+| Faktor | 4 | Float | Optional, Suffix `*Faktor`: Skalierungsfaktor für den kurvenbasierten Anteil der Vorheizzeit (0,20–5,0). Gesamtvorheizzeit = Offset + Faktor × HK2-Kurve(Außentemperatur); z.B. `60*1.5` |
+| MindestMin | 4 | Integer | Optional, zweiter Suffix `*Faktor*MindestMin`: Mindest-Vorlaufzeit in Minuten (1–480, Default 15); verhindert, dass faktor2HeizBedarf die Zeit bei IST nahe ZIEL wegrechnet |
 | VorzeitAus | 5 | Integer | Minuten vor Terminende, nach denen abgeschaltet wird |
 | Thermostat | 6 | String | Nur bei Modus `HS`: CCU-Kanaladresse des Thermostats, der als Temperatursensor dient |
 | Schaltaktor(en) | 7+ | String | Nur bei Modus `HS`: CCU-Kanaladdresse(n) der Schaltaktoren; mehrere Aktoren werden durch weitere `;`-Felder angehängt |

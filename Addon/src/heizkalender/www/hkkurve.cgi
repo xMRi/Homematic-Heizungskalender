@@ -369,6 +369,7 @@ puts {  <link rel="stylesheet" href="heizkalender.css">
   <nav class="hk-nav">
     <a href="index.cgi">Raum&uuml;bersicht</a>
     <a href="hkkurve.cgi" class="active">Heizkurve</a>
+    <a href="hkrechner.cgi">Rechner</a>
     <a href="hkconfig.cgi">Einstellungen</a>
     <a href="hklog.cgi">HK-Log</a>
     <a href="syslog.cgi">Syslog</a>

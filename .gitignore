@@ -10,8 +10,11 @@ Homematic-Handbuch/
 .DS_Store
 .vscode/
 .claude/
+CLAUDE.md
 memory/
 logs/
 build/
 Addon/build/
 site/
+docs-egn/
+project-plans/

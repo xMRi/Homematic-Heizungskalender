@@ -45,7 +45,7 @@
 string vrp="";
 
 !//Debug Ausgaben Ein und Aus schalten. 0 = Aus, 1 = Ein
-boolean DEBUG=1;
+boolean DEBUG=0;
 
 !// Logging in "Log" mit 1 zwingend einschalten oder mit -1 zwingend Ausschalten
 !// Mit 0 wird die Einstellung aus der HKx-Logging übernommen.
@@ -210,10 +210,9 @@ while(SListe!=""){
   !// Sollte der Termin weit in der Zukunft liegen warten wir noch.
   if (NOW<EIN) {
     !// Termine in der Zukunft überspringen
-    if(DEBUG)  {WriteLine(RaumLogName # " Heizbeginn liegt in derZukunft");}
+    if(DEBUG)  {WriteLine(RaumLogName # " Heizbeginn liegt in der^Zukunft");}
     continue;
-  }
-  
+  }  
 
   !// Räume im Dauerschaltstatus werden ignoriert
   !// 0=Aus, 1=Ein, 2=Dauer AUS, 3=Dauer EIN
@@ -269,11 +268,11 @@ while(SListe!=""){
     }else{
       if(DEBUG) {WriteLine(RaumLogName # " neuer Heizlisteneintrag wird bearbeitet, da das Heizende erreicht wurde!");}
     }   
-  } else {
-    !// Räume merken, die geschaltet werden. 
-    bearbeiteteRaeume = bearbeiteteRaeume # RVN # ";";
-  }
-
+  } 
+  
+  !// Räume merken, die geschaltet werden. 
+  bearbeiteteRaeume = bearbeiteteRaeume # RVN # ";";
+  
   !// Vorgegebene Temperaur oder Raumtemperatur bestimmen
   if(SDFlag<=0){
     !// Temperaturen individuell bestimmen
@@ -421,7 +420,7 @@ if (DEBUG) { WriteLine("neueRaumliste=" # neueRaumListe); }
 !//------------------------------------------------------------------
 !// Neue RaumListen Daten speichern
 if (objVar.State()!=neueRaumListe){
-  !// objVar.State(neueRaumListe);
+  objVar.State(neueRaumListe);
   if (RaumListe==""){
     if (DEBUG) { WriteLine("Neue Raumliste: Keine Termine"); }
   }else{

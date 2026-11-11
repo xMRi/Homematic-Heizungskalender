@@ -29,6 +29,16 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Skript2: Wenn die minimale Vorheizzeit greift wird auch die Berechnung angepasst und nicht nur [mindest] angezeigt.
 - Heizkurvenkontrolle: Korrektur bei mehreren Terminen je Tag.
 
+### Behoben
+
+- Heizkurvenkontrolle: Doppeltermin-Guard auf `bearbeiteteRaeume` umgestellt (war `RaumListe`). Der alte Guard übersprang Räume fälschlich in Folgeläufen, weil `RaumListe` Bit 0 aus dem letzten Lauf noch gesetzt hatte. Folge: nach Heizbeginn wurden keine Log-Einträge mehr geschrieben. Fix: Guard prüft jetzt nur innerhalb des aktuellen Skriptlaufs.
+- Addon: Vorheizzeit-Rechner: Raum-Dropdown zeigte keine Räume mit HomeMatic-IP-Geräten und bei Gruppeneinträgen fehlten einzelne Räume. Filter korrigiert auf Modus (H/HS/S), Gruppen-Einträge mit `+`-Trennzeichen werden korrekt aufgelöst.
+
+### Hinzugefügt
+
+- Addon: Neuer Vorheizzeit-Rechner (`hkrechner.cgi`) — simuliert die Vorheizzeitberechnung
+  für einen frei konfigurierbaren Raum; clientseitig in `hkrechner.js` / `hkrechner.css`.
+
 ## [2026-11-09]
 
 ### Geändert

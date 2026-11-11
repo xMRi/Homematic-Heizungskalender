@@ -15,6 +15,10 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [2026-11-11]
 
+### Behoben
+
+- Skript2: Am Ende der Heizzeit kam es zu dem Effekt, dass ein Termin evtl. nicht mehr in die Heizliste aufgenommen wurde. Aber bei einer leeren HK2-Heizliste wird, jeder Termin aus der HK1-Schaltliste wieder übernommen. Das brachte dann auch die Heizkurvenberechnung durcheinander.
+
 ### Geändert
 
 - Heizkurvenkontrolle: basiert jetzt auf HK2-Schaltliste

@@ -305,11 +305,11 @@ while(SListe!=""){
     !// alle 5min voll. Dazu speichern wir den Raum mit gesetztem Bit 3 zurück in die RaumListe.
     if ((status & 8)==0){
       if (AktAktor==""){
-        logObj.State        (RaumLogName # ": Kein Temperatur-Sensor konfiguriert (Feld 6 leer) - Heizkurvenkontrolle übersprungen.");
-        if(DEBUG) {WriteLine(RaumLogName # ": Kein Temperatur-Sensor konfiguriert (Feld 6 leer) - Heizkurvenkontrolle übersprungen.");}
+        logObj.State        (RaumLogName # " Fehler: Kein Temperatur-Sensor konfiguriert (Feld 6 leer) - Heizkurvenkontrolle übersprungen.");
+        if(DEBUG) {WriteLine(RaumLogName # " Fehler: Kein Temperatur-Sensor konfiguriert (Feld 6 leer) - Heizkurvenkontrolle übersprungen.");}
       }else{
-        logObj.State        (RaumLogName # ": Temperatur-Sensor " # AktAktor # " existiert nicht - Heizkurvenkontrolle übersprungen.");
-        if(DEBUG) {WriteLine(RaumLogName # ": Temperatur-Sensor " # AktAktor # " existiert nicht - Heizkurvenkontrolle übersprungen.");}
+        logObj.State        (RaumLogName # " Fehler: Temperatur-Sensor " # AktAktor # " existiert nicht - Heizkurvenkontrolle übersprungen.");
+        if(DEBUG) {WriteLine(RaumLogName # " Fehler: Temperatur-Sensor " # AktAktor # " existiert nicht - Heizkurvenkontrolle übersprungen.");}
       }
       !// setzt Bit 3 (kein Temperatur-Sensor vorhande)
       status = status | 8;

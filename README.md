@@ -42,6 +42,8 @@ Auch als responsive Website mit Suchfunktion: [https://xmri.github.io/Homematic-
 - [Skript-Referenz](/docs/skripte/readme.md): alle Skripte und Systemvariablen im Detail.
 - [Heizsteuerung und Vorheizzeit](/docs/heizkalender/heizsteuerung-vorheizzeit.md): Berechnung der Vorheizzeit mit Beispielen.
 - [Tools](/docs/tools/readme.md): optionale Zusatz-Skripte für Diagnose, Logging und Wartung.
+- [Hinweise zu Updates](/docs/heizkalender/updates.md) 
+
 
 ### Für Entwickler
 

@@ -13,6 +13,14 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-11]
+
+### Geändert
+
+- Heizkurvenkontrolle: basiert jetzt auf HK2-Schaltliste
+- Heizkurvenkontrolle: Konsistenz der Logs garantiert
+- Heizkurvenkontrolle: Behandlung mehrere Termine an einem Tag verbessert
+
 ## [2026-11-10]
 
 ### Geändert

@@ -573,6 +573,19 @@ puts {              <span class="hkr-err" id="hkr-mindest-err"></span>
         </fieldset>
       </div><!-- hkr-gruppe-kurve -->
 
+      <div class="hkr-gruppe hkr-gruppe-vergleich" id="hkr-gruppe-vergleich" style="display:none">
+        <fieldset>
+          <legend>Raumvergleich</legend>
+          <canvas id="hkr-canvas-vergleich" width="1146" height="200"></canvas>
+          <p class="hkr-canvas-legende">
+            <span class="hkr-cl-vhz" style="font-weight:bold">&#x25A0;</span> Vorzeitiger Heizbeginn (V + V<sub>global</sub>) &middot; <i>f</i><sub>2</sub> &nbsp;&nbsp;
+            <span class="hkr-cl-at" style="font-weight:bold">&#x25A0;</span> AT-abh&auml;ngige Zeit (<i>f</i><sub>1</sub> &middot; HK2(T<sub>at</sub>)) &middot; <i>f</i><sub>2</sub> &nbsp;&nbsp;
+            <span style="color:#c0392b;font-weight:bold">&#x25A0;</span> Mindest-Vorlauf greift &nbsp;&nbsp;
+            <span style="color:#555;font-style:italic">T<sub>ist</sub> aus Eingabefeld; raumindividuelle Ziel- und Grundtemperatur</span>
+          </p>
+        </fieldset>
+      </div><!-- hkr-gruppe-vergleich -->
+
     </div><!-- hkr-gruppen -->
 
 

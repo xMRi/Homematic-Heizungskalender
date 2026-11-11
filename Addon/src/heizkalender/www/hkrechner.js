@@ -111,6 +111,7 @@ function berechnen() {
         document.getElementById("hkr-gruppe-ergebnis").style.display = "none";
         document.getElementById("hkr-gruppe-zeitanteile").style.display = "none";
         document.getElementById("hkr-gruppe-verlauf").style.display = "none";
+        document.getElementById("hkr-gruppe-vergleich").style.display = "none";
         return;
     }
 
@@ -179,6 +180,9 @@ function berechnen() {
     document.getElementById("hkr-gruppe-zeitanteile").style.display = "";
     document.getElementById("hkr-gruppe-verlauf").style.display = "";
 
+    var vergleichVerfuegbar = (typeof HKR_RAEUME !== "undefined" && HKR_RAEUME.length > 1);
+    document.getElementById("hkr-gruppe-vergleich").style.display = vergleichVerfuegbar ? "" : "none";
+
     // ---------------------------------------------------------------------------
     // Canvas zeichnen
     // ---------------------------------------------------------------------------
@@ -187,6 +191,10 @@ function berechnen() {
         zeichneZeitbalken(vhzRoh_min, atRoh_min, f1, f2, vhzSkal_min, atSkal_min, mindest, effektiv_min, gesamt_min);
         zeichneKurvendiagramm(kurve, f1, f2, gt, ziel, at);
         zeichneVerlauf(gt, ziel, ist, ka, effektiv_min);
+        var aktiverRaum = "";
+        var sel = document.getElementById("hkr-raum");
+        if (sel) aktiverRaum = sel.value;
+        zeichneVergleich(at, kv, kurve, ka, ist, aktiverRaum);
     }, 0);
 }
 
@@ -648,6 +656,116 @@ function raumWerteBefuellen(name) {
 function setFeld(id, val) {
     var el = document.getElementById(id);
     if (el) el.value = val;
+}
+
+// ---------------------------------------------------------------------------
+// Hilfsfunktion: VLZ_eff fuer einen Raum berechnen (mit f2, Ist-Temp aus Eingabefeld)
+// ---------------------------------------------------------------------------
+function berechneVLZ(raum, at, kv, kurve, ka, ist) {
+    var f1      = Math.max(0.20, Math.min(5.0, parseFloat(raum.f1) || 1.0));
+    var vhz     = parseFloat(raum.vhz) || 0;
+    var mindest = parseFloat(raum.mindest) || 15;
+    var gt      = parseFloat(raum.gt) || 10;
+    var ziel    = parseFloat(raum.ziel) || 20;
+    var atRoh   = linearInterpolate(at, kurve);
+
+    var f2 = 1.0;
+    if ((ziel - gt) !== 0) {
+        var istClip = Math.min(ist, ziel);
+        var mitte   = gt + (ziel - gt) / 2;
+        if (ist < mitte) {
+            f2 = 1.0 - ka * ((istClip - gt) / (ziel - gt));
+        } else {
+            f2 = (2.0 - ka) * (1.0 - ((istClip - gt) / (ziel - gt)));
+        }
+    }
+
+    var vhzAnteil = (vhz + kv) * f2;
+    var atAnteil  = f1 * f2 * atRoh;
+    var gesamt    = vhzAnteil + atAnteil;
+    return { effektiv: Math.max(gesamt, mindest), gesamt: gesamt,
+             vhzAnteil: vhzAnteil, atAnteil: atAnteil, mindest: mindest };
+}
+
+// ---------------------------------------------------------------------------
+// Canvas: Raumvergleich
+// ---------------------------------------------------------------------------
+function zeichneVergleich(at, kv, kurve, ka, ist, aktiverRaum) {
+    var canvas = document.getElementById("hkr-canvas-vergleich");
+    if (!canvas || !canvas.getContext) return;
+    if (typeof HKR_RAEUME === "undefined" || HKR_RAEUME.length === 0) return;
+
+    // Ergebnisse berechnen und absteigend sortieren
+    var ergebnisse = [];
+    for (var i = 0; i < HKR_RAEUME.length; i++) {
+        var r = HKR_RAEUME[i];
+        var vlz = berechneVLZ(r, at, kv, kurve, ka, ist);
+        var label = r.name.replace(/^HKG-Raum-/, "");
+        ergebnisse.push({ label: label, name: r.name, vlz: vlz });
+    }
+    ergebnisse.sort(function(a, b) { return b.vlz.effektiv - a.vlz.effektiv; });
+
+    var dpr  = window.devicePixelRatio || 1;
+    var cssW  = 1146;
+    var rowH  = 28;
+    var padL  = 160, padR = 60, padT = 10, padB = 20;
+    var cssH  = padT + ergebnisse.length * rowH + padB;
+    canvas.width  = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    canvas.style.width  = cssW + "px";
+    canvas.style.height = cssH + "px";
+    var ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, cssW, cssH);
+
+    var cw      = cssW - padL - padR;
+    var maxVal  = ergebnisse[0].vlz.effektiv;
+    if (maxVal <= 0) return;
+
+    function xLen(v) { return Math.max(0, (v / maxVal) * cw); }
+
+    for (var j = 0; j < ergebnisse.length; j++) {
+        var e      = ergebnisse[j];
+        var vlz    = e.vlz;
+        var y      = padT + j * rowH;
+        var barY   = y + 4;
+        var barH   = rowH - 8;
+        var aktiv  = (e.name === aktiverRaum);
+        var greift = (vlz.gesamt < vlz.mindest);
+
+        // Raumname
+        ctx.fillStyle = aktiv ? "#000" : "#444";
+        ctx.font      = aktiv ? "bold 12px sans-serif" : "12px sans-serif";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        ctx.fillText(e.label, padL - 6, y + rowH / 2);
+
+        // VHZ-Anteil blau
+        ctx.fillStyle = "#2980b9";
+        ctx.fillRect(padL, barY, xLen(vlz.vhzAnteil), barH);
+        // AT-Anteil orange
+        ctx.fillStyle = "#e67e22";
+        ctx.fillRect(padL + xLen(vlz.vhzAnteil), barY, xLen(vlz.atAnteil), barH);
+        // Mindest-Aufschlag rot (nur wenn Mindest greift)
+        if (greift) {
+            var aufschlag = vlz.mindest - vlz.gesamt;
+            ctx.fillStyle = "#c0392b";
+            ctx.fillRect(padL + xLen(vlz.vhzAnteil) + xLen(vlz.atAnteil), barY, xLen(aufschlag), barH);
+        }
+
+        // Aktiven Raum umranden
+        if (aktiv) {
+            ctx.strokeStyle = "#333";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(padL, barY, xLen(vlz.effektiv), barH);
+        }
+
+        // Minutenwert rechts
+        ctx.fillStyle = "#333";
+        ctx.font = "11px sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(fmtDE(vlz.effektiv, 0) + " min", padL + xLen(vlz.effektiv) + 4, y + rowH / 2);
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 !// Tool zur Kontrolle der Heizkurve
 !//================================================================================================
-!// Stand:    11.11.2026
+!// Stand:    12.11.2026
 !// Autoren:  Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -13,6 +13,7 @@
 !// Skript sollte alle 5min laufen ca. 30 Sekunden nach dem Schaltskript
 !//
 
+!// MRi: 2026-11-12 Ablaufen der HK2-Schaltliste führte zu Fehler.
 !// MRi: 2026-11-11 Umstrukturierung der Arbeitsweise auf bleibenden Status und garantierte
 !//                 Abarbeitung in zeitlicher Folge.
 !// TT:  2026-11-10 Doppel-Termine: Guard auf bearbeiteteRaeume umgestellt (war RaumListe).
@@ -131,7 +132,7 @@ while(SListe!=""){
     break;
   }
 
-  !// Ersten Raumlisteneintrrag als Start nehmen
+!// Ersten Raumlisteneintrrag als Start nehmen
   string  RVN = SLEintrag.StrValueByIndex(";",0);
 
   !// Suche ob, es diesen Raum nochmal gibt. Dadurch dass wir mit dem Hashmark suchen,
@@ -146,13 +147,15 @@ while(SListe!=""){
     !// Diesen Eintrag nehmen und prüfen ob der Heizbeginn früher liegt
     string SLEintrag2 = SListe2.StrValueByIndex("#",0);
 
-    !// Prüfe und nimm den kleineren Eintrag
-    if (SLEintrag.StrValueByIndex(";",4).ToTime().ToInteger()>SLEintrag2.StrValueByIndex(";",4).ToTime().ToInteger()){
+    !// Prüfe und nimm den kleineren Eintrag. Wir vergeleichen den ganzen Eintrag
+    !// D.h. kürzere Termine bei gleichem Terminstart werden zuerst gefunden.
+    if (SLEintrag>SLEintrag2){
       SLEintrag = SLEintrag2;
     }
 
-    !// Nächsten Eintrag suchen
-    iPos = SListe2.Find("#" # RVN # ";");
+    !// Nächsten Eintrag suchen. Der aktuelle Eintrag soll nicht gefunden werden.
+    !// Also setzen wir einen falschen Prefix "-".
+    iPos = ("-" # SListe2).Find("#" # RVN # ";");
   }
 
   !// Wir haben nun den kleinsten Schaltlisten Eintrag für diesen Raum.
@@ -162,6 +165,7 @@ while(SListe!=""){
     if(DEBUG){WriteLine("Fataler Fehler. Heizlisteneintrag konnte nicht gefunden werden!");}
     quit;
   }
+
   !// Entferne ab der Position inkl. # Zeichen
   SListe = SListe.Substr(0,iPos) # SListe.Substr(iPos+SLEintrag.Length()+1);
 
@@ -221,6 +225,7 @@ while(SListe!=""){
     if(DEBUG)  {WriteLine(RaumLogName # " ist dauerhaft AN/AUS");}
     continue;
   }
+  if(DEBUG)  {WriteLine(RaumLogName # " aktuellerSchaltZustand=" # aktuellerSchaltZustand);}
 
   !// Daten aus aktueller Raumliste bestimmen. Und die Daten aus der Raumliste entfernen.
   !//   0. Name

@@ -280,7 +280,7 @@ if {$submitted && [llength $log_files] > 0} {
             set rest     [string range $msg [expr {$sp+1}] end]
             set cdp [string first ":" $rest]
             if {$cdp > 0} {
-                set ereignis [string trim [string range $rest 0 [expr {$cdp-1}]]]
+                set ereignis [string trimleft [string range $rest 0 [expr {$cdp-1}]] " -"]
                 set detail   [string trim [string range $rest [expr {$cdp+1}] end]]
                 set c1 [string first "," $detail]
                 if {$c1 > 0} {

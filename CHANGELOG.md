@@ -13,6 +13,14 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-12]
+
+### Behoben
+
+- Heizkurvenkontrolle: Fix bei mehreren Terminen je Tag.
+- Addon: 0.9.1
+- Addon: Anpassung an neues Format der Ausgabe
+
 ## [2026-11-11]
 
 ### Behoben

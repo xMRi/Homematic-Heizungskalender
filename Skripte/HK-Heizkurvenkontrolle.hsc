@@ -146,7 +146,9 @@ while(SListe!=""){
 
     !// Prüfe und nimm den kleineren Eintrag. Wir vergleichen den ganzen Eintrag
     !// D.h. kürzere Termine bei gleichem Terminstart werden zuerst gefunden.
-    if (SLEintrag>SLEintrag2){
+    string EIN1 = SLEintrag.StrValueByIndex(";",4) # ";" # SLEintrag.StrValueByIndex(";",5);
+    string EIN2 = SLEintrag2.StrValueByIndex(";",4) # ";" # SLEintrag2.StrValueByIndex(";",5);
+    if (EIN1>EIN2){
       SLEintrag = SLEintrag2;
     }
 
@@ -200,20 +202,20 @@ while(SListe!=""){
   !// Unser Skript macht nur Sinn für Modus Heizen
   string HSFlag = RVI.StrValueByIndex(";",1);
   if ((HSFlag=="S") || (HSFlag=="V")){
-    if(DEBUG)  {WriteLine(RaumLogName # " Kein Heizvorgang");}
+    if(DEBUG)  {WriteLine(RaumLogName # "Kein Heizvorgang");}
     continue;
   }
 
   if (SDFlag<0){
     !// Sollte es eine Dauerschaltung sein, ignorieren wir diesen Eintrag
-    if(DEBUG)  {WriteLine(RaumLogName # " Dauerschaltungen werden nicht behandelt");}
+    if(DEBUG)  {WriteLine(RaumLogName # "Dauerschaltungen werden nicht behandelt");}
     continue;
   }
 
   !// Sollte der Termin weit in der Zukunft liegen warten wir noch.
   if (NOW<EIN) {
     !// Termine in der Zukunft überspringen
-    if(DEBUG)  {WriteLine(RaumLogName # " Heizbeginn liegt in der Zukunft");}
+    if(DEBUG)  {WriteLine(RaumLogName # "Heizbeginn liegt in der Zukunft");}
     continue;
   }
 
@@ -221,10 +223,10 @@ while(SListe!=""){
   !// 0=Aus, 1=Ein, 2=Dauer AUS, 3=Dauer EIN
   integer aktuellerSchaltZustand = RVI.StrValueByIndex(";",0).ToInteger();
   if ((aktuellerSchaltZustand==3) ||(aktuellerSchaltZustand==2)){
-    if(DEBUG)  {WriteLine(RaumLogName # " ist dauerhaft AN/AUS");}
+    if(DEBUG)  {WriteLine(RaumLogName # "ist dauerhaft AN/AUS");}
     continue;
   }
-  if(DEBUG)  {WriteLine(RaumLogName # " aktuellerSchaltZustand=" # aktuellerSchaltZustand);}
+  if(DEBUG)  {WriteLine(RaumLogName # "aktuellerSchaltZustand=" # aktuellerSchaltZustand);}
 
   !// Daten aus aktueller Raumliste bestimmen. Und die Daten aus der Raumliste entfernen.
   !//   0. Name
@@ -267,14 +269,14 @@ while(SListe!=""){
     !// nicht überspringen wir den nächsten Eintrag, bis das Heizende, des aktuellen
     !// Schaltlisteneintrag, den wir schon behandelt haben erreicht ist
     if ((status & 4)==0) {
-      if(DEBUG) {WriteLine(RaumLogName # " Späterer Termin wird übersprungen, Raum wurde in diesem Lauf bereits verarbeitet und ist nicht am Heizende!");}
+      if(DEBUG) {WriteLine(RaumLogName # "Späterer Termin wird übersprungen, Raum wurde in diesem Lauf bereits verarbeitet und ist nicht am Heizende!");}
       continue;
     }else{
-      if(DEBUG) {WriteLine(RaumLogName # " neuer Heizlisteneintrag wird bearbeitet, da das Heizende erreicht wurde!");}
-    }
-  }
-
-  !// Räume merken, die geschaltet werden.
+      if(DEBUG) {WriteLine(RaumLogName # "neuer Heizlisteneintrag wird bearbeitet, da das Heizende erreicht wurde!");}
+    }   
+  } 
+  
+  !// Räume merken, die geschaltet werden. 
   bearbeiteteRaeume = bearbeiteteRaeume # RVN # ";";
 
   !// Vorgegebene Temperatur oder Raumtemperatur bestimmen
@@ -309,11 +311,11 @@ while(SListe!=""){
     !// alle 5min voll. Dazu speichern wir den Raum mit gesetztem Bit 3 zurück in die RaumListe.
     if ((status & 8)==0){
       if (AktAktor==""){
-        logObj.State        (RaumLogName # " Fehler: Kein Temperatur-Sensor konfiguriert (Feld 6 leer) - Heizkurvenkontrolle übersprungen.");
-        if(DEBUG) {WriteLine(RaumLogName # " Fehler: Kein Temperatur-Sensor konfiguriert (Feld 6 leer) - Heizkurvenkontrolle übersprungen.");}
+        logObj.State        (RaumLogName # "Fehler: Kein Temperatur-Sensor konfiguriert (Feld 6 leer) - Heizkurvenkontrolle übersprungen.");
+        if(DEBUG) {WriteLine(RaumLogName # "Fehler: Kein Temperatur-Sensor konfiguriert (Feld 6 leer) - Heizkurvenkontrolle übersprungen.");}
       }else{
-        logObj.State        (RaumLogName # " Fehler: Temperatur-Sensor " # AktAktor # " existiert nicht - Heizkurvenkontrolle übersprungen.");
-        if(DEBUG) {WriteLine(RaumLogName # " Fehler: Temperatur-Sensor " # AktAktor # " existiert nicht - Heizkurvenkontrolle übersprungen.");}
+        logObj.State        (RaumLogName # "Fehler: Temperatur-Sensor " # AktAktor # " existiert nicht - Heizkurvenkontrolle übersprungen.");
+        if(DEBUG) {WriteLine(RaumLogName # "Fehler: Temperatur-Sensor " # AktAktor # " existiert nicht - Heizkurvenkontrolle übersprungen.");}
       }
       !// setzt Bit 3 (kein Temperatur-Sensor vorhanden)
       status = status | 8;
@@ -350,8 +352,8 @@ while(SListe!=""){
     if (!strTemp.StartsWith("-")){
       strTemp = "+" # strTemp;
     }
-    logObj.State          (RaumLogName # " Heizende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
-    if (DEBUG) { WriteLine(RaumLogName # " Heizende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
+    logObj.State          (RaumLogName # "Heizende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
+    if (DEBUG) { WriteLine(RaumLogName # "Heizende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
     !// setzt Bit 2 (Heizung ausgeschaltet)
     status = status | 4;
   }
@@ -363,8 +365,8 @@ while(SListe!=""){
     if (!strTemp.StartsWith("-")){
       strTemp = "+" # strTemp;
     }
-    logObj.State          (RaumLogName # " Zieltemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
-    if (DEBUG) { WriteLine(RaumLogName # " Zieltemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
+    logObj.State          (RaumLogName # "Zieltemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
+    if (DEBUG) { WriteLine(RaumLogName # "Zieltemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
     !// Setzt Bit 1 (Zieltemperatur erreicht)
     status = status | 2;
   }
@@ -376,8 +378,8 @@ while(SListe!=""){
     if (!strTemp.StartsWith("-")){
       strTemp = "+" # strTemp;
     }
-    logObj.State          (RaumLogName # " Terminbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
-    if (DEBUG) { WriteLine(RaumLogName # " Terminbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
+    logObj.State          (RaumLogName # "Terminbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
+    if (DEBUG) { WriteLine(RaumLogName # "Terminbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
     !// Setzt Bit 5 (Terminanfang geloggt)
     status = status | 32;
   }
@@ -389,8 +391,8 @@ while(SListe!=""){
     if (!strTemp.StartsWith("-")){
       strTemp = "+" # strTemp;
     }
-    logObj.State          (RaumLogName # " Terminende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
-    if (DEBUG) { WriteLine(RaumLogName # " Terminende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
+    logObj.State          (RaumLogName # "Terminende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1));
+    if (DEBUG) { WriteLine(RaumLogName # "Terminende: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # AT.ToString(1)); }
     !// Setzt Bit 4 (Terminende geloggt)
     status = status | 16;
   }

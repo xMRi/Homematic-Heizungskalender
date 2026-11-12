@@ -89,7 +89,7 @@ mit dem Mittelpunkt $M = T_G + \dfrac{T_W - T_G}{2}$
 | :--- | :--- | :--- |
 | $T_G$ | Grundtemperatur (`HK2-Grundtemperatur`) | 10 °C |
 | $T_W$ | Wohlfühltemperatur (Zieltemperatur laut Schaltliste) | 20 °C |
-| $K$ | Kurvenanpassung (steuert die Krümmung des Zwei-Geraden-Modells) | 0,8 |
+| $K$ | Kurvenanpassung (steuert die Krümmung des Zwei-Geraden-Modells); konfigurierbar über `HK2-Kurvenanpassung` | 0,8 |
 | $M$ | Mittelpunkt (Knickstelle der zwei Geraden) | 15 °C |
 
 ### faktor1HK2Kurve (raumspezifischer Multiplikator)

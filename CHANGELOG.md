@@ -29,6 +29,11 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Addon: Heizkurvenkontrolle: Log-Parser unterstützt das neue Log-Format von `HK-Heizkurvenkontrolle.hsc` (`RaumName - Ereignis: ...`); Rückwärtskompatibilität mit dem alten Format erhalten.
 - Addon: Version 0.10.0.
 - Heizkurvenkontrolle: Code-Review-Korrekturen: 5 ungenutzte Variablen entfernt (`OffsetAT`, `ATG`, `Flag_Hand_Temp`, `Flag_Hand_Grundtemp`, `RIDINamen`), `vrp+` auf `vrp#` vereinheitlicht, Guard-Bedingung korrigiert, Heizbeginn-Reset präzisiert.
+### Behoben
+
+- Heizkurvenkontrolle: Fix bei mehreren Terminen je Tag.
+- Addon: 0.9.1
+- Addon: Anpassung an neues Format der Ausgabe
 
 ## [2026-11-11]
 
@@ -43,6 +48,10 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Heizkurvenkontrolle: Behandlung mehrere Termine an einem Tag verbessert
 
 ## [2026-11-10]
+
+### Hinzugefügt
+
+- Skript2: Kurvenanpassungsfaktor über optionale Systemvariable `HK2-Kurvenanpassung` konfigurierbar (0,3..1,0, Vorgabe 0,8). Fehlt die Variable, bleibt das Verhalten unverändert. Empfohlener Wert 0,6 für Brennwertkessel mit schwerer Bausubstanz.
 
 ### Geändert
 

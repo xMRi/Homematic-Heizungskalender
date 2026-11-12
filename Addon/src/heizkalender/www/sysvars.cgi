@@ -113,7 +113,8 @@ set doc_dev_hkgl    "${doc_dev}#hk2-hkg-liste"
 set doc_dev_sl      "${doc_dev}#hk1-schaltliste"
 set doc_dev_vlz1    "${doc_dev}#hk1-vorlaufzeit"
 set doc_dev_vlz2    "${doc_dev}#hk2-schaltzeiten"
-set doc_dev_kurve   "${doc_dev}#hk2-kurve"
+set doc_dev_kurve          "${doc_dev}#hk2-kurve"
+set doc_dev_kurvenanpassung "${doc_dev}#hk2-kurvenanpassung"
 set doc_dev_raeume_hkk "${doc_dev}#hk-raumeheizkurvenkontrolle"
 set doc_dev_sl2    "${doc_dev}#hk2-schaltliste"
 
@@ -146,6 +147,7 @@ set doc_links [list \
     HK2-Hand-Temp                 $doc_skripte_s2 \
     HK2-HKG-Liste                 $doc_dev_hkgl \
     HK2-Kurve                     $doc_dev_kurve  \
+    HK2-Kurvenanpassung           $doc_dev_kurvenanpassung \
     HK2-Kurvenversatz             $doc_skripte_s2 \
     HK2-VorzeitAus                $doc_skripte_s2 \
     HK2-Schaltliste               $doc_dev_sl2 \

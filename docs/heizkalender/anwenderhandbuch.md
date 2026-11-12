@@ -442,6 +442,26 @@ Ein Wert von 0 ist nicht erlaubt; der Heizkalender verwendet dann den Default vo
 
 Greift die Mindest-Vorlaufzeit, erscheint im HK-Log ein Hinweis `[Mindest]` in der betreffenden Zeile.
 
+### Kurvenanpassungsfaktor `HK2-Kurvenanpassung`
+
+Die Stärke der Reduzierung bei bereits vorgeheizten Räumen lässt sich über die optionale
+Systemvariable `HK2-Kurvenanpassung` einstellen. Der Wert bestimmt, wie aggressiv die
+berechnete Vorlaufzeit sinkt, wenn die Raumtemperatur sich bereits der Zieltemperatur nähert.
+
+| Wert | Wirkung |
+| :--- | :--- |
+| 1,0 | Lineare Gerade: maximale Reduzierung, keine Reserve |
+| 0,8 | Standardkurve mit Reserve in der Mitte (Vorgabe) |
+| 0,6 | Empfehlung für Brennwertkessel mit schwerer Bausubstanz |
+| 0,3 | Minimalwert: geringste Reduzierung, längste Vorlaufzeiten |
+
+Fehlt die Variable, gilt automatisch 0,8. Werte außerhalb 0,3..1,0 werden begrenzt.
+
+**Wann ist eine Anpassung sinnvoll?** Wenn ein Raum beim Termin noch nicht die Wohlfühltemperatur
+erreicht hat, obwohl die Heizkurve `HK2-Kurve` eigentlich ausreichend bemessen ist, kann
+`HK2-Kurvenanpassung` auf 0,6 gesetzt werden. Die Vorlaufzeit bei Raumtemperaturen über 15 °C
+wird dann weniger stark verkürzt.
+
 ### Werte der Heizkurve
 
 | Außentemperatur | −10 °C | −5 °C | 0 °C | 8 °C | 10 °C | 12 °C | 15 °C | 17,5 °C |

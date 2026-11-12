@@ -348,6 +348,20 @@ Beispielkurven und Berechnungshintergrund:
 [Anwenderhandbuch](anwenderhandbuch.md#die-heizkurve-hk2-kurve),
 [Heizsteuerung-Vorheizzeit.md](heizsteuerung-vorheizzeit.md)
 
+### HK2-Kurvenanpassung
+
+Optional. Faktor K für das Zwei-Geraden-Modell der `faktor2HeizBedarf`-Berechnung (0,3 bis 1,0).
+
+Steuert, wie stark die Vorlaufzeit bei bereits vorgeheizten Räumen reduziert wird:
+bei 1,0 ergibt sich eine lineare Gerade (maximale Reduzierung), bei 0,8 die Standardkurve mit
+mehr Reserve in der Mitte, bei 0,6 wird die Reduzierung abgemildert (längere Vorlaufzeiten
+bei IST-Temperaturen über 15 °C).
+
+Fehlt die Variable auf der CCU, verwendet `HK-Skript 2` automatisch den Wert 0,8.
+Werte außerhalb des Bereichs 0,3..1,0 werden auf diesen Bereich begrenzt.
+
+Empfehlung: 0,6 für Gebäude mit Brennwertkessel, schwerer Bausubstanz und schwachen Heizkörpern.
+
 ### HK2-Schaltliste
 
 Übergabepuffer von `HK-Skript 2` an `HK-Skript 3`. Wird automatisch befüllt und

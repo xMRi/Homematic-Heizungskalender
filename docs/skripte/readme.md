@@ -102,6 +102,7 @@ Dieses Skript legt alle Systemvariablen an, die für das Berechnungs- und das Sc
 | HK2-VorzeitAus | Globale Grundoffsetzeit in Minuten, um die vor Terminende ausgeschaltet wird. Wird nur bei Heizvorgängen angewendet, nicht bei reinem Schalten. Gegenstück zu HK2-Kurvenversatz (Einschalt-Offset). Default: 0 |
 | HK2-Kurvenversatz | Globale Grundoffsetzeit in Minuten, um die vor Terminbeginn eingeschaltet wird. Wird nur bei Heizvorgängen angewendet, nicht bei reinem Schalten. Gegenstück zu HK2-VorzeitAus (Ausschalt-Offset). Default: 0 |
 | HK2-Kurve | Heizkurve: 8 Vorlaufzeiten in Minuten zu den Außentemperatur-Stützpunkten −10, −5, 0, 8, 10, 12, 15, 17,5 °C (semikolongetrennt). Zwischen den Stützpunkten interpoliert `HK-Skript 2` linear; der höchste Wert (bei tiefster Außentemperatur) ist die längste Vorheizzeit. Installation-Default (konservativ): `162;130;100;59;50;41;30;20` (max. 162 min ≈ 2,7 h). Als Orientierungshilfe sind drei Beispielkurven bekannt (konservativ / mittel / großzügig); Details und eine vollständige Vergleichstabelle siehe [Anwenderhandbuch](../heizkalender/anwenderhandbuch.md) und [../heizkalender/heizsteuerung-vorheizzeit.md](../heizkalender/heizsteuerung-vorheizzeit.md). |
+| HK2-Kurvenanpassung | Optional. Faktor k für das Zwei-Geraden-Modell der Vorheizzeit-Berechnung (0.3..1.0). Steuert die Stärke der Reduzierung der Vorlaufzeit bei bereits vorgeheizten Räumen: 1.0 = lineare Gerade (maximale Reduzierung), 0.8 = Sicherheitskurve (Vorgabe), 0.6 = empfohlen für Brennwertkessel mit schwerer Bausubstanz und schwachen Heizkörpern. Fehlt die Variable, wird automatisch 0.8 verwendet. Werte außerhalb 0.3..1.0 werden auf diesen Bereich begrenzt. |
 | HK2-Schaltliste |  Hier werden von `HK-Skript 2` errechneten Schaltzeiten eingetragen, die von dann vom Schaltskript `HK-Skript 3` verwendet werden |
 | HK2-Schaltzeiten | Wird von `HK-Skript 2` am Ende jedes Laufs geschrieben (optional, nur wenn die Variable vorhanden ist). Enthält die berechneten Schaltzeiten aller Räume des letzten Skriptlaufs. Format: `RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;NachlaufMin~...` (Einträge durch `~` getrennt). Bei Multi-Raum-Zuordnungen ein Eintrag pro Raum mit individueller Vorheizzeit. Dient zur Anzeige im Addon. Nicht manuell setzen. |
 | HK2-Log | Variable für das Schalt-Log (siehe Abschnitt _HK-Init-Variablen Logging.hsc_) |
@@ -208,7 +209,7 @@ Das Schaltskript ist das Herzstück der Heizkalender Software. Es muss zwingend 
 
 Das Skript 2 ist ein Hauptskript um eigentlichen Schaltzeiten zu berechnen.
 
-Benötigte Variablen: `HK1-R-Liste`, `HK1-Schaltliste`, `HK2-Aussentemperatur`, `HK2-Grundtemperatur`, `HK2-HKG-Liste`, `HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Log`, `HK2-Logging`, `HK2-VorzeitAus`. Optional (wird beschrieben falls vorhanden): `HK2-Schaltzeiten`
+Benötigte Variablen: `HK1-R-Liste`, `HK1-Schaltliste`, `HK2-Aussentemperatur`, `HK2-Grundtemperatur`, `HK2-HKG-Liste`, `HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Log`, `HK2-Logging`, `HK2-VorzeitAus`. Optional (wird beschrieben falls vorhanden): `HK2-Kurvenanpassung`, `HK2-Schaltzeiten`
 Sowie weitere Raum-Variablen `HKG-Raum-*`
 
 ## HK-Skript 3.hsc

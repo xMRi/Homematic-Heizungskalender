@@ -6,6 +6,9 @@
 #   HK2-Kurve            - 8 AT-Stuetzwerte (semikolongetrennt)
 #   HK2-Kurvenversatz    - Globaler Einschalt-Versatz in Minuten
 #   HK2-Aussentemperatur - Aktueller AT-Durchschnitt
+#   HK2-Grundtemperatur  - Globale Grundtemperatur (Fallback fuer Raeume ohne Abw. GT)
+#   HK2-A.Temp.Grenze    - Aussentemperatur-Grenze fuer Abschaltung
+#   HK2-Kurvenanpassung  - Kurvenanpassung K
 #   HKG-Raum-*           - Raumvariablen fuer Dropdown (Wohlfuehltemp, Grundtemp, VHZ, Faktor, Mindest)
 #
 # Die Berechnung laeuft clientseitig in hkrechner.js (kein Reload).
@@ -53,6 +56,8 @@ set ccu_kurve ""
 set ccu_kv ""
 set ccu_at ""
 set ccu_ka "0.8"
+set ccu_grundtemp "10"
+set ccu_atg ""
 
 catch {
     set raw [extract_stdout [rega_script {
@@ -65,6 +70,10 @@ catch {
         if (sv) { WriteLine("AT:" # sv.Value()); }
         sv = dom.GetObject("HK2-Kurvenanpassung");
         if (sv) { WriteLine("KA:" # sv.Value()); }
+        sv = dom.GetObject("HK2-Grundtemperatur");
+        if (sv) { WriteLine("GT:" # sv.Value()); }
+        sv = dom.GetObject("HK2-A.Temp.Grenze");
+        if (sv) { WriteLine("ATG:" # sv.Value()); }
     }]]
     foreach line [split $raw "\n"] {
         set line [string trim $line]
@@ -81,16 +90,26 @@ catch {
             catch { set ccu_ka [format "%g" [string range $line 3 end]] } \
                   { set ccu_ka [string range $line 3 end] }
         }
+        if {[string match "GT:*"    $line]} {
+            catch { set ccu_grundtemp [format "%.1f" [string range $line 3 end]] } \
+                  { set ccu_grundtemp [string range $line 3 end] }
+        }
+        if {[string match "ATG:*"   $line]} {
+            catch { set ccu_atg [format "%.1f" [string range $line 4 end]] } \
+                  { set ccu_atg [string range $line 4 end] }
+        }
     }
 }
 
 # ---------------------------------------------------------------------------
-# Raumvariablen laden
+# Raumvariablen und Ist-Temperaturen laden
 # ---------------------------------------------------------------------------
 # raeume_namen  - geordnete Liste der Raumnamen
 # raeume_werte  - Array: Name -> Rohwert der Raumvariable
+# raeume_ist    - Array: Name -> Ist-Temperatur (leer wenn kein Sensor)
 set raeume_namen {}
 array set raeume_werte {}
+array set raeume_ist {}
 
 catch {
     set raw [extract_stdout [rega_script {
@@ -104,9 +123,36 @@ catch {
                 result = result # name # "=" # sv.Value() # "\n";
             }
         }
+        result = result # "===TEMPS===\n";
+        foreach(id, dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs()) {
+            var sv = dom.GetObject(id);
+            if (!sv) { continue; }
+            string name = sv.Name();
+            if (name.StartsWith("HKG-Raum-")) {
+                string val = sv.Value();
+                string sensor = val.StrValueByIndex(";", 6);
+                if (sensor != "") {
+                    var ch = dom.GetObject(sensor);
+                    if (ch) {
+                        var dpTemp = ch.DPByHssDP("ACTUAL_TEMPERATURE");
+                        if (!dpTemp) { dpTemp = ch.DPByHssDP("TEMPERATURE"); }
+                        if (dpTemp) { result = result # name # "\t" # dpTemp.State() # "\n"; }
+                    }
+                }
+            }
+        }
         WriteLine(result);
     }]]
-    foreach line [split $raw "\n"] {
+    set temp_sep "===TEMPS==="
+    set tspos [string first $temp_sep $raw]
+    if {$tspos >= 0} {
+        set vars_raw  [string range $raw 0 [expr {$tspos - 1}]]
+        set temps_raw [string range $raw [expr {$tspos + [string length $temp_sep]}] end]
+    } else {
+        set vars_raw  $raw
+        set temps_raw ""
+    }
+    foreach line [split $vars_raw "\n"] {
         set line [string trim $line]
         set eq [string first "=" $line]
         if {$eq > 0} {
@@ -119,6 +165,15 @@ catch {
                 lappend raeume_namen $rname
                 set raeume_werte($rname) $rval
             }
+        }
+    }
+    foreach line [split $temps_raw "\n"] {
+        set line [string trim $line]
+        set tab [string first "\t" $line]
+        if {$tab > 0} {
+            set rname [string range $line 0 [expr {$tab - 1}]]
+            set tval  [string range $line [expr {$tab + 1}] end]
+            catch { set raeume_ist($rname) [format "%.1f" $tval] }
         }
     }
 }
@@ -136,7 +191,8 @@ proc raum_label {name} {
 
 # Ersten Raum als Vorbelegung fuer die Einzelfelder verwenden
 set erster_raum_ziel  "20"
-set erster_raum_gt    "10"
+set erster_raum_gt    $ccu_grundtemp
+set erster_raum_hat_gt 0
 set erster_raum_vhz   "0"
 set erster_raum_f1    "1.0"
 set erster_raum_mindest "15"
@@ -151,6 +207,7 @@ if {[llength $raeume_namen] > 0} {
     if {$slash >= 0} {
         catch { set erster_raum_ziel [format "%.1f" [string range $feld3 0 [expr {$slash-1}]]] }
         catch { set erster_raum_gt   [format "%.1f" [string range $feld3 [expr {$slash+1}] end]] }
+        set erster_raum_hat_gt 1
     } else {
         catch { set erster_raum_ziel [format "%.1f" $feld3] }
     }
@@ -196,6 +253,12 @@ puts {  <link rel="stylesheet" href="heizkalender.css">
 
 # Raumdaten als JS-Variable ausgeben
 puts {  <script>}
+puts "  var HKR_GT_GLOBAL = \"[jsquote $ccu_grundtemp]\";"
+if {$erster_raum_hat_gt} {
+    puts {  var hkrRaumHatEigeneGT = true;}
+} else {
+    puts {  var hkrRaumHatEigeneGT = false;}
+}
 puts "  var HKR_RAEUME = \["
 set first 1
 foreach rname $raeume_namen {
@@ -217,9 +280,11 @@ foreach rname $raeume_namen {
     if {[llength $parts] >= 2} { catch { set f1 [format "%g" [lindex $parts 1]] } }
     if {[llength $parts] >= 3} { catch { set mindest [format "%g" [lindex $parts 2]] } }
     set label [raum_label $rname]
+    set ist ""
+    if {[info exists raeume_ist($rname)]} { set ist $raeume_ist($rname) }
     if {!$first} { puts "," }
     set first 0
-    puts -nonewline "    \{\"name\":\"[jsquote $label]\",\"ziel\":\"[jsquote $ziel]\",\"gt\":\"[jsquote $gt]\",\"vhz\":\"[jsquote $vhz]\",\"f1\":\"[jsquote $f1]\",\"mindest\":\"[jsquote $mindest]\"\}"
+    puts -nonewline "    \{\"name\":\"[jsquote $label]\",\"ziel\":\"[jsquote $ziel]\",\"gt\":\"[jsquote $gt]\",\"vhz\":\"[jsquote $vhz]\",\"f1\":\"[jsquote $f1]\",\"mindest\":\"[jsquote $mindest]\",\"ist\":\"[jsquote $ist]\"\}"
 }
 puts ""
 puts "  \];"
@@ -262,17 +327,24 @@ puts {              <span class="hkr-err" id="hkr-at-err"></span>
             </div>
 
             <div class="hkr-field">
+              <label for="hkr-grundtemp">Grundtemperatur (&deg;C)</label>}
+puts "              <input type=\"number\" id=\"hkr-grundtemp\" step=\"0.1\" maxlength=\"5\""
+puts "                     value=\"[htmlquote $ccu_grundtemp]\" placeholder=\"z.B. 10\">"
+puts {              <span class="hkr-err" id="hkr-grundtemp-err"></span>
+            </div>
+
+            <div class="hkr-field">
+              <label for="hkr-atg">Au&szlig;entemp.-Grenze (&deg;C)</label>}
+puts "              <input type=\"number\" id=\"hkr-atg\" step=\"0.1\" maxlength=\"5\""
+puts "                     value=\"[htmlquote $ccu_atg]\" placeholder=\"z.B. 15\">"
+puts {              <span class="hkr-err" id="hkr-atg-err"></span>
+            </div>
+
+            <div class="hkr-field">
               <label for="hkr-kv">Vorz. Heizbeginn (min)</label>}
 puts "              <input type=\"number\" id=\"hkr-kv\" step=\"1\" maxlength=\"3\""
 puts "                     value=\"[htmlquote $ccu_kv]\" placeholder=\"0\">"
 puts {              <span class="hkr-err" id="hkr-kv-err"></span>
-            </div>
-
-            <div class="hkr-field">
-              <label for="hkr-ka">Kurvenanpassung K</label>}
-puts "              <input type=\"number\" id=\"hkr-ka\" step=\"0.1\" maxlength=\"4\""
-puts "                     value=\"[htmlquote $ccu_ka]\" placeholder=\"0.8\">"
-puts {              <span class="hkr-err" id="hkr-ka-err"></span>
             </div>
 
             <div class="hkr-field hkr-field-wide2">
@@ -281,6 +353,13 @@ puts "              <input type=\"text\" id=\"hkr-kurve\" maxlength=\"60\""
 puts "                     pattern=\"\\d+(\\.\\d+)?(;\\d+(\\.\\d+)?){7}\""
 puts "                     value=\"[htmlquote $ccu_kurve]\" placeholder=\"8 Werte, semikolongetrennt\">"
 puts {              <span class="hkr-err" id="hkr-kurve-err"></span>
+            </div>
+
+            <div class="hkr-field">
+              <label for="hkr-ka">Kurvenanpassung K</label>}
+puts "              <input type=\"number\" id=\"hkr-ka\" step=\"0.1\" maxlength=\"4\""
+puts "                     value=\"[htmlquote $ccu_ka]\" placeholder=\"0.8\">"
+puts {              <span class="hkr-err" id="hkr-ka-err"></span>
             </div>
 
           </div>
@@ -378,12 +457,11 @@ puts {              <span class="hkr-err" id="hkr-mindest-err"></span>
         <fieldset id="hkr-fs-ergebnis">
           <legend>Ergebnis</legend>
           <table class="hk-table hkr-table hkr-table-vertikal">
-            <tr><th><i>V</i><sub>raum</sub></th>     <td id="hkr-r-vhz-roh"></td>    <td class="hkr-einheit">min</td></tr>
-            <tr><th><i>V</i><sub>global</sub></th>   <td id="hkr-r-kv"></td>          <td class="hkr-einheit">min</td></tr>
+            <tr><th><i>V</i><sub>gesamt</sub></th>     <td id="hkr-r-vhz-roh"></td>    <td class="hkr-einheit">min</td></tr>
             <tr><th>HK2</th>                          <td id="hkr-r-at-roh"></td>      <td class="hkr-einheit">min</td></tr>
             <tr><th><i>f</i><sub>1</sub></th>         <td id="hkr-r-f1"></td>          <td class="hkr-einheit"></td></tr>
             <tr><th><i>f</i><sub>2</sub></th>         <td id="hkr-r-f2"></td>          <td class="hkr-einheit"></td></tr>
-            <tr><th><i>V</i> &middot; <i>f</i><sub>2</sub></th>                          <td id="hkr-r-vhz-skal"></td>    <td class="hkr-einheit">min</td></tr>
+            <tr><th><i>V</i><sub>gesamt</sub> &middot; <i>f</i><sub>2</sub></th>                          <td id="hkr-r-vhz-skal"></td>    <td class="hkr-einheit">min</td></tr>
             <tr><th>HK2 &middot; <i>f</i><sub>1</sub> &middot; <i>f</i><sub>2</sub></th>  <td id="hkr-r-at-skal"></td>     <td class="hkr-einheit">min</td></tr>
             <tr><th>VLZ</th>                          <td id="hkr-r-gesamt-roh"></td>  <td class="hkr-einheit">min</td></tr>
             <tr><th><i>T</i><sub>Mindest</sub></th>  <td id="hkr-r-mindest"></td>     <td class="hkr-einheit">min</td></tr>
@@ -568,7 +646,8 @@ puts {              <span class="hkr-err" id="hkr-mindest-err"></span>
             <span class="hkr-cl-vhz" style="font-weight:bold">&#x2014;</span> HK2(T<sub>at</sub>) &nbsp;&nbsp;
             <span class="hkr-cl-at" style="font-weight:bold">&#x2014;</span> <i>f</i><sub>1</sub> &middot; HK2(T<sub>at</sub>) &nbsp;&nbsp;
             <span style="color:#cc2200;font-weight:bold">&#x2014;</span> VLZ<sub>eff</sub> = <i>f</i><sub>1</sub> &middot; <i>f</i><sub>2</sub> &middot; HK2(T<sub>at</sub>) &nbsp;&nbsp;
-            <span style="color:#1a7a3a;font-weight:bold">- -</span> aktuelle AT
+            <span style="color:#1a7a3a;font-weight:bold">- -</span> aktuelle Au&szlig;entemperatur &nbsp;&nbsp;
+            <span style="color:#c0392b;font-weight:bold">- -</span> Au&szlig;entemperaturgrenze
           </p>
         </fieldset>
       </div><!-- hkr-gruppe-kurve -->

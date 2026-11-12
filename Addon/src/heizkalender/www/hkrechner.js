@@ -38,16 +38,18 @@ function parseKurve(s) {
 // ---------------------------------------------------------------------------
 function validateFields() {
     var ok = true;
-    ok = validateNum("hkr-at",    -40,  40,  true)  && ok;
-    ok = validateNum("hkr-ist",   -40,  40,  true)  && ok;
-    ok = validateNum("hkr-ziel",    5,  40,  true)  && ok;
-    ok = validateNum("hkr-gt",      5,  30,  true)  && ok;
-    ok = validateNum("hkr-vhz",     0, 960,  true)  && ok;
-    ok = validateNum("hkr-kv",      0, 960,  true)  && ok;
-    ok = validateNum("hkr-faktor1", 0.20, 5.0, true) && ok;
-    ok = validateNum("hkr-mindest", 1,  480,  true)  && ok;
-    ok = validateNum("hkr-ka", 0.3, 1.0, true)       && ok;
-    ok = validateKurve()                              && ok;
+    ok = validateNum("hkr-at",        -40,  40,   true)  && ok;
+    ok = validateNum("hkr-grundtemp",   5,  30,   true)  && ok;
+    ok = validateNum("hkr-atg",       -40,  40,   false) && ok;
+    ok = validateNum("hkr-ist",       -40,  40,   true)  && ok;
+    ok = validateNum("hkr-ziel",        5,  40,   true)  && ok;
+    ok = validateNum("hkr-gt",          5,  30,   true)  && ok;
+    ok = validateNum("hkr-vhz",         0, 960,   true)  && ok;
+    ok = validateNum("hkr-kv",          0, 960,   true)  && ok;
+    ok = validateNum("hkr-faktor1",  0.20,  5.0,  true)  && ok;
+    ok = validateNum("hkr-mindest",     1, 480,   true)  && ok;
+    ok = validateNum("hkr-ka",        0.3,  1.0,  true)  && ok;
+    ok = validateKurve()                                  && ok;
 
     // Kreuzvalidierung ziel > gt
     var ziel = parseFloat(document.getElementById("hkr-ziel").value);
@@ -116,6 +118,8 @@ function berechnen() {
     }
 
     var at       = parseFloat(document.getElementById("hkr-at").value);
+    var atgEl    = document.getElementById("hkr-atg");
+    var atg      = (atgEl && atgEl.value !== "") ? parseFloat(atgEl.value) : NaN;
     var ist      = parseFloat(document.getElementById("hkr-ist").value);
     var ziel     = parseFloat(document.getElementById("hkr-ziel").value);
     var gt       = parseFloat(document.getElementById("hkr-gt").value);
@@ -160,7 +164,6 @@ function berechnen() {
     // Ergebnis-Tabelle befuellen
     // ---------------------------------------------------------------------------
     setText("hkr-r-vhz-roh",    fmtDE(vhzRoh_min, 1));
-    setText("hkr-r-kv",         fmtDE(kv, 1));
     setText("hkr-r-at-roh",     fmtDE(atRoh_min, 1));
     setText("hkr-r-f1",         fmtDE(f1, 2));
     setText("hkr-r-f2",         fmtDE(f2, 3));
@@ -189,7 +192,7 @@ function berechnen() {
     setTimeout(function() {
         zeichneF2Kurve(gt, ziel, ka, ist, f2);
         zeichneZeitbalken(vhzRoh_min, atRoh_min, f1, f2, vhzSkal_min, atSkal_min, mindest, effektiv_min, gesamt_min);
-        zeichneKurvendiagramm(kurve, f1, f2, gt, ziel, at);
+        zeichneKurvendiagramm(kurve, f1, f2, gt, ziel, at, atg);
         zeichneVerlauf(gt, ziel, ist, ka, effektiv_min);
         var aktiverRaum = "";
         var sel = document.getElementById("hkr-raum");
@@ -325,7 +328,7 @@ function zeichneF2Kurve(gt, ziel, ka, ist, f2Aktuell) {
 // ---------------------------------------------------------------------------
 // Canvas 3: Heizkurven-Diagramm (HK2, f1*HK2, f1*f2*HK2 ueber AT)
 // ---------------------------------------------------------------------------
-function zeichneKurvendiagramm(kurve, f1, f2, gt, ziel, at) {
+function zeichneKurvendiagramm(kurve, f1, f2, gt, ziel, at, atg) {
     var canvas = document.getElementById("hkr-canvas-kurven");
     if (!canvas || !canvas.getContext) return;
 
@@ -443,7 +446,7 @@ function zeichneKurvendiagramm(kurve, f1, f2, gt, ziel, at) {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Aktuelle AT (dunkelblaue Linie)
+    // Aktuelle AT (grüne Linie)
     var xAt = xPos(at);
     ctx.strokeStyle = "#1a7a3a";
     ctx.lineWidth = 1.5;
@@ -457,6 +460,23 @@ function zeichneKurvendiagramm(kurve, f1, f2, gt, ziel, at) {
     ctx.font = "11px sans-serif";
     ctx.textAlign = xAt > W - 60 ? "right" : "left";
     ctx.fillText("AT=" + fmtDE(at, 1), xAt + (xAt > W - 60 ? -4 : 4), pad.t + 12);
+
+    // AT-Grenze (rote gestrichelte Linie, nur wenn definiert und im Darstellungsbereich)
+    if (!isNaN(atg) && atg >= atMin && atg <= atMax) {
+        var xAtg = xPos(atg);
+        ctx.strokeStyle = "#c0392b";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.moveTo(xAtg, pad.t);
+        ctx.lineTo(xAtg, pad.t + ch);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#c0392b";
+        ctx.font = "11px sans-serif";
+        ctx.textAlign = xAtg > W - 60 ? "right" : "left";
+        ctx.fillText("ATG=" + fmtDE(atg, 1), xAtg + (xAtg > W - 60 ? -4 : 4), pad.t + 24);
+    }
 
     // Marker: Schnittpunkt AT und VLZ_eff
     var vlzEffAtAt = f1 * f2 * linearInterpolate(at, kurve);
@@ -543,7 +563,7 @@ function zeichneZeitbalken(vhzRoh, atRoh, f1, f2, vhzSkal, atSkal, mindest, effe
         ctx.fillRect(x, y1, xLen(vhzRoh), rowH);
         if (xLen(vhzRoh) >= 30) {
             drawParts(x, y1, xLen(vhzRoh), rowH,
-                [{t:"V+V",s:false},{t:"global",s:true},{t:" = "+fmtDE(vhzRoh,1),s:false}], "#fff");
+                [{t:"V",s:false},{t:"raum",s:true},{t:"+V",s:false},{t:"global",s:true},{t:" = "+fmtDE(vhzRoh,1),s:false}], "#fff");
         }
         x += xLen(vhzRoh);
     }
@@ -564,7 +584,7 @@ function zeichneZeitbalken(vhzRoh, atRoh, f1, f2, vhzSkal, atSkal, mindest, effe
         ctx.fillRect(x, y2, xLen(vhzSkal), rowH);
         if (xLen(vhzSkal) >= 40) {
             drawParts(x, y2, xLen(vhzSkal), rowH,
-                [{t:"V+V",s:false},{t:"global",s:true},{t:" * f",s:false},{t:"2",s:true},{t:" = "+fmtDE(vhzSkal,1),s:false}], "#333");
+                [{t:"V",s:false},{t:"raum",s:true},{t:"+V",s:false},{t:"global",s:true},{t:" * f",s:false},{t:"2",s:true},{t:" = "+fmtDE(vhzSkal,1),s:false}], "#333");
         }
         x += xLen(vhzSkal);
     }
@@ -573,7 +593,7 @@ function zeichneZeitbalken(vhzRoh, atRoh, f1, f2, vhzSkal, atSkal, mindest, effe
         ctx.fillRect(x, y2, xLen(atSkal), rowH);
         if (xLen(atSkal) >= 40) {
             drawParts(x, y2, xLen(atSkal), rowH,
-                [{t:"f",s:false},{t:"1",s:true},{t:" * HK2 * f",s:false},{t:"2",s:true},{t:" = "+fmtDE(atSkal,1),s:false}], "#333");
+                [{t:"HK2 * f",s:false},{t:"1",s:true},{t:" * f",s:false},{t:"2",s:true},{t:" = "+fmtDE(atSkal,1),s:false}], "#333");
         }
         x += xLen(atSkal);
     }
@@ -606,9 +626,10 @@ function labelSegment(ctx, x, y, w, h, text, color) {
 // Event-Listener
 // ---------------------------------------------------------------------------
 var hkrDirty = false;
+if (typeof hkrRaumHatEigeneGT === "undefined") { var hkrRaumHatEigeneGT = false; }
 
 (function() {
-    var ids = ["hkr-at", "hkr-ist", "hkr-ziel", "hkr-gt", "hkr-vhz",
+    var ids = ["hkr-at", "hkr-grundtemp", "hkr-atg", "hkr-ist", "hkr-ziel", "hkr-gt", "hkr-vhz",
                "hkr-kv", "hkr-ka", "hkr-faktor1", "hkr-mindest", "hkr-kurve"];
     for (var i = 0; i < ids.length; i++) {
         var el = document.getElementById(ids[i]);
@@ -616,6 +637,16 @@ var hkrDirty = false;
             el.addEventListener("input",  function() { hkrDirty = true; berechnen(); });
             el.addEventListener("change", function() { hkrDirty = true; berechnen(); });
         }
+    }
+
+    // Grundtemperatur-Feld: hkr-gt nachfuehren, wenn kein raumindividueller Wert
+    var grundtempEl = document.getElementById("hkr-grundtemp");
+    if (grundtempEl) {
+        grundtempEl.addEventListener("input", function() {
+            if (!hkrRaumHatEigeneGT) {
+                setFeld("hkr-gt", this.value);
+            }
+        });
     }
 
     var sel = document.getElementById("hkr-raum");
@@ -643,8 +674,10 @@ function raumWerteBefuellen(name) {
     for (var i = 0; i < HKR_RAEUME.length; i++) {
         var r = HKR_RAEUME[i];
         if (r.name === name) {
+            hkrRaumHatEigeneGT = r.gt !== "";
             setFeld("hkr-ziel",    r.ziel);
-            setFeld("hkr-gt",      r.gt !== "" ? r.gt : "10");
+            setFeld("hkr-gt",      hkrRaumHatEigeneGT ? r.gt : (typeof HKR_GT_GLOBAL !== "undefined" ? HKR_GT_GLOBAL : "10"));
+            setFeld("hkr-ist",     r.ist !== "" ? r.ist : "18");
             setFeld("hkr-vhz",     r.vhz);
             setFeld("hkr-faktor1", r.f1);
             setFeld("hkr-mindest", r.mindest);
@@ -665,7 +698,7 @@ function berechneVLZ(raum, at, kv, kurve, ka, ist) {
     var f1      = Math.max(0.20, Math.min(5.0, parseFloat(raum.f1) || 1.0));
     var vhz     = parseFloat(raum.vhz) || 0;
     var mindest = parseFloat(raum.mindest) || 15;
-    var gt      = parseFloat(raum.gt) || 10;
+    var gt      = parseFloat(raum.gt !== "" ? raum.gt : (typeof HKR_GT_GLOBAL !== "undefined" ? HKR_GT_GLOBAL : "10")) || 10;
     var ziel    = parseFloat(raum.ziel) || 20;
     var atRoh   = linearInterpolate(at, kurve);
 

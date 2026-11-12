@@ -13,11 +13,49 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-11]
+
+### Behoben
+
+- Skript2: Am Ende der Heizzeit kam es zu dem Effekt, dass ein Termin evtl. nicht mehr in die Heizliste aufgenommen wurde. Aber bei einer leeren HK2-Heizliste wird, jeder Termin aus der HK1-Schaltliste wieder übernommen. Das brachte dann auch die Heizkurvenberechnung durcheinander.
+
+### Geändert
+
+- Heizkurvenkontrolle: basiert jetzt auf HK2-Schaltliste
+- Heizkurvenkontrolle: Konsistenz der Logs garantiert
+- Heizkurvenkontrolle: Behandlung mehrere Termine an einem Tag verbessert
+
 ## [2026-11-10]
 
 ### Hinzugefügt
 
 - Skript2: Kurvenanpassungsfaktor über optionale Systemvariable `HK2-Kurvenanpassung` konfigurierbar (0,3..1,0, Vorgabe 0,8). Fehlt die Variable, bleibt das Verhalten unverändert. Empfohlener Wert 0,6 für Brennwertkessel mit schwerer Bausubstanz.
+
+### Geändert
+
+- HeizkalenderInstallation: merkt sich die Verbindungen in einer MRU liste. Vorteilhaft wenn man mehrere CCUs pflegt.
+- Skript2: Wenn die minimale Vorheizzeit greift wird auch die Berechnung angepasst und nicht nur [mindest] angezeigt.
+- Heizkurvenkontrolle: Korrektur bei mehreren Terminen je Tag.
+
+### Behoben
+
+- Heizkurvenkontrolle: Doppeltermin-Guard auf `bearbeiteteRaeume` umgestellt (war `RaumListe`). Der alte Guard übersprang Räume fälschlich in Folgeläufen, weil `RaumListe` Bit 0 aus dem letzten Lauf noch gesetzt hatte. Folge: nach Heizbeginn wurden keine Log-Einträge mehr geschrieben. Fix: Guard prüft jetzt nur innerhalb des aktuellen Skriptlaufs.
+- Addon: Vorheizzeit-Rechner: Raum-Dropdown zeigte keine Räume mit HomeMatic-IP-Geräten und bei Gruppeneinträgen fehlten einzelne Räume. Filter korrigiert auf Modus (H/HS/S), Gruppen-Einträge mit `+`-Trennzeichen werden korrekt aufgelöst.
+
+### Hinzugefügt
+
+- Addon: Neuer Vorheizzeit-Rechner (`hkrechner.cgi`) — simuliert die Vorheizzeitberechnung
+  für einen frei konfigurierbaren Raum; clientseitig in `hkrechner.js` / `hkrechner.css`.
+
+## [2026-11-09]
+
+### Geändert
+
+- Heizkurvenkontrolle: Zieltemperatur wurde evtl. nicht angezeigt
+- Skript2: minimale Vorheizzeit eingebaut
+- HeizkalenderInstallation: Raum Daten um minimale Vorheizzeit erweitert.
+- Anpassung der Doku
+- HeizkalenderInstallation: Version 5.0.4
 
 ## [2026-11-08]
 
@@ -29,6 +67,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 ### Geändert
 
 - Skript2: `faktor1`/`faktor2` in `faktor1HK2Kurve`/`faktor2HeizBedarf` umbenannt.
+- Addon: Version 0.9.0
 
 ## [2026-11-07]
 

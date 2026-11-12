@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    10.11.2026
+!// Stand:    11.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// MRi: 2026-11-11 Abgelaufene Termine erst entfernen, wenn sie nicht mehr in der HK1-Schaltliste sind
 !// TT:  2026-11-10 Kurvenanpassungsfaktor ueber optionale Systemvariable HK2-Kurvenanpassung konfigurierbar (0.3..1.0, Vorgabe 0.8)
 !// MRi: 2026-11-09 Minimale Heizzeit (default 15min) eingeführt
 !// TT:  2026-11-08 Konfigurierbare Mindest-Vorlaufzeit pro Raum (Feld 4: Vorheizzeit*Faktor*MindestMin, Default 15min)
@@ -88,8 +89,6 @@ string HK2VLZListe="";
 string SchaltListeAlt=dom.GetObject(vrp # "HK2-Schaltliste").State();
 string SchaltListeNeu="";
 integer zeitNachlauf=30;      !// 30 Minuten
-
-
 
 !// Logging vorbereiten
 var logObj=dom.GetObject(vrp # "HK2-Log");
@@ -308,16 +307,11 @@ foreach(TLEintrag,TerminListe){
       EIN     = strAlterListenEintrag.StrValueByIndex(";",4).ToTime().ToInteger();
       AUS     = strAlterListenEintrag.StrValueByIndex(";",5).ToTime().ToInteger();
 
-      !// Ist der Eintrag überhaupt noch gültig, 30min nach Schaltende entfernen wie den Eintrag
-      if ((AUS+(zeitNachlauf*60))<NOW){
-        !// Schaltlisteeintrag ist abgelaufen und damit obsolet.
-        if(DEBUG) {WriteLine(RVN # " Schaltlisteneintrag wird übersprungen!");}
-        continue;
-      }
-
       !// Wir prüfen den alten Schaltlisteneintrag. Befinden wir uns schon in der Schaltphase?
       !// Dann wird dieser Eintrag nicht mehr geändert.
       !// Das gilt nicht für Sonderbefehle (SDFlag<0).
+      !// Sollte der Termin abgelaufen sein, dann lassen wir ihn stehen, bis er aus der 
+      !// HK1-Schaltliste verschwindet.
       if ((EIN<NOW) && (SDFlag>=0)){
         !// Der Termin ist noch nicht abgeschaltet aber er befindet sich in der Heizphase.
         !// Wir beerechnen die EIN und UAS Zeiten nicht neu, den alten Eintrag unverändert
@@ -576,18 +570,21 @@ foreach(TLEintrag,TerminListe){
         string mindestHinweis = "";
         if (gesamtOffsetKorr < gesamtOffset) {
           mindestHinweis = " [Mindest]";
+          offsetTempAn = (gesamtOffsetKorr-gesamtOffset)+offsetTempAn;
         }
         string logText = RaumLogName # " - Heizen - AT " # AT.ToString(1) # "°C / GT " # GT.ToString(1) # "°C / IST " # ISTTemperatur.ToString(1) # "°C / ZIEL " # RTemp.ToString(1) # "°C" # HUMText # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
-        logText = logText # (offsetRaumAn/60) #"min ";
+        logText = logText # (offsetRaumAn/60).ToInteger() #"min ";
         if (offsetTempAn==0){ logText=logText#" - "; }
-        logText = logText # (offsetTempAn/60) # "min" # mindestHinweis # " = ";
-        EIN = EIN + gesamtOffsetKorr;
+        logText = logText # (offsetTempAn/60).ToInteger() # "min" # mindestHinweis # " = ";
+        EIN = EIN + offsetRaumAn + offsetTempAn;
         logText = logText # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAus>0){ logText=logText#"+"; }elseif(offsetRaumAus==0){ logText=logText#"-"; }
         AUS = AUS + offsetRaumAus;
-        logText = logText # (offsetRaumAus/60) # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
+        logText = logText # (offsetRaumAus/60).ToInteger() # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
         HK2VLZListe = HK2VLZListe # RVN # ";" # ((EIN_Org.ToTime().ToInteger()-EIN)/60) # ";" # EIN.ToTime() # ";" # EIN_Org # ";" # AUS.ToTime() # ";" # ((AUS_Org.ToTime().ToInteger()-AUS)/60) # "~";
+        
+        !// Jetzt die Logzeile ausgeben
         if(log) {logObj.State(logText);}
         if(DEBUG)  {WriteLine(logText);}
       }else{
@@ -600,13 +597,15 @@ foreach(TLEintrag,TerminListe){
         !// Reale Schaltzeiten berechnen
         string logText = RaumLogName # strTemp #EIN.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
-        logText = logText # (offsetRaumAn/60) #"min = ";
+        logText = logText # (offsetRaumAn/60).ToInteger() #"min = ";
         EIN = EIN + offsetRaumAn;
         logText = logText # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAus>0){ logText=logText#"+"; }elseif(offsetRaumAus==0){ logText=logText#"-"; }
         AUS = AUS + offsetRaumAus;
-        logText = logText # (offsetRaumAus/60) # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
+        logText = logText # (offsetRaumAus/60).ToInteger() # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
         HK2VLZListe = HK2VLZListe # RVN # ";" # ((EIN_Org.ToTime().ToInteger()-EIN)/60) # ";" # EIN.ToTime() # ";" # EIN_Org # ";" # AUS.ToTime() # ";" # ((AUS_Org.ToTime().ToInteger()-AUS)/60) # "~";
+        
+        !// Jetzt die Logzeile ausgeben
         if(log) {logObj.State(logText);}
         if(DEBUG)  {WriteLine(logText);}
       }

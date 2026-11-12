@@ -19,6 +19,7 @@ Durch die gesamte Installation führen folgende Dokumente:
 - [Zugangsdaten für Kalender beschaffen](kalender-einrichten.md)
 - [Einrichtung der CCU](ccu-einrichten.md)
 - [Einrichtung des Heizkalenders mir der `HeizkalenderInstallation.exe`-Anleitung](../heizkalender-installation/readme.md).
+- [Informationen zu Updates](updates.md)
 
 > [!WARNING]
 > **In dieser Beschreibung werden Systemvariablen direkt mir Ihrem Namen benannt. Wenn der `HeizkalenderInstallation.exe` verwendet wird, kann dieses Programm für die Einstellung aller hier beschrieben Parameter verwendet werden!**
@@ -206,9 +207,12 @@ ergänzende Bedienoberfläche für die CCU sind folgende Apps geeignet:
 
 Die `HeizkalenderInstallation.exe` ist das zentrale Werkzeug für die Installation und Verwaltung des Heizkalenders. Mit ihr lassen sich alle erforderlichen Skripte und Systemvariablen auf der CCU einrichten sowie die Verbindung zum verwendeten Kalendersystem konfigurieren.
 
-Auch spätere Änderungen an der Konfiguration können bequem über das Programm vorgenommen werden. Stehen Updates zur Verfügung, unterstützt die Anwendung zudem die Aktualisierung des Heizkalenders.
+Auch spätere Änderungen an der Konfiguration können bequem über das Programm vorgenommen werden. Stehen Updates zur Verfügung, unterstützt die Anwendung zudem die Aktualisierung des Heizkalenders.  
+[Weitere Informationen zu Programm-Updates finden sich hier](updates.md).
 
 **Die Bedienung ist bewusst einfach gehalten:** Im Normalfall sind nur wenige manuelle Schritte über die Web-Oberfläche der CCU und deren Bordmittel erforderlich. Dadurch können auch technisch interessierte Anwender ohne tiefgehende Homematic-Kenntnisse die Installation, Konfiguration und Aktualisierung selbst durchführen.
+
+**Grundsätzlich ist die manuelle Installation über die einzelnen *Init-Skripte* auch möglich.** [Informationen finden Sie bei der Erklärung der Skripte](../skripte/readme.md)
 
 ## Namenskonvention
 
@@ -258,7 +262,8 @@ Das genaue Format und die Bedeutung der einzelnen Felder sind in der [Entwickler
 
 ### Beispiel einer Raumvariablen
 
-`0;H;IP;18;0;30;Heizgruppe-xyz`
+`0;H;IP;21/16;60*1.5*45;30;Heizgruppe-xyz`  
+    wie oben, aber 21 °C Wohlfühltemperatur, 16 °C Grundtemperatur, 60 min Vorheizzeit mit Faktor 1,5, die Vorheizzeit beträgt mindestens 45min
 
 Dieser Beispielwert beschreibt folgende Konfiguration:
 
@@ -267,8 +272,11 @@ Dieser Beispielwert beschreibt folgende Konfiguration:
 | `0` | Kein aktives Heizen |
 | `H` | Betriebsmodus „Heizen“ |
 | `IP` | Homematic-IP-Thermostat |
-| `18` | Wohlfühltemperatur: 18 °C |
-| `0` | Keine zusätzliche individuelle Vorheizzeit |
+| `21` | Wohlfühltemperatur: 18 °C |
+| `16` | Abweichene Grundtemperatur: 16 °C |
+| `60` | 60min zusätzliche Vorheizzeit (wird gekürzt)|
+| `1.5` | Die Vorheizzeit die aus der Heizkurve `HK2-Kurve` berechnet wird, wird um den Faktor 1.5 vergrößert |
+| `45` | Die Vorheizzeit beträgt minimal 45min |
 | `30` | Abschalten 30 Minuten vor Terminende |
 | `Heizgruppe-xyz` | Bezeichnung der anzusteuernden Heizgruppe |
 
@@ -368,6 +376,15 @@ kälter es draußen und je kühler der Raum, desto früher wird eingeschaltet.
 Außentemperatur errechnete Verschiebung skalieren (erlaubt zwischen 0.20 und 5.0;
 ohne oder bei ungültigem Wert gilt Faktor 1.0). Ein Faktor > 1 heizt bei kalter
 Außentemperatur steiler vor, z.B. für träge Fußbodenheizungen.
+
+### Auswirkung der Nachtabsenkung am Heizkessel
+
+> [!WARNING]
+> **Bei vielen Heizkesseln ist eine Nachtabsenkung eingestellt. Sie kann die Vorheizzeit des Heizkalenders beeinträchtigen:** Muss der Heizkalender die Heizung so früh einschalten, dass die Vorheizzeit in die Nachtabsenkung fällt, wird die Heizung in dieser Zeit möglicherweise nicht ausreichend warm.
+>
+> **Dann erreichen die betroffenen Räume ihre gewünschte Temperatur eventuell nicht rechtzeitig.**
+
+**Beispiel:** Ein Raum soll ab 08:00 Uhr genutzt werden. Der Heizkalender berechnet eine Vorheizzeit von fünf Stunden. Die Heizung startet deshalb bereits um 03:00 Uhr. Ist am Heizkessel eine Nachtabsenkung bis 06:00 Uhr eingestellt, heizt der Kessel während der ersten drei Stunden möglicherweise reduziert. Dadurch kann der Raum seine Zieltemperatur bis 08:00 Uhr verfehlen.
 
 ### Rückstellung am Terminende (manuelle Eingriffe)
 

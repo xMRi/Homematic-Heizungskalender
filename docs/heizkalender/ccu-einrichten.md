@@ -221,7 +221,7 @@ schnellsten in einer Art Fließbandarbeit:
     angepasst) haben, fahren sie mit dem Anlernen der Aktoren des
     nächsten Raumes fort.
 
-### Zuordnen der Aktoren zu den Aktorengruppen
+### Zuordnen der Aktoren zu den Aktorengruppen/Heizgruppen
 
 Da in der Gruppenliste die Gerätenamen nicht angezeigt werden, sondern
 nur die Seriennummern, ist es hilfreich, zunächst nur Aktoren eines
@@ -238,6 +238,11 @@ nächsten Raumes anzulernen.
     Seriennummern die zu diesem Raum (also dieser Aktorengruppe)
     gehörenden Aktoren und nehmen Sie durch Klick auf den Button
     „Hinzufügen" in die Gruppe auf.
+
+> [!WARNING]
+> **Die maximale Anzahl von Thermostaten in einer Heizgruppe ist auf 8 beschränkt. Sollten mehr Thermostate benötigt werden sollten mehrere Heizgruppen angelegt werden.**
+>
+> Bitte lesen Sie dazu die [Homematic Dokumentation](https://de.elv.com/elvwissen/elvhilft/homematic-ip-heizungssteuerung-hilfestellungen-zur-einrichtung-der-thermostate/#Heizgruppen).
 
 ### Anpassung der Grundprogrammierung
 

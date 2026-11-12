@@ -56,7 +56,7 @@ WriteLine("_____________________________________________________________________
 WriteLine("Test Skript Lauf vom " # system.Date().ToString());
 
 !//------------------------------------------------------------------------------------------
-!// Dekodieren der Schaltliste in Klartext
+!// Dekodieren der Schaltliste 1 in Klartext
 
 WriteLine("___________________________________________________________________________");
 
@@ -69,17 +69,40 @@ while (true) {
     break;
   }
   if ((i%5)==0){
-    WriteLine("\nSchaltzeiten Raum=" # stemp);
+    WriteLine("\nSchaltzeiten Raum=\t" # stemp);
   } elseif ((i%5)==1) {
-    WriteLine("Zeit Start=" # stemp);
+    WriteLine("Zeit Start=\t\t\t" # stemp);
   } elseif ((i%5)==2) {
-    WriteLine("Zeit Ende=" # stemp);
+    WriteLine("Zeit Ende=\t\t\t" # stemp);
   } elseif ((i%5)==3) {
-    WriteLine("Temperatur=" # stemp);
+    WriteLine("Temperatur=\t\t\t" # stemp);
   } elseif ((i%5)==4) {
-    WriteLine("Heizen/Schalten=" # stemp);
+    WriteLine("Heizen/Schalten=\t" # stemp);
   }
   i=i+1;
+}
+
+!//------------------------------------------------------------------------------------------
+!// Dekodieren der Schaltliste 2 in Klartext
+
+WriteLine("___________________________________________________________________________");
+
+string SListe=dom.GetObject(vrp # "HK2-Schaltliste").State();
+WriteLine("HK2-Schaltliste=" # SListe);
+string SLEintrag;
+!// Schleife über die Schaltliste
+foreach(SLEintrag,SListe.Split("#")){
+  if(SLEintrag==""){
+    continue;
+  }
+  WriteLine("\nSchaltzeiten Raum=\t" # SLEintrag.StrValueByIndex(";",0));
+  WriteLine("Zeit TerminStart=\t" # SLEintrag.StrValueByIndex(";",1));
+  WriteLine("Zeit TerminEnde=\t" # SLEintrag.StrValueByIndex(";",2));
+  WriteLine("Temperatur=\t\t\t" # SLEintrag.StrValueByIndex(";",3));
+  WriteLine("Zeit Start=\t\t\t" # SLEintrag.StrValueByIndex(";",4));
+  WriteLine("Zeit Ende=\t\t\t" # SLEintrag.StrValueByIndex(";",5));
+  WriteLine("Temperatur=\t\t\t" # SLEintrag.StrValueByIndex(";",6));
+  WriteLine("Außentemperatur=\t" # SLEintrag.StrValueByIndex(";",7));
 }
 
 !//------------------------------------------------------------------------------------------
@@ -138,6 +161,41 @@ if (dom.GetObject(vrp # "HK2-Log")){
 }else{
   WriteLine("HK2-Log: Log-Variable für Script 2 existiert nicht");
 }
+
+obj=dom.GetObject(vrp # "HK3-Logging");
+if (obj){
+  if (obj.State()!=0){
+    stemp = "ein";
+  }else{
+    stemp = "aus";
+  }
+  WriteLine("HK3-Logging: Logging Script 3 ist " # stemp # "geschaltet");
+}else{
+  WriteLine("HK3-Logging: Log-Variable für Script 3 existiert nicht");
+}
+if (dom.GetObject(vrp # "HK3-Log")){
+  WriteLine("HK3-Log: Log-Variable für Script 3 existiert");
+}else{
+  WriteLine("HK3-Log: Log-Variable für Script 3 existiert nicht");
+}
+
+obj=dom.GetObject(vrp # "HK-LoggingHeizkurvenkontrolle");
+if (obj){
+  if (obj.State()!=0){
+    stemp = "ein";
+  }else{
+    stemp = "aus";
+  }
+  WriteLine("HK-LoggingHeizkurvenkontrolle: Logging Heizkurvenkontrolle ist " # stemp # "geschaltet");
+}else{
+  WriteLine("HK-LoggingHeizkurvenkontrolle: Log-Variable für Heizkurvenkontrolle existiert nicht");
+}
+if (dom.GetObject(vrp # "HK-LogHeizkurvenkontrolle")){
+  WriteLine("HK-LoggingHeizkurvenkontrolle: Log-Variable für Heizkurvenkontrolle existiert");
+}else{
+  WriteLine("HK-LoggingHeizkurvenkontrolle: Log-Variable für Heizkurvenkontrolle existiert nicht");
+}
+
 
 !//------------------------------------------------------------------------------------------
 !// Ausgabe Der Churchtools Raumliste und deren Raum Parameter
@@ -265,10 +323,10 @@ foreach(RName,ListeRaumVariablen.Split(";")){
     !// Optionale Kurvenkorrektur
     WriteLine("Kurvenkorr.:\t" # stemp.ToFloat().ToString(2));
   }
-  string stemp2 = RaumDef.StrValueByIndex(";",4).StrValueByIndex("*",2);
-  if (stemp2){
+  string stemp = RaumDef.StrValueByIndex(";",4).StrValueByIndex("*",2);
+  if (stemp){
     !// Optionale Mindest-Vorlaufzeit
-    WriteLine("Mindest-VLZ:\t" # stemp2.ToInteger().ToString() # " min");
+    WriteLine("Mindest-VLZ:\t" # stemp.ToInteger().ToString() # " min");
   }
 
   !// Wert #5 Nachlaufzeit
@@ -345,4 +403,4 @@ foreach(vid, svIDs){
 WriteLine(svListStr);
 
 WriteLine("___________________________________________________________________________");
-WriteLine("Alles fertig...");
+WriteLine("Ausgabe beednet");

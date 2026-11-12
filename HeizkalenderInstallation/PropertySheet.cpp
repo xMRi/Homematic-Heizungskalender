@@ -162,6 +162,20 @@ CPageConnect::CPageConnect()
 		theApp.m_iCCU_portCloudMatic = theApp.GetProfileInt(_T("Connection"), _T("PortCloudMatic"), 44381);
 		theApp.m_strPrefix = theApp.GetProfileString(_T("Connection"), _T("Prefix"));
 		theApp.m_bCloudMatic = theApp.GetProfileInt(_T("Connection"), _T("CloudMatic"), 0) != 0;
+
+		// MRU Liste laden
+		int iMRU = theApp.GetProfileInt(_T("MRU"), _T("Count"), 0);
+		for (int i = 0; i < iMRU; ++i)
+		{
+			CString strHost = theApp.GetProfileString(_T("MRU"), _T("Host")+IntToString(i+1), _T(""));
+			bool bCloudMatic = theApp.GetProfileInt(_T("MRU"), _T("CloudMatic")+IntToString(i+1), 0) != 0;
+			CString strUser = theApp.GetProfileString(_T("MRU"), _T("UserName")+IntToString(i+1), _T(""));
+			CString strPassword = theApp.GetProfileString(_T("MRU"), _T("Password")+IntToString(i+1), _T(""));	
+			if (!strHost.IsEmpty())
+			{
+				theApp.m_lstMRU.push_back(CHeizkalenderInstallationApp::SMRUEntry{strHost, bCloudMatic, strUser, strPassword});
+			}
+		}
 	}
 	else
 	{
@@ -174,6 +188,7 @@ CPageConnect::CPageConnect()
 BEGIN_MESSAGE_MAP(CPageConnect, CPageBase)
 	ON_BN_CLICKED(IDC_BT_CONNECT, &CPageConnect::OnBnClickedBtConnect)
 	ON_BN_CLICKED(IDC_ABOUT, &CPageConnect::OnBnClickedAbout)
+	ON_CBN_SELCHANGE(IDC_CB_HOST, &CPageConnect::OnCbnSelchangeCbHost)
 	ON_CBN_SELCHANGE(IDC_CB_MODE, &CPageConnect::OnCbnSelchangeCbMode)
 	ON_BN_CLICKED(IDC_BT_READRES, &CPageConnect::OnBnClickedBtReadres)
 END_MESSAGE_MAP()
@@ -181,7 +196,7 @@ END_MESSAGE_MAP()
 void CPageConnect::DoDataExchange(CDataExchange* pDX)
 {
 	CPageBase::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_ED_HOST, m_edHost);
+	DDX_Control(pDX, IDC_CB_HOST, m_cbHost);
 	DDX_Control(pDX, IDC_ED_USERNAME, m_edUserName);
 	DDX_Control(pDX, IDC_ED_PASSWORD, m_edPassword);
 	DDX_Control(pDX, IDC_ED_PREFIX, m_edPrefix);
@@ -195,7 +210,19 @@ void CPageConnect::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ED_GOOGLE_KALID, m_edGoogleKalId);
 	DDX_Control(pDX, IDC_ED_RAUMLISTE, m_edRaumListe);
 	DDX_Control(pDX, IDC_BT_LOGO, m_logo);
-	DDX_Text(pDX, IDC_ED_HOST, theApp.m_strCCU_host);
+
+	// MRU Liste laden
+	if (!pDX->m_bSaveAndValidate)
+	{
+		m_cbHost.ResetContent();
+		for (auto & e: theApp.m_lstMRU)
+		{
+			int nIndex = m_cbHost.AddString(e.m_strHostName);
+			m_cbHost.SetItemDataPtr(nIndex, &e);
+		}
+	}
+
+	DDX_Text(pDX, IDC_CB_HOST, theApp.m_strCCU_host);
 	DDX_Text(pDX, IDC_ED_USERNAME, theApp.m_strCCU_username);
 	DDX_Text(pDX, IDC_ED_PASSWORD, theApp.m_strCCU_password);
 	DDX_Text(pDX, IDC_ED_PREFIX, theApp.m_strPrefix);
@@ -263,7 +290,6 @@ void CPageConnect::DoDataExchange(CDataExchange* pDX)
 			}
 		}
 	}
-
 }
 
 static UINT auiCtrlsChurchTools[] = 
@@ -338,7 +364,7 @@ BOOL CPageConnect::OnInitDialog()
 	strText.FormatMessage(strMask, theApp.m_strAppVersion.GetString(), theApp.m_strScriptVersion.GetString());
 	SetDlgItemText(IDC_ST_VERSION,strText);
 
-	// Alle COntrols disdablen
+	// Alle Controls disdablen
 	for (auto const& e : aCtrlsForModes)
 	{
 		for (auto const *p = e.m_puiCtrls; *p; ++p)
@@ -370,10 +396,9 @@ BOOL CPageConnect::OnInitDialog()
 	// Falls dies eine Simulation ist eine Warnung anzeigen.
 	if (theApp.m_bSimulation)
 	{
-		UINT const aCtrls[] = { IDC_ED_HOST, IDC_ED_USERNAME, IDC_ED_PASSWORD };
+		UINT const aCtrls[] = { IDC_CB_HOST, IDC_ED_USERNAME, IDC_ED_PASSWORD, IDC_CH_CLOUDMATIC };
 		for (auto uiCtrl : aCtrls)
-			STATIC_DOWNCAST(CEdit,GetDlgItem(uiCtrl))->SetReadOnly(TRUE);
-		STATIC_DOWNCAST(CButton, GetDlgItem(IDC_CH_CLOUDMATIC))->EnableWindow(FALSE);
+			GetDlgItem(uiCtrl)->EnableWindow(FALSE);
 		AfxMessageBox(IDP_SIMULATION_GESTARTET);
 	}
 	return TRUE;  
@@ -418,6 +443,21 @@ void SwitchToMode(CComboBox& cb, ModeScript1 mode)
 		}
 	}
 	cb.SetCurSel(-1);
+}
+
+void CPageConnect::OnCbnSelchangeCbHost()
+{
+	int nSel = m_cbHost.GetCurSel();
+	if (nSel<0)
+		return;	
+
+	CHeizkalenderInstallationApp::SMRUEntry* pEntry = static_cast<CHeizkalenderInstallationApp::SMRUEntry*>(m_cbHost.GetItemDataPtr(nSel));
+	if (pEntry)
+	{
+		CheckDlgButton(IDC_CH_CLOUDMATIC,pEntry->m_bCloudMatic);
+		SetDlgItemText(IDC_ED_USERNAME,pEntry->m_strUserName);
+		SetDlgItemText(IDC_ED_PASSWORD,pEntry->m_strPassword);
+	}
 }
 
 void CPageConnect::OnCbnSelchangeCbMode()
@@ -558,6 +598,29 @@ void CPageConnect::OnBnClickedBtConnect()
 		theApp.WriteProfileString(_T("Connection"), _T("Password"), theApp.m_strCCU_password);
 		theApp.WriteProfileString(_T("Connection"), _T("Prefix"), theApp.m_strPrefix);
 		theApp.WriteProfileInt(_T("Connection"), _T("CloudMatic"), theApp.m_bCloudMatic);
+
+		// Update MRU list
+		CHeizkalenderInstallationApp::SMRUEntry entry{theApp.m_strCCU_host, theApp.m_bCloudMatic, theApp.m_strCCU_username, theApp.m_strCCU_password};
+		auto it = std::find_if(theApp.m_lstMRU.begin(), theApp.m_lstMRU.end(), [&](CHeizkalenderInstallationApp::SMRUEntry const& e) { return e.m_strHostName==entry.m_strHostName; });	
+		// Alten Eintrag löschen, falls vorhanden und neuen Eintrag vorne einfügen.
+		if (it!=theApp.m_lstMRU.end())
+			theApp.m_lstMRU.erase(it);
+		theApp.m_lstMRU.push_front(entry);
+		// Limit auf 10 Einträge
+		while (theApp.m_lstMRU.size()>10)
+			theApp.m_lstMRU.pop_back();	
+
+		// MRU Liste speichern
+		theApp.WriteProfileInt(_T("MRU"), _T("Count"), static_cast<int>(theApp.m_lstMRU.size()));
+		int i = 0;
+		for (auto const &e: theApp.m_lstMRU)
+		{
+			++i;
+			theApp.WriteProfileString(_T("MRU"), _T("Host")+IntToString(i), e.m_strHostName);
+			theApp.WriteProfileInt(_T("MRU"), _T("CloudMatic")+IntToString(i), e.m_bCloudMatic);
+			theApp.WriteProfileString(_T("MRU"), _T("UserName")+IntToString(i), e.m_strUserName);
+			theApp.WriteProfileString(_T("MRU"), _T("Password")+IntToString(i), e.m_strPassword);
+		}
 	}
 
 	// Modus in combobox setzen.
@@ -576,10 +639,9 @@ void CPageConnect::OnBnClickedBtConnect()
 	OnCbnSelchangeCbMode();
 
 	// Disable all controls, for a connect, we are allowe dto do this only once
-	UINT aIds[] = { IDC_ED_HOST, IDC_ED_USERNAME, IDC_ED_PASSWORD, IDC_ED_PREFIX};
+	UINT aIds[] = { IDC_CB_HOST, IDC_ED_USERNAME, IDC_ED_PASSWORD, IDC_ED_PREFIX, IDC_CH_CLOUDMATIC };
 	for (UINT id : aIds)
-		static_cast<CEdit*>(GetDlgItem(id))->SetReadOnly(TRUE);
-	GetDlgItem(IDC_BT_CONNECT)->EnableWindow(FALSE);
+		GetDlgItem(id)->EnableWindow(FALSE);
 	m_cbScript1Mode.EnableWindow(TRUE);
 
 	// Wenn wir jetzt keinen Modus haben sehen wir alt aus.

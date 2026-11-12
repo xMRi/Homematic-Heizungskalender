@@ -15,6 +15,20 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [2026-11-12]
 
+### Hinzugefügt
+
+- Addon: Vorheizzeit-Rechner: Globale Parameter `HK2-Grundtemperatur` und `HK2-A.Temp.Grenze` werden aus der CCU geladen und als Eingabefelder angezeigt.
+- Addon: Vorheizzeit-Rechner: Außentemperaturgrenze erscheint als rote gestrichelte Linie im Heizkurven-Verlauf-Diagramm.
+- Addon: Vorheizzeit-Rechner: Ist-Temperatur wird beim Raumwechsel automatisch aus dem Thermostat-Sensor des gewählten Raums vorbelegt (Fallback 18 °C).
+- Addon: Vorheizzeit-Rechner: Grundtemperatur-Fallback für Räume ohne individuelle Abweichung verwendet `HK2-Grundtemperatur` statt fest codierter 10 °C; ändert sich der globale Wert, aktualisiert sich das Raumfeld live.
+
+### Geändert
+
+- Addon: Vorheizzeit-Rechner: Ergebnis-Tabelle zeigt `V_gesamt` statt `V`; `V_global`-Zeile entfernt, Legende behält beide Einträge.
+- Addon: Vorheizzeit-Rechner: Zeitanteile-Balken beschriftet `V_raum+V_global` und `HK2 · f1 · f2`.
+- Addon: Heizkurvenkontrolle: Log-Parser unterstützt das neue Log-Format von `HK-Heizkurvenkontrolle.hsc` (`RaumName - Ereignis: ...`); Rückwärtskompatibilität mit dem alten Format erhalten.
+- Addon: Version 0.10.0.
+- Heizkurvenkontrolle: Code-Review-Korrekturen: 5 ungenutzte Variablen entfernt (`OffsetAT`, `ATG`, `Flag_Hand_Temp`, `Flag_Hand_Grundtemp`, `RIDINamen`), `vrp+` auf `vrp#` vereinheitlicht, Guard-Bedingung korrigiert, Heizbeginn-Reset präzisiert.
 ### Behoben
 
 - Heizkurvenkontrolle: Fix bei mehreren Terminen je Tag.

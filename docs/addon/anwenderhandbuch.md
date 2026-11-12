@@ -133,18 +133,20 @@ In den Zeilen *Terminbeginn* und *Terminende* erscheint neben der Temperatur ein
 
 Der Vorheizzeit-Rechner simuliert die Vorheizzeit-Berechnung aus HK-Skript 2 für einen frei konfigurierbaren Simulationsraum. Er erlaubt es, Parameteränderungen zu testen, ohne auf einen echten Schaltvorgang warten zu müssen.
 
-Die Vorbelegung der Felder stammt direkt aus den Systemvariablen der CCU (`HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Grundtemperatur`, `HK2-Aussentemperatur`) sowie aus der ersten Raumvariable der CCU. Alle Eingaben werden live im Browser ausgewertet; ein Seiten-Reload ist nicht nötig.
+Die Vorbelegung der Felder stammt direkt aus den Systemvariablen der CCU (`HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Grundtemperatur`, `HK2-Aussentemperatur`, `HK2-A.Temp.Grenze`) sowie aus der ersten Raumvariable der CCU. Alle Eingaben werden live im Browser ausgewertet; ein Seiten-Reload ist nicht nötig.
 
 **Eingabefelder:**
 
 | Feld | Bedeutung | Bereich |
 | :--- | :--- | :--- |
 | Außentemperatur | Aktuelle oder hypothetische Außentemperatur | -40 bis 40 °C |
+| Grundtemperatur | Globale Grundtemperatur aus `HK2-Grundtemperatur`; wird als Fallback für Räume ohne raumindividuelle Abweichung verwendet | 5 bis 30 °C |
+| Außentemp.-Grenze | Außentemperatur-Grenze aus `HK2-A.Temp.Grenze`; oberhalb dieses Wertes heizt das Skript nicht; wird im Heizkurven-Verlauf als rote gestrichelte Linie angezeigt | -40 bis 40 °C |
 | Vorzeitiger Heizbeginn (Global) | Wert aus `HK2-Kurvenversatz`; wird zur raumspezifischen Vorheizzeit *addiert* (nicht überschrieben) | 0 bis 960 min |
 | Individuelle Eigenschaften des Raumes laden | Dropdown zum Übernehmen der Werte aus einer Raumvariable der CCU. Es erscheinen nur Räume mit Modus H, HS oder S (nicht Modus V). | |
-| Ist-Temperatur | Aktuelle Raumtemperatur | -40 bis 40 °C |
+| Ist-Temperatur | Aktuelle Raumtemperatur; wird beim Raumwechsel automatisch aus dem Thermostat-Sensor des gewählten Raums übernommen (Fallback: 18 °C) | -40 bis 40 °C |
 | Wohlfühltemperatur | Gewünschte Raumtemperatur zum Terminbeginn | 5 bis 40 °C |
-| Abw. Grundtemperatur | Raumindividuelle Grundtemperatur; Default 10 °C | 5 bis 30 °C |
+| Abw. Grundtemperatur | Raumindividuelle Grundtemperatur; wird mit der globalen Grundtemperatur aus `HK2-Grundtemperatur` vorbelegt, sofern keine raumindividuelle Abweichung definiert ist | 5 bis 30 °C |
 | Vorzeitiger Heizbeginn (Raum) | Fixer raumspezifischer Offset; entspricht Feld 4 der Raumvariable | 0 bis 960 min |
 | Faktor Heizkurve | Raumspezifischer Multiplikator auf den kurvenabhängigen Anteil (`faktor1HK2Kurve`) | 0,20 bis 5,0 |
 | Mindest-Vorlauf | Untergrenze der Gesamtvorheizzeit; verhindert vollständiges Wegrechnen durch den Heizbedarf-Faktor | 1 bis 480 min |
@@ -169,7 +171,7 @@ Vier Diagramme veranschaulichen die Berechnung:
 - **Heizbedarf-Kurve:** Zeigt das Zwei-Geraden-Modell des Heizbedarf-Faktors *f*₂ in Abhängigkeit von der Ist-Temperatur zwischen Grundtemperatur und Wohlfühltemperatur. Ein roter Marker zeigt den aktuellen IST-Wert mit dem berechneten *f*₂.
 - **Zeitanteile:** Horizontales Balkendiagramm. Der obere Balken zeigt die Rohwert-Segmente: blau ist der vorzeitige Heizbeginn (*V* + *V*_global zusammen addiert), orange die AT-abhängige Zeit aus der Heizkurve skaliert mit *f*₁. Der grau gestrichelte Bereich zeigt die Reduktion durch *f*₂. Die rote gestrichelte Linie markiert die Mindest-Vorlaufzeit. Der untere Balken zeigt die effektive Gesamtvorheizzeit (grün wenn ausreichend, rot wenn durch die Mindest-Vorlaufzeit angehoben).
 - **Temperaturverlauf:** Zeigt den modellierten Temperaturanstieg vom Start bis zur Wohlfühltemperatur über die berechnete Vorheizzeit. Eingezeichnet sind Grundtemperatur (blaugrau), Wohlfühltemperatur (grau gestrichelt) und die aktuelle Ist-Temperatur als roter Punkt auf der Kurve.
-- **Heizkurven-Verlauf:** Zeigt die interpolierte HK2-Kurve über den gesamten Außentemperaturbereich sowie die mit *f*₁ und *f*₂ skalierten Zeitanteile. Eine gestrichelte Linie markiert die aktuell eingegebene Außentemperatur.
+- **Heizkurven-Verlauf:** Zeigt die interpolierte HK2-Kurve über den gesamten Außentemperaturbereich sowie die mit *f*₁ und *f*₂ skalierten Zeitanteile. Eine grüne gestrichelte Linie markiert die aktuell eingegebene Außentemperatur. Ist eine Außentemperaturgrenze (`HK2-A.Temp.Grenze`) definiert, erscheint sie als rote gestrichelte Linie.
 
 **Hinweis zum Vorzeitigen Heizbeginn:** Der globale Wert (`HK2-Kurvenversatz`) wird zur raumspezifischen Vorheizzeit *addiert*. Ein Raum mit 30 min eigener Vorheizzeit und einem globalen Versatz von 10 min startet also 40 min vor Terminbeginn. Der globale Versatz greift nur bei Heizvorgängen (Heiztyp H/HS), nicht bei reinen Schaltvorgängen.
 

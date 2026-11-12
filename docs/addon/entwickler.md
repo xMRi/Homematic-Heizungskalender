@@ -236,17 +236,19 @@ Interaktive Simulationsseite für die Vorheizzeit-Berechnung. Das Tcl-CGI lädt 
 | `HK2-Kurvenversatz` | Globaler Einschalt-Versatz in Minuten |
 | `HK2-Aussentemperatur` | Aktueller Außentemperatur-Durchschnitt |
 | `HK2-Kurvenanpassung` | Kurvenanpassungsfaktor K (Default 0,8; Bereich 0,3..1,0) |
-| `HK2-HKG-Liste` | Befüllt das Raum-Dropdown; Räume mit Modus `V` werden herausgefiltert |
+| `HK2-Grundtemperatur` | Globale Grundtemperatur; Fallback für Räume ohne raumindividuelle Abweichung |
+| `HK2-A.Temp.Grenze` | Außentemperatur-Grenze; wird als rote Linie im Heizkurven-Verlauf angezeigt |
+| `HKG-Raum-*` | Befüllt das Raum-Dropdown; Räume mit Modus `V` werden herausgefiltert; Feld 6 (Sensor-Kanal) wird für die Ist-Temperatur-Vorbelegung ausgelesen |
 
-**Gruppeneinträge in `HK2-HKG-Liste`:** Ein Eintrag kann mehrere Raumvariablen mit `+` verbunden enthalten, z.B. `HKG-Raum-EG-Eltern-Kind-Raum+HKG-Raum-EG-Eltern-Kind-Raum-Schalten`. Der Rechner verwendet nur den ersten Teil (vor dem ersten `+`) als Haupt-Raum und liest dessen Parameter. Die weiteren Räume der Gruppe sind für die Vorheizzeitberechnung nicht relevant.
+**Gruppeneinträge in `HK2-HKG-Liste`:** Ein Eintrag kann mehrere Raumvariablen mit `+` verbunden enthalten, z.B. `HKG-Raum-EG-Eltern-Kind-Raum+HKG-Raum-EG-Eltern-Kind-Raum-Schalten`. Der Rechner liest die Räume direkt aus `HKG-Raum-*`-Systemvariablen (nicht aus `HK2-HKG-Liste`). Feld 6 des Raumwertes enthält optional den Sensor-Kanal für die Ist-Temperatur-Vorbelegung.
 
 Die gesamte Berechnungslogik (Zwei-Geraden-Modell für faktor2HeizBedarf, lineare Interpolation der HK2-Kurve, Mindest-Vorlaufzeit-Clamp) läuft clientseitig in `hkrechner.js`. Die Berechnung wird bei jedem `input`-Event live ausgelöst, ohne Seiten-Reload. Ungültige Felder erhalten die CSS-Klasse `hkr-invalid` (rote Umrandung) und eine einzeilige Fehlermeldung. Berechnung und Canvas werden nur aktualisiert, wenn alle Felder gültig sind.
 
 `hkrechner.js` zeichnet vier `<canvas>`-Elemente:
 
 - **faktor2HeizBedarf-Kurve:** Zeigt das Zwei-Geraden-Modell im Bereich GT bis ZIEL; IST-Wert mit rotem Marker.
-- **Zeitanteile:** Horizontales Balkendiagramm mit fester VHZ (blau), AT-Zeit (orange), Reduktion durch faktor2 (grau gestrichelt), Mindest-Linie (rot vertikal) und effektiver Gesamtvorheizzeit (grün/rot).
-- **Heizkurven-Verlauf:** Zeigt die interpolierte HK2-Kurve über den Außentemperaturbereich sowie die skalierten Zeitanteile.
+- **Zeitanteile:** Horizontales Balkendiagramm mit V_raum+V_global (blau), AT-Zeit skaliert mit f1 (orange), Reduktion durch faktor2 (grau gestrichelt), Mindest-Linie (rot vertikal) und effektiver Gesamtvorheizzeit (grün/rot).
+- **Heizkurven-Verlauf:** Zeigt die interpolierte HK2-Kurve über den Außentemperaturbereich sowie die skalierten Zeitanteile. Eine grüne gestrichelte Linie markiert die aktuelle Außentemperatur; ist `HK2-A.Temp.Grenze` definiert, erscheint sie als rote gestrichelte Linie.
 - **Temperaturverlauf:** Zeigt den modellierten Temperaturanstieg vom Start bis zur Wohlfühltemperatur über die berechnete Vorheizzeit (inverses Zwei-Geraden-Modell); eingetragen sind Grundtemperatur (blaugrau), Wohlfühltemperatur (grau gestrichelt) und IST-Punkt (roter Marker).
 
 #### Layout-Ansatz: feste Pixelbreiten

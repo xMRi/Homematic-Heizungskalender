@@ -80,6 +80,11 @@
   box-sizing: border-box;
 }
 
+.hkr-gruppe-vergleich {
+  width: 1180px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
 
 
 .hkr-grid {
@@ -229,7 +234,8 @@
 #hkr-canvas-f2,
 #hkr-canvas-zeit,
 #hkr-canvas-kurven,
-#hkr-canvas-verlauf {
+#hkr-canvas-verlauf,
+#hkr-canvas-vergleich {
   display: block;
   margin-top: 0.4em;
   max-width: 100%;

@@ -1054,13 +1054,13 @@ void CEditDouble::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	switch (nSBCode) 
 	{
 	case SB_LINEUP:			                        
-		m_fValue = RoundDouble(((int)(m_fValue/m_fStep)+1)*m_fStep,m_iPrecision);
+		m_fValue = RoundDouble((nearbyint(m_fValue/m_fStep)+1)*m_fStep,m_iPrecision);
 		if (m_fValue>m_fMax)
 			m_fValue = m_fMax;
 		else
 			break;
 	case SB_LINEDOWN:
-		m_fValue = RoundDouble((((int)(m_fValue*2/m_fStep)+1)/2-1)*m_fStep,m_iPrecision);
+		m_fValue = RoundDouble((nearbyint(m_fValue/m_fStep)-1)*m_fStep,m_iPrecision);
 		if (m_fValue<m_fMin)
 			m_fValue = m_fMin;
 		break;

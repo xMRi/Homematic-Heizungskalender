@@ -17,6 +17,14 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ### Hinzugefügt
 
+- HeizkalenderInstallation: Kurvenanpassung ergänzt
+- HeizkalenderInstallation: Spin-Buttons für 0.1 Werte arbeitet evtl. nicht korrekt.
+- HeizkalenderInstallation: Verison 5.0.6
+
+## [2026-11-12]
+
+### Hinzugefügt
+
 - Addon: Vorheizzeit-Rechner: Globale Parameter `HK2-Grundtemperatur` und `HK2-A.Temp.Grenze` werden aus der CCU geladen und als Eingabefelder angezeigt.
 - Addon: Vorheizzeit-Rechner: Außentemperaturgrenze erscheint als rote gestrichelte Linie im Heizkurven-Verlauf-Diagramm.
 - Addon: Vorheizzeit-Rechner: Ist-Temperatur wird beim Raumwechsel automatisch aus dem Thermostat-Sensor des gewählten Raums vorbelegt (Fallback 18 °C).

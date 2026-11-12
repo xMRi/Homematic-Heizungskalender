@@ -31,3 +31,4 @@
 7323	HK3-Log		Variable um ein einfaches Log im System Protokoll zu erzeugen	20	true	true
 7324	HK3-Logging	true	Flag um das Logging für Skript 3 ein- und auszuschalten	2	true	true
 7325	HK2-Schaltliste		Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!	20	true	true
+7326	HK2-Kurvenanpassung	0.800000	Kurvenanpassungsfaktor für das Zwei-Geraden-Modell der Vorheizzeit-Berechnung (0.3 bis 1.0). Vorgabe 0.8	4	true	true

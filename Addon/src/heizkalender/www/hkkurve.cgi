@@ -272,14 +272,31 @@ if {$submitted && [llength $log_files] > 0} {
         set max_val    ""
         set at_val     ""
 
-        set sp [string first " " $msg]
-        set dp [string first ":" $msg]
+        set sep [string first " - " $msg]
+        set dp  [string first ":" $msg]
 
-        if {$sp > 0 && ($dp < 0 || $sp < $dp)} {
-            set raumname [string range $msg 0 [expr {$sp-1}]]
-            set rest     [string range $msg [expr {$sp+1}] end]
+        if {$sep >= 0} {
+            # Neues Format: "RaumName - Ereignis: ..."
+            set raumname [string range $msg 0 [expr {$sep-1}]]
+            set rest     [string range $msg [expr {$sep+3}] end]
+        } else {
+            set sp [string first " " $msg]
+            if {$sp > 0 && ($dp < 0 || $sp < $dp)} {
+                set raumname [string range $msg 0 [expr {$sp-1}]]
+                set rest     [string range $msg [expr {$sp+1}] end]
+            } else {
+                set raumname ""
+                set rest     ""
+            }
+        }
+
+        if {![string equal $raumname ""] && ![string equal $rest ""]} {
             set cdp [string first ":" $rest]
-            if {$cdp > 0} {
+            if {$cdp == 0} {
+                # Fehler-Format: "RaumName - : Fehlermeldung"
+                set ereignis "Fehler"
+                set delta    [string trim [string range $rest 1 end]]
+            } elseif {$cdp > 0} {
                 set ereignis [string trim [string range $rest 0 [expr {$cdp-1}]]]
                 set detail   [string trim [string range $rest [expr {$cdp+1}] end]]
                 set c1 [string first "," $detail]
@@ -315,7 +332,7 @@ if {$submitted && [llength $log_files] > 0} {
                     }
                 }
             }
-        } elseif {$dp > 0} {
+        } elseif {$dp > 0 && [string equal $raumname ""]} {
             set raumname [string range $msg 0 [expr {$dp-1}]]
             set ereignis "Fehler"
             set delta    [string trim [string range $msg [expr {$dp+1}] end]]

@@ -149,7 +149,9 @@ while(SListe!=""){
 
     !// Prüfe und nimm den kleineren Eintrag. Wir vergeleichen den ganzen Eintrag
     !// D.h. kürzere Termine bei gleichem Terminstart werden zuerst gefunden.
-    if (SLEintrag>SLEintrag2){
+    string EIN1 = SLEintrag.StrValueByIndex(";",4) # ";" # SLEintrag.StrValueByIndex(";",5);
+    string EIN2 = SLEintrag2.StrValueByIndex(";",4) # ";" # SLEintrag2.StrValueByIndex(";",5);
+    if (EIN1>EIN2){
       SLEintrag = SLEintrag2;
     }
 

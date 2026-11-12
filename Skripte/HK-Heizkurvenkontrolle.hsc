@@ -214,7 +214,7 @@ while(SListe!=""){
   !// Sollte der Termin weit in der Zukunft liegen warten wir noch.
   if (NOW<EIN) {
     !// Termine in der Zukunft überspringen
-    if(DEBUG)  {WriteLine(RaumLogName # " Heizbeginn liegt in der^Zukunft");}
+    if(DEBUG)  {WriteLine(RaumLogName # " Heizbeginn liegt in der Zukunft");}
     continue;
   }  
 

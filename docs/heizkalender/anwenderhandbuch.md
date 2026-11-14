@@ -366,11 +366,14 @@ kälter es draußen und je kühler der Raum, desto früher wird eingeschaltet.
 > [!NOTE]
 > Als Außentemperatur verwendet der Heizkalender **nicht** den aktuellen Momentanwert,
 > sondern einen gleitenden Mittelwert über die letzten 18 Stunden und die nächsten 6 Stunden. Das Skript
-> `HK-Außentemperatur-Open-Meteo` bezieht diese Daten vom Deutschen Wetterdienst. Verwendet werden die 
+> `HK-Außentemperatur-Open-Meteo` bezieht diese Daten vom Deutschen Wetterdienst über die [Open-Meteo DWD-API](https://open-meteo.com/en/docs/dwd-api) (Modell: ICON-D2, 2,2 km Auflösung, Zentraleuropa). Verwendet werden die
 > Geodaten der CCU. Das Ergebnis dieser Berechnung schreibt das Skript in die Systemvariable `HK2-Aussentemperatur`
 > zur späteren Verwendung. Dadurch wirkt sich die Trägheit des Gebäudes realistischer aus, als es ein kurzfristiger 
 > Temperatursprung tun würde. Alternativ kann die Variable auch von einem eigenen Außentemperatursensor gesetzt
 > werden.
+>
+> Optional kann das Außentemperatur-Skript zusätzlich die Systemvariable `HK2-Aussentemperatur-Aktuell`
+> (Momentanwert) setzen. Diese dient der Anzeige und als Diagnosewert.
 
 Über den optionalen `*Faktor` hinter der Vorheizzeit lässt sich die aus der
 Außentemperatur errechnete Verschiebung skalieren (erlaubt zwischen 0.20 und 5.0;
@@ -592,7 +595,7 @@ Der Eintrag **Zieltemperatur** entsteht, wenn die gewünschte Temperatur erreich
 Hier ein Auszug aus dem Textprotokoll. Alle Zeilen, die nicht zum Heizkurvenprotokoll gehören, wurden entfernt.
 
 ```txt
-2026-10-20 18:25:30 HK-LogHeizkurvenkontrolle Ju-HuRaum(5)-JuHu Heizbeginn: -64min, Ist: 19.2, Ziel: 20.0, AT: 8.9
+2026-10-20 18:25:30 HK-LogHeizkurvenkontrolle Ju-HuRaum(5)-JuHu Heizbeginn: -64min, Ist: 19.2, Ziel: 20.0, AT: 8.9 (akt=8.9)
 2026-10-20 19:00:30 HK-LogHeizkurvenkontrolle Ju-HuRaum(5)-JuHu Zieltemperatur: -29min, Ist: 20.1, Ziel: 20.0, Max.: 20.1
 2026-10-20 19:30:30 HK-LogHeizkurvenkontrolle Ju-HuRaum(5)-JuHu Terminbeginn: +0min, Ist: 20.7, Ziel: 20.0, Max.: 20.7
 2026-10-20 20:30:30 HK-LogHeizkurvenkontrolle Ju-HuRaum(5)-JuHu Heizende: +60min, Ist: 20.7, Ziel: 20.0, Max.: 20.7
@@ -606,7 +609,7 @@ Sich im reinen Textprotokoll einen Überblick über einzelne Räume und mehrere 
 Die fünf Einträge zeigen beispielhaft den Ablauf eines Heizvorgangs:
 
 - **Zeile 1: Heizbeginn**  
-  Bei einer Außentemperatur von 8,9 °C und einer aktuellen Raumtemperatur von 19,2 °C beginnt das Heizen 64 Minuten vor dem Termin. Die Zieltemperatur beträgt 20 °C.
+  Bei einer effektiven Außentemperatur von 8,9 °C und einer aktuellen Raumtemperatur von 19,2 °C beginnt das Heizen 64 Minuten vor dem Termin. Die Zieltemperatur beträgt 20 °C. In Klammern wird — sofern die optionale Systemvariable vorhanden ist — der aktuelle Momentanwert (`akt`) angezeigt.
 
 - **Zeile 2: Zieltemperatur**  
   Die Zieltemperatur wird 29 Minuten vor Terminbeginn erreicht. Die Vorheizzeit war damit ausreichend. Ob sie auch optimal war, lässt sich besser anhand mehrerer Termine beurteilen.
@@ -863,4 +866,4 @@ Die vollständige Beschreibung der Funktionen und Seiten findet sich im
 Nach einem Neustart der CCU melden Thermostate, die noch nicht wieder Funkkontakt mit der Basis-CCU hatten eine Isttemperatur von 0°C. Dies kann direkt nach dem Neustart zu eigentümlichen errechneten Vorlaufzeiten führen oder auch zu falschen Informationen im Addon in der Raumübersicht.  
 Durch diese *falschen* Temperatur Informationen kann es dazu kommen, dass Heizvorgänge vorzeitig eingeschaltet werden. Der Heizkalender wird diese Vorgänge jedoch sofort abbrechen, wenn die realen Temperaturen übermittelt werden und der nächste Durchlauf für `HK-Skript 2` startet
 
-Erst nach bis zu 1h Laufzeit wird sich die CCU nach einem Neustart wieder eingependelt haben.
+Erst nach bis zu 1h Laufzeit wird sich die CCU nach einem Neustart wieder eingependelt haben.art wieder eingependelt haben.

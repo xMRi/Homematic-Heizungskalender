@@ -1,6 +1,6 @@
 !// Tool zur Kontrolle der Heizkurve
 !//================================================================================================
-!// Stand:    13.11.2026
+!// Stand:    14.11.2026
 !// Autoren:  Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -22,8 +22,9 @@
 !//                 Bugfix Finding 2: Null-Check fuer dom.GetObject(RVN) ergaenzt (continue).
 !//                 Bugfix Finding 3: status-Reset auf (status & 32) bei neuem Heizvorgang.
 !//                 Bugfix Finding 4: Bit-0-Guard bei Zieltemperatur-Pruefung ergaenzt.
-!//                 ATLog: akt= und min12h= auf eine Dezimalstelle formatiert (war roher CCU-Float).
-!//                 AT-Logausgabe: effektive AT mit Durchschnitt/Aktuell/Prognose-Min.
+!//                 ATLog: akt= auf eine Dezimalstelle formatiert (war roher CCU-Float).
+!//                 AT-Logausgabe: AT mit optionaler aktueller Temperatur.
+!// TT:  2026-11-14 ATLog-Format: eckige Klammern statt runde (war "(akt=X.X)", neu "[akt X.X°C]").
 !// TT:  2026-11-13 Bereinigungsblock loggt "Termin entfernt", wenn ein Raum während einer aktiven
 !//                 Heizphase aus der Schaltliste gelöscht wurde (Bit 0 gesetzt, Bit 4 nicht).
 !// TT:  2026-11-12 Code-Review: Tippfehler behoben, ungenutzte Variablen entfernt,
@@ -78,23 +79,11 @@ string SListe=dom.GetObject(vrp # "HK2-Schaltliste").State();
 string VarNamen=dom.GetObject(vrp # "HK2-HKG-Liste").State();
 real ATDurchschnitt=dom.GetObject(vrp # "HK2-Aussentemperatur").State().ToFloat();
 real AT=ATDurchschnitt;
-!// Effektive AT: min(Durchschnitt, Prognose-Min), identisch zu Skript 2.
-!// Damit entspricht das geloggte AT dem Wert, mit dem die VLZ berechnet wurde.
-!// ATLog zeigt den effektiven Wert und optional Durchschnitt, aktuelle AT und Prognose-Min.
-!// Format: "3.8 (avg=6.1/akt=4.2/min12h=3.8)" oder nur "6.1" ohne Variablen.
-string ATExtra = "";
-var svATAkt = dom.GetObject(vrp # "HK2-Aussentemperatur-Aktuell");
-if (svATAkt) { ATExtra = "akt=" # svATAkt.State().ToFloat().ToString(1); }
-var svATMin = dom.GetObject(vrp # "HK2-Aussentemperatur-Prognose-Min");
-if (svATMin) {
-    real ATMin = svATMin.State().ToFloat();
-    if ((ATMin < AT)) { AT = ATMin; }
-    if (ATExtra != "") { ATExtra = ATExtra # "/"; }
-    ATExtra = ATExtra # "min12h=" # ATMin.ToString(1);
-}
+!// ATLog zeigt den Durchschnitt und optional die aktuelle AT.
+!// Format: "4.1 [akt 8.8°C]" oder nur "4.1" ohne Variable.
 string ATLog = AT.ToString(1);
-if (ATExtra != "") { ATLog = "avg=" # ATDurchschnitt.ToString(1) # "/" # ATExtra; }
-if (ATExtra != "") { ATLog = AT.ToString(1) # " (" # ATLog # ")"; }
+var svATAkt = dom.GetObject(vrp # "HK2-Aussentemperatur-Aktuell");
+if (svATAkt) { ATLog = ATLog # " [akt " # svATAkt.State().ToFloat().ToString(1) # "°C]"; }
 real GTStandard=dom.GetObject(vrp # "HK2-Grundtemperatur").State().ToFloat();
 real GT=GTStandard;
 string AktAktor;

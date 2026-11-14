@@ -275,7 +275,7 @@ if {$submitted && [llength $log_files] > 0} {
         set sep [string first " - " $msg]
         set dp  [string first ":" $msg]
 
-        if {$sep >= 0} {
+        if {$sep >= 0 && ($dp < 0 || $dp > $sep)} {
             # Neues Format: "RaumName - Ereignis: ..."
             set raumname [string range $msg 0 [expr {$sep-1}]]
             set rest     [string range $msg [expr {$sep+3}] end]
@@ -477,9 +477,17 @@ if {[llength $log_files] == 0} {
         if {![string equal $at_val ""]} {
             set sp_at [string first " " $at_val]
             if {$sp_at > 0} {
-                set at_num [string range $at_val 0 [expr {$sp_at-1}]]
-                set at_rest [string range $at_val $sp_at end]
-                set at_str "${at_num} ${deg}C${at_rest}"
+                set at_num  [string range $at_val 0 [expr {$sp_at-1}]]
+                set at_rest [string trim [string range $at_val $sp_at end]]
+                # Altes Format "(avg=.../akt=.../min12h=...)" wegfiltern
+                if {[string match "(avg=*" $at_rest]} {
+                    set at_rest ""
+                }
+                if {[string equal $at_rest ""]} {
+                    set at_str "${at_num} ${deg}C"
+                } else {
+                    set at_str "${at_num} ${deg}C $at_rest"
+                }
             } else {
                 set at_str "$at_val ${deg}C"
             }

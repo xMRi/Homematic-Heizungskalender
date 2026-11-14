@@ -15,11 +15,14 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ### Hinzugefügt
 
-- AT-Skript: Prognose-Minimum der nächsten 12h wird in optionale Variable `HK2-Aussentemperatur-Prognose-Min` geschrieben.
 - AT-Skript: Momentanwert der letzten vollen Stunde wird in optionale Variable `HK2-Aussentemperatur-Aktuell` geschrieben.
-- Skript 2: Verwendet `min(Durchschnitt, Prognose-Min)` als effektive Außentemperatur — Vorheizzeit steigt frühzeitig bei vorhergesagter Kältefront.
-- Init-Skript 2+3: Neue Variablen `HK2-Aussentemperatur-Aktuell` und `HK2-Aussentemperatur-Prognose-Min` werden angelegt.
+- Init-Skript 2+3: Neue Variable `HK2-Aussentemperatur-Aktuell` wird angelegt.
+- Addon hkkurve.cgi: AT-Spalte zeigt Durchschnitt aus `HK2-Aussentemperatur`, in eckigen Klammern den Aktuell-Wert aus `HK2-Aussentemperatur-Aktuell` (z.B. `1.8 °C [akt 1.6 °C]`).
 - Addon: Version 0.10.3.
+
+### Geändert
+
+- AT-Skript: Wechsel von `icon_seamless` auf DWD ICON-D2 (`dwd-icon`-Endpunkt, `models=icon_d2`, 2,2 km Auflösung, alle 3h aktualisiert); `past_days` von 2 auf 1 reduziert; maximale `stundenZurueck` von 48 auf 24 begrenzt.
 
 ### Behoben
 

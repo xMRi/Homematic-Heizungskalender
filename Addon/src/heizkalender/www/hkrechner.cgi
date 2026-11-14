@@ -56,7 +56,6 @@ set ccu_kurve ""
 set ccu_kv ""
 set ccu_at ""
 set ccu_at_akt ""
-set ccu_at_min ""
 set ccu_ka "0.8"
 set ccu_grundtemp "10"
 set ccu_atg ""
@@ -72,8 +71,6 @@ catch {
         if (sv) { WriteLine("AT:" # sv.Value()); }
         sv = dom.GetObject("HK2-Aussentemperatur-Aktuell");
         if (sv) { WriteLine("ATAKT:" # sv.Value()); }
-        sv = dom.GetObject("HK2-Aussentemperatur-Prognose-Min");
-        if (sv) { WriteLine("ATMIN:" # sv.Value()); }
         sv = dom.GetObject("HK2-Kurvenanpassung");
         if (sv) { WriteLine("KA:" # sv.Value()); }
         sv = dom.GetObject("HK2-Grundtemperatur");
@@ -103,10 +100,6 @@ catch {
         if {[string match "ATAKT:*" $line]} {
             catch { set ccu_at_akt [format "%.1f" [string range $line 6 end]] } \
                   { set ccu_at_akt [string range $line 6 end] }
-        }
-        if {[string match "ATMIN:*" $line]} {
-            catch { set ccu_at_min [format "%.1f" [string range $line 6 end]] } \
-                  { set ccu_at_min [string range $line 6 end] }
         }
         if {[string match "ATG:*"   $line]} {
             catch { set ccu_atg [format "%.1f" [string range $line 4 end]] } \

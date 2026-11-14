@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    13.11.2026
+!// Stand:    11.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,8 +21,6 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
-!// TT:  2026-11-13 Prognose-Min: AT = min(Durchschnitt, HK2-Aussentemperatur-Prognose-Min) fuer
-!//                 konservativere VLZ-Berechnung bei fallender AT (Variable optional).
 !// MRi: 2026-11-11 Abgelaufene Termine erst entfernen, wenn sie nicht mehr in der HK1-Schaltliste sind
 !// TT:  2026-11-10 Kurvenanpassungsfaktor ueber optionale Systemvariable HK2-Kurvenanpassung konfigurierbar (0.3..1.0, Vorgabe 0.8)
 !// MRi: 2026-11-09 Minimale Heizzeit (default 15min) eingeführt
@@ -81,15 +79,6 @@ string VarNamen=dom.GetObject(vrp # "HK2-HKG-Liste").State();
 string RIDI=dom.GetObject(vrp # "HK1-R-Liste").State();
 real ATG=dom.GetObject(vrp # "HK2-A.Temp.Grenze").State().ToFloat();
 real AT=dom.GetObject(vrp # "HK2-Aussentemperatur").State().ToFloat();
-!// Optional: Prognose-Minimum fuer konservativere VLZ-Berechnung
-!// Verwendet min(Durchschnitt, Prognose-Min), damit bei fallender AT die VLZ
-!// frueher steigt. Variable wird nur gelesen wenn sie existiert (Fallback: Durchschnitt).
-real ATPrognoseMin = AT;
-var svATMin = dom.GetObject(vrp # "HK2-Aussentemperatur-Prognose-Min");
-if (svATMin) {
-    ATPrognoseMin = svATMin.State().ToFloat();
-    if ((ATPrognoseMin < AT)) { AT = ATPrognoseMin; }
-}
 real GTStandard=dom.GetObject(vrp # "HK2-Grundtemperatur").State().ToFloat();
 real GT=GTStandard;
 string AktAktor;

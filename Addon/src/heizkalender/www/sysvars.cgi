@@ -143,8 +143,7 @@ set doc_links [list \
     HK3-Logging                   $doc_skripte_log \
     HK2-A.Temp.Grenze             $doc_skripte_s2 \
     HK2-Aussentemperatur          $doc_skripte_at \
-    HK2-Aussentemperatur-Aktuell       $doc_skripte_at \
-    HK2-Aussentemperatur-Prognose-Min  $doc_skripte_at \
+    HK2-Aussentemperatur-Aktuell  $doc_skripte_at \
     HK2-Grundtemperatur           $doc_skripte_s2 \
     HK2-Hand-Grundtemp            $doc_skripte_s2 \
     HK2-Hand-Temp                 $doc_skripte_s2 \
@@ -401,8 +400,7 @@ proc format_temp {val} {
 proc is_temp_var {name} {
     if {[string equal $name "HK2-A.Temp.Grenze"]}   { return 1 }
     if {[string equal $name "HK2-Aussentemperatur"]} { return 1 }
-    if {[string equal $name "HK2-Aussentemperatur-Aktuell"]}      { return 1 }
-    if {[string equal $name "HK2-Aussentemperatur-Prognose-Min"]} { return 1 }
+    if {[string equal $name "HK2-Aussentemperatur-Aktuell"]} { return 1 }
     if {[string equal $name "HK2-Grundtemperatur"]}  { return 1 }
     return 0
 }

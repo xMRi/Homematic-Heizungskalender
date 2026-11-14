@@ -1,0 +1,19 @@
+// VS Code extension httpYac
+// https://httpyac.github.io/guide/installation_vscode.html
+
+// DWD ICON API REST API
+// https://open-meteo.com/en/docs/dwd-api
+
+
+###
+# @name getForecast
+# @title Get DWD forecast
+# @description Open data weather forecasts from the German weather service DWD
+@latitude=50.1155
+@longitude=8.6842
+@models=icon_d2
+GET https://api.open-meteo.com/v1/dwd-icon?latitude={{latitude}}&longitude={{longitude}}&models={{models}}&hourly=temperature_2m&past_days=1&forecast_days=1&timezone=Europe%2FBerlin
+Content-Type: application/json
+
+?? status == 200
+

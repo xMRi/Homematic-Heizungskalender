@@ -18,7 +18,7 @@
 !// Ich (MRi) habe diesen Code dann erweitert, korrigiert und verbessert um sie an die Nutzung in
 !// meiner Gemeinde anzupassen.
 !//
-!// TT:   2026-11-13 HK2-Aussentemperatur-Aktuell und -Prognose-Min ergaenzt
+!// TT:   2026-11-13 HK2-Aussentemperatur-Aktuell ergaenzt
 !// TT:   2026-11-10 HK2-Kurvenanpassung: optionaler Kurvenanpassungsfaktor fuer das Zwei-Geraden-Modell (0.3..1.0, Vorgabe 0.8)
 !// MRi:  2026-11-03 Neue Variable für Skript3, HK2-Schaltliste
 !// TT:   2026-10-25 HK2-Schaltzeiten: Schlüssel von ResID auf Raumvariablenname (RVN) umgestellt.
@@ -47,8 +47,7 @@ string nm=  "HK2-HKG-Liste;" #
             "HK2-Kurvenanpassung;" #
             "HK2-Schaltliste;" #
             "HK2-Schaltzeiten;" #
-            "HK2-Aussentemperatur-Aktuell;" #
-            "HK2-Aussentemperatur-Prognose-Min";
+            "HK2-Aussentemperatur-Aktuell";
 
 !// Beschreibungstexte
 string be=  "Liste der HK-Raum-Variablen;" #
@@ -63,8 +62,7 @@ string be=  "Liste der HK-Raum-Variablen;" #
             "Kurvenanpassungsfaktor fuer das Zwei-Geraden-Modell der Vorheizzeit-Berechnung (0.3 bis 1.0). Vorgabe 0.8;" #
             "Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!;" #
             "Berechnete Schaltzeiten pro Raum von Skript 2 für das Addon. Hier bitte nichts verändern!;" #
-            "Aktuelle Außentemperatur (letzte volle Stunde, von Open-Meteo). Wird vom AT-Skript geschrieben.;" #
-            "Niedrigste prognostizierte Außentemperatur der nächsten 12h. Wird vom AT-Skript geschrieben.";
+            "Aktuelle Außentemperatur (letzte volle Stunde, von Open-Meteo). Wird vom AT-Skript geschrieben.";
 
 !// Typen
 string tp=  "string;" #
@@ -79,7 +77,6 @@ string tp=  "string;" #
             "integer;" #
             "string;" #
             "string;" #
-            "integer;" #
             "integer";
 
 !// Vorgabe Werte
@@ -96,7 +93,6 @@ string vl=  ";" #
             "0.8;" #
             ";" #
             ";" #
-            "0.0;" #
             "0.0";
 
 !// Einheit (z.B. °C)
@@ -112,7 +108,6 @@ string vu=  ";" #
             ";" #
             ";" #
             ";" #
-            "°C;" #
             "°C";
 
 !// Zusätzliche Info Texte für
@@ -130,7 +125,6 @@ string wr=  ";" #
             "0.3+1.0;" #
             ";" #
             ";" #
-            "-50+50;" #
             "-50+50";
 
 !// Protokollierungs Flags
@@ -146,7 +140,6 @@ string pr=  "1;" #
             "1;" #
             "1;" #
             "0;" #
-            "1;" #
             "1";
 
 !//------------------------------------------------------------------------------------------------

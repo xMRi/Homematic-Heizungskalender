@@ -22,7 +22,8 @@
 !//
 !// Das Skript sollte jede volle Stunde laufen
 
-!// TT: 2026-11-15 Division durch Null bei n==0 behoben; aktuellerWert initialisiert;
+!// TT: 2026-11-15 models=dwd_icon_d2_native (icon_d2 wird 2026-11-30 abgeschaltet);
+!//                Division durch Null bei n==0 behoben; aktuellerWert initialisiert;
 !// TT: 2026-11-14 DWD ICON-D2 statt icon_seamless (dwd-icon-Endpunkt, models=icon_d2);
 !//                past_days von 2 auf 1 reduziert; stundenZurueck.Min(48) auf Min(24),
 !//                ueberspringen-Formel von h+48 auf h+24 angepasst;
@@ -108,7 +109,7 @@ if (lat=="" || lon=="" || lat.ToFloat()==0.0 || lon.ToFloat()==0.0){
   !// Temperaturwerte lesen: 24h davor (past_days=1), heute+morgen voraus (forecast_days=2).
   !// DWD ICON-D2: 2,2km Aufloesung, Zentraleuropa, alle 3h aktualisiert.
   !// forecast_days=2 noetig damit das 6h-Voraus-Fenster auch abends genug Daten hat.
-  command = "wget --timeout=3 -O - 'https://api.open-meteo.com/v1/dwd-icon?latitude=" # lat # "&longitude=" # lon # "&models=icon_d2&hourly=temperature_2m&past_days=1&forecast_days=2&timezone=Europe%2FBerlin'";
+  command = "wget --timeout=3 -O - 'https://api.open-meteo.com/v1/dwd-icon?latitude=" # lat # "&longitude=" # lon # "&models=dwd_icon_d2_native&hourly=temperature_2m&past_days=1&forecast_days=2&timezone=Europe%2FBerlin'";
 
   !// Da es immer wieder mal zu Fehlern kommt, wiederholen wir die Anfrage im Abstand von 1 Sekunde mehrfach
   integer iRetry = 10;

@@ -1,5 +1,5 @@
 import org.rrd4j.core.RrdDb;
-import java.io.FileOutputStream;
+import org.rrd4j.core.RrdRandomAccessFileBackendFactory;
 
 public class DumpRRD {
     public static void main(String[] args) {
@@ -8,7 +8,7 @@ public class DumpRRD {
             return;
         }
         try {
-            RrdDb rrd = new RrdDb(args[0]);
+            RrdDb rrd = RrdDb.getBuilder().setPath(args[0]).setReadOnly(true).setBackendFactory(new RrdRandomAccessFileBackendFactory()).build();
             rrd.exportXml(args[1]);
             rrd.close();
             System.out.println("Erfolgreich exportiert nach " + args[1]);

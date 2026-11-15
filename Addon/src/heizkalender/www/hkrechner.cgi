@@ -20,7 +20,7 @@ proc htmlquote {s} {
 }
 
 proc jsquote {s} {
-    return [string map {\\ \\\\ \" \\\" ' \\' \n \\n \r {}} $s]
+    return [string map {\\ \\\\ \" \\\" ' \\' \n \\n \r {} / \\/} $s]
 }
 
 proc extract_stdout {rega_raw} {

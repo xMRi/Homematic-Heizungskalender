@@ -1,6 +1,6 @@
 !// Bestimmen der Außentemperatur für den Heizkalender
 !//================================================================================================
-!// Stand:    14.11.2026
+!// Stand:    15.11.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -22,6 +22,7 @@
 !//
 !// Das Skript sollte jede volle Stunde laufen
 
+!// TT: 2026-11-15 Division durch Null bei n==0 behoben; aktuellerWert initialisiert;
 !// TT: 2026-11-14 DWD ICON-D2 statt icon_seamless (dwd-icon-Endpunkt, models=icon_d2);
 !//                past_days von 2 auf 1 reduziert; stundenZurueck.Min(48) auf Min(24),
 !//                ueberspringen-Formel von h+48 auf h+24 angepasst;
@@ -182,7 +183,7 @@ if (lat=="" || lon=="" || lat.ToFloat()==0.0 || lon.ToFloat()==0.0){
 
     !// Werte berechnen
     integer i=0;
-    real aktuellerWert;
+    real aktuellerWert = 0.0;
     real tempWert = 0.0;
     foreach (temp, stemp.Split(","))
     {
@@ -216,26 +217,19 @@ if (lat=="" || lon=="" || lat.ToFloat()==0.0 || lon.ToFloat()==0.0){
       WriteLine(summe);
       WriteLine(n);
     }
-    temp = (summe/n).ToString(1);
-    string atLogText = "Akt. AT= " # aktuellerWert.ToString(1) # "°C / Durchschn. AT= " # temp # "°C (Fenster: -" # stundenZurueck.ToInteger() # "h/+" # stundenVoraus.ToInteger() # "h)";
-    WriteLine(atLogText);
-
-    if (log) {
-      if (n!=0) {
-        logObj.State(atLogText);
-      } else {
-        logObj.State("Keine Werte für die Außentemperatur gefunden!");
-      }
-    }
-
     !// Ergebnis schreiben
     if (n!=0){
+      temp = (summe/n).ToString(1);
+      string atLogText = "Akt. AT= " # aktuellerWert.ToString(1) # "°C / Durchschn. AT= " # temp # "°C (Fenster: -" # stundenZurueck.ToInteger() # "h/+" # stundenVoraus.ToInteger() # "h)";
+      WriteLine(atLogText);
+      if (log) { logObj.State(atLogText); }
       dom.GetObject(vrp+"HK2-Aussentemperatur").State(temp);
       !// Optionale Variable: aktuelle Temperatur (wird nur geschrieben wenn sie existiert)
       var svAkt = dom.GetObject(vrp+"HK2-Aussentemperatur-Aktuell");
       if (svAkt) { svAkt.State(aktuellerWert.ToString(1)); }
       break;
     } else {
+      if (log) { logObj.State("Keine Werte für die Außentemperatur gefunden!"); }
       !// Unerwünschtes Ergebnis/Fehler, also ein Retry mehr
       iRetry = iRetry-1;
       !// Verzögern

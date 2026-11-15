@@ -113,7 +113,6 @@ proc log_raumname {logname} {
 set filter_raum "alle"
 set filter_tage "1"
 set filter_ereignis "alle"
-set submitted 1
 
 set query_string ""
 catch {set query_string $env(QUERY_STRING)}
@@ -162,7 +161,7 @@ if {[string equal $filter_tage "0"]} {
 # Datei einschließen wenn Dateiname >= datum_ab minus 7 Tage. Wochendateien
 # (Dateiname = Startdatum der Woche) können bis zu 7 Tage jüngere Einträge
 # enthalten als der Dateiname andeutet. Die Zeilenebene filtert dann genau.
-set usb_dir "/media/usb1"
+set usb_dir "/media/usb0"
 set log_files {}
 if {[file isdirectory $usb_dir]} {
     set tage_fuer_filter [expr {[string equal $filter_tage "0"] ? 1 : ([string equal $filter_tage "24"] ? 1 : int($filter_tage))}]
@@ -184,7 +183,8 @@ set hkk_src "HK-LogHeizkurvenkontrolle"
 # HK2-HKK-Zieltemperatur (optional): "Kritisch-vor;Perfekt-von;Perfekt-bis;Kritisch-nach"
 #   Default: -45;-20;5;15
 # ---------------------------------------------------------------------------
-set hkg_raw [extract_stdout [rega_script {
+set hkg_raw ""
+if {[catch {set hkg_raw [extract_stdout [rega_script {
     string result = "";
     string id;
     foreach(id, dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs()) {
@@ -200,7 +200,11 @@ set hkg_raw [extract_stdout [rega_script {
     if (zs) {
         WriteLine("ZS:" # zs.Value());
     }
-}]]
+}]]} err]} {
+    puts "Content-Type: text/html; charset=utf-8\r\n\r\n"
+    puts "<html><body><p>Fehler: ReGa nicht erreichbar. ($err)</p></body></html>"
+    return
+}
 
 # alle_raeume: Suffix von HKG-Raum-* (= Raumname im Log), nach Name sortiert
 # Zieltemperatur-Schwellen: Defaults nach Martins Vorgabe
@@ -238,7 +242,7 @@ set alle_raeume [lsort -index 1 $alle_raeume]
 # ---------------------------------------------------------------------------
 set alle_ereignisse {}
 
-if {$submitted && [llength $log_files] > 0} {
+if {[llength $log_files] > 0} {
     # grep liefert nur die relevanten Zeilen; das spart 99% der Laufzeit
     set fpaths {}
     foreach lf $log_files { lappend fpaths "$usb_dir/$lf" }
@@ -434,8 +438,6 @@ puts {      </fieldset>}
 puts "    </form>"
 puts {  </div>}
 
-if {$submitted} {
-
 if {[llength $log_files] == 0} {
     puts {  <p class="hk-empty">Kein USB-Stick gefunden oder keine HK-Log-Dateien vorhanden.</p>}
 } elseif {[llength $alle_ereignisse] == 0} {
@@ -540,7 +542,6 @@ puts "      <span class=\"hk-kurve-ziel-gelb hk-kurve-badge\">Zieltemp. akzeptab
 puts "      <span class=\"hk-kurve-ziel-rot hk-kurve-badge\">Zieltemp. kritisch (&lt; [fmt_delta $ziel_rot_unten] oder &gt; [fmt_delta $ziel_rot_oben] min)</span>"
 puts "    </p>"
 puts {  </fieldset>}
-}
 
 puts {</div>
 </body>

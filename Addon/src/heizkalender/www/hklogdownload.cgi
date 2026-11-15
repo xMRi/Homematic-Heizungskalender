@@ -2,7 +2,7 @@
 # Heizkalender-Addon: Download einer HK-Log-Datei vom USB-Stick
 # Zielplattform: CCU3, Tcl 8.2.3
 
-set usb_dir "/media/usb1"
+set usb_dir "/media/usb0"
 set file_param ""
 
 set query_string ""

@@ -61,7 +61,7 @@ foreach param [split $query_string "&"] {
 # ---------------------------------------------------------------------------
 # USB-Stick: verfügbare Log-Dateien (neueste zuerst, max. 30 Tage)
 # ---------------------------------------------------------------------------
-set usb_dir "/media/usb1"
+set usb_dir "/media/usb0"
 set log_files {}
 if {[file isdirectory $usb_dir]} {
     set cutoff_secs [expr {[clock seconds] - 60 * 86400}]
@@ -315,7 +315,7 @@ if {$count == 0} {
     puts {  </table></div>}
 }
 
-puts {  <p class="hk-hint">Die Logdateien werden auf einem USB-Stick gespeichert, der an der CCU angeschlossen ist (<code>/media/usb1/HK-Log_JJJJ-MM-TT.log</code>). Es werden die Eintr&auml;ge der letzten 60 Tage angezeigt. Da <em>HK-SystemProtokoll sichern.hsc</em> alle 29 Minuten l&auml;uft, kann die Anzeige bis zu 29 Minuten hinter dem aktuellen Geschehen zur&uuml;ckliegen.</p>}
+puts {  <p class="hk-hint">Die Logdateien werden auf einem USB-Stick gespeichert, der an der CCU angeschlossen ist (<code>/media/usb0/HK-Log_JJJJ-MM-TT.log</code>). Es werden die Eintr&auml;ge der letzten 60 Tage angezeigt. Da <em>HK-SystemProtokoll sichern.hsc</em> alle 29 Minuten l&auml;uft, kann die Anzeige bis zu 29 Minuten hinter dem aktuellen Geschehen zur&uuml;ckliegen.</p>}
 
 puts {</div>
 </body>

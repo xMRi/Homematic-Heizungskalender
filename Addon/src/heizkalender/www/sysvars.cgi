@@ -30,7 +30,12 @@ set rega_script {
 # zurück. Enthält <inhalt> geschweifte Klammern oder Sonderzeichen, schlägt
 # array set fehl. Daher manuell: alles zwischen dem ersten "{" nach "STDOUT "
 # und dem zugehörigen abschließenden "}" extrahieren.
-set rega_raw [rega_script $rega_script]
+set rega_raw ""
+if {[catch {set rega_raw [rega_script $rega_script]} err]} {
+    puts "Content-Type: text/html; charset=utf-8\r\n\r\n"
+    puts "<html><body><p>Fehler: ReGa nicht erreichbar. ($err)</p></body></html>"
+    return
+}
 set raw ""
 set stdout_start [string first "STDOUT {" $rega_raw]
 if {$stdout_start >= 0} {
@@ -457,10 +462,6 @@ proc render_table {varlist} {
     return $html
 }
 
-proc decode_hkk_status {s} {
-    return $s
-}
-
 proc render_hk_raeume_hkk {val} {
     if {[string equal $val ""]} { return "<em>(leer)</em>" }
     set entries [split $val "#"]
@@ -478,7 +479,7 @@ proc render_hk_raeume_hkk {val} {
         set cnt   [lindex $parts 1]
         set temp  [lindex $parts 2]
         catch {set temp [format "%.1f" $temp]}
-        set status_text [decode_hkk_status $cnt]
+        set status_text $cnt
         append html "  <tr><td>[htmlquote $rvar]</td><td>[htmlquote $status_text]</td><td>[htmlquote $temp]</td></tr>\n"
     }
     append html "</table>\n"

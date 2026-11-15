@@ -159,7 +159,13 @@ set rega_script {
     WriteLine(result);
 }
 
-set raw [extract_stdout [rega_script $rega_script]]
+set rega_raw ""
+if {[catch {set rega_raw [rega_script $rega_script]} err]} {
+    puts "Content-Type: text/html; charset=utf-8\r\n\r\n"
+    puts "<html><body><p>Fehler: ReGa nicht erreichbar. ($err)</p></body></html>"
+    return
+}
+set raw [extract_stdout $rega_raw]
 
 # Sechs Abschnitte trennen
 set sl_sep    "\n===SL===\n"

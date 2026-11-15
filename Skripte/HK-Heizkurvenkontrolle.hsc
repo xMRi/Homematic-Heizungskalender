@@ -1,6 +1,6 @@
 !// Tool zur Kontrolle der Heizkurve
 !//================================================================================================
-!// Stand:    14.11.2026
+!// Stand:    15.11.2026
 !// Autoren:  Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -13,6 +13,8 @@
 !// Skript sollte alle 5min laufen ca. 30 Sekunden nach dem Schaltskript
 !//
 
+!// TT:  2026-11-15 ATLog-Format vereinfacht: kein °C-Suffix (war "[akt X.X°C]", neu "[Akt: X.X]").
+!// TT:  2026-11-14 ATLog-Format: eckige Klammern statt runde (war "(akt=X.X)", neu "[akt X.X°C]").
 !// TT:  2026-11-13 Überlappende Termine: ausTerminMax (Feld 3 in RaumParameter) trackt das
 !//                 Maximum aller AUS_Termin-Werte. Terminende und Zieltemperatur-Guard nutzen
 !//                 ausTerminMax statt AUS_Termin des ersten Eintrags.
@@ -24,7 +26,6 @@
 !//                 Bugfix Finding 4: Bit-0-Guard bei Zieltemperatur-Pruefung ergaenzt.
 !//                 ATLog: akt= auf eine Dezimalstelle formatiert (war roher CCU-Float).
 !//                 AT-Logausgabe: AT mit optionaler aktueller Temperatur.
-!// TT:  2026-11-14 ATLog-Format: eckige Klammern statt runde (war "(akt=X.X)", neu "[akt X.X°C]").
 !// TT:  2026-11-13 Bereinigungsblock loggt "Termin entfernt", wenn ein Raum während einer aktiven
 !//                 Heizphase aus der Schaltliste gelöscht wurde (Bit 0 gesetzt, Bit 4 nicht).
 !// TT:  2026-11-12 Code-Review: Tippfehler behoben, ungenutzte Variablen entfernt,
@@ -80,10 +81,10 @@ string VarNamen=dom.GetObject(vrp # "HK2-HKG-Liste").State();
 real ATDurchschnitt=dom.GetObject(vrp # "HK2-Aussentemperatur").State().ToFloat();
 real AT=ATDurchschnitt;
 !// ATLog zeigt den Durchschnitt und optional die aktuelle AT.
-!// Format: "4.1 [akt 8.8°C]" oder nur "4.1" ohne Variable.
+!// Format: "4.1 [Akt: 8.8]" oder nur "4.1" ohne Variable.
 string ATLog = AT.ToString(1);
 var svATAkt = dom.GetObject(vrp # "HK2-Aussentemperatur-Aktuell");
-if (svATAkt) { ATLog = ATLog # " [akt " # svATAkt.State().ToFloat().ToString(1) # "°C]"; }
+if (svATAkt) { ATLog = ATLog # " [Akt: " # svATAkt.State().ToFloat().ToString(1) # "]"; }
 real GTStandard=dom.GetObject(vrp # "HK2-Grundtemperatur").State().ToFloat();
 real GT=GTStandard;
 string AktAktor;

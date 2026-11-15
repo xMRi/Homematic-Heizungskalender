@@ -477,22 +477,7 @@ if {[llength $log_files] == 0} {
         set max_str  [expr {![string equal $max_val ""] ? "$max_val ${deg}C" : ""}]
         set at_str ""
         if {![string equal $at_val ""]} {
-            set sp_at [string first " " $at_val]
-            if {$sp_at > 0} {
-                set at_num  [string range $at_val 0 [expr {$sp_at-1}]]
-                set at_rest [string trim [string range $at_val $sp_at end]]
-                # Altes Format "(avg=.../akt=.../min12h=...)" wegfiltern
-                if {[string match "(avg=*" $at_rest]} {
-                    set at_rest ""
-                }
-                if {[string equal $at_rest ""]} {
-                    set at_str "${at_num} ${deg}C"
-                } else {
-                    set at_str "${at_num} ${deg}C $at_rest"
-                }
-            } else {
-                set at_str "$at_val ${deg}C"
-            }
+            set at_str "${at_val} ${deg}C"
         }
         set delta_str $delta
         if {[string equal $ereignis "Fehler"] || [string equal $ereignis "Termin entfernt"]} {

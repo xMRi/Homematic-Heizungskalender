@@ -1,49 +1,43 @@
 #!/bin/sh
-set -e
 # Installationsskript für das Heizkalender-Addon
-# Basiert auf der Vorlage aus https://github.com/homematic-community/ccu-addon-howto
+# Basiert auf https://github.com/homematic-community/ccu-addon-howto/blob/master/templates/update_script
 
-ADDON="heizkalender"
-ADDONS_DIR="/usr/local/addons"
-ADDON_DIR="${ADDONS_DIR}/${ADDON}"
-WWW_DIR="/usr/local/etc/config/addons/www/${ADDON}"
-RCD_DIR="/usr/local/etc/config/rc.d"
+ADDON=heizkalender
+ADDONS_DIR=/usr/local/addons
+ADDON_DIR=$ADDONS_DIR/$ADDON
+CONF_DIR=/usr/local/etc/config
+WWW_DIR=$CONF_DIR/addons/www/$ADDON
+EXITCODE=10
 
-# /usr/local einbinden (CCU3); Fehler ignorieren falls bereits gemountet
-mount /usr/local 2>/dev/null || true
-
-# Prüfen ob es eine Neuinstallation oder ein Update ist
-FRESH_INSTALL=0
-if [ ! -d "${ADDON_DIR}" ]; then
-  FRESH_INSTALL=1
+mount | grep /usr/local 2>&1 >/dev/null
+if [ $? -eq 1 ]; then
+    mount /usr/local
 fi
 
-# Verzeichnisse sicherstellen
-mkdir -p "${ADDON_DIR}/www"
-mkdir -p "${RCD_DIR}"
+mkdir -p $ADDONS_DIR && chmod 755 $ADDONS_DIR
+mkdir -p $CONF_DIR/addons/www && chmod 755 $CONF_DIR/addons/www
+mkdir -p $CONF_DIR/rc.d
 
-# Eventuell laufenden Dienst stoppen (bei Update)
-if [ "${FRESH_INSTALL}" = "0" ] && [ -x "${RCD_DIR}/${ADDON}" ]; then
-  ${RCD_DIR}/${ADDON} stop
+# Update-Erkennung: rc.d-Skript vorhanden = Update
+if [ -f $CONF_DIR/rc.d/$ADDON ]; then
+    EXITCODE=0
+    $CONF_DIR/rc.d/$ADDON stop 2>/dev/null || true
 fi
 
-# Addon-Dateien kopieren
-cp VERSION "${ADDON_DIR}/VERSION"
-cp -r heizkalender/www/. "${ADDON_DIR}/www/"
+# Addon-Dateien kopieren (www/ komplett ersetzen, damit keine veralteten Dateien bleiben)
+mkdir -p $ADDON_DIR
+rm -rf $ADDON_DIR/www
+cp VERSION $ADDON_DIR/VERSION
+cp -r heizkalender/www $ADDON_DIR/www
 
-# rc.d-Script installieren
-cp rc.d/heizkalender "${RCD_DIR}/${ADDON}"
-chmod 755 "${RCD_DIR}/${ADDON}"
+# rc.d-Skript installieren
+cp rc.d/$ADDON $CONF_DIR/rc.d/$ADDON
+chmod 755 $CONF_DIR/rc.d/$ADDON
 
-# WWW-Symlink anlegen
-if [ ! -L "${WWW_DIR}" ]; then
-  ln -sf "${ADDON_DIR}/www" "${WWW_DIR}"
-fi
+# WWW-Symlink anlegen (-n ersetzt auch einen existierenden Verzeichnis-Symlink)
+rmdir $WWW_DIR 2>/dev/null
+ln -sfn $ADDON_DIR/www $WWW_DIR
 
-if [ "${FRESH_INSTALL}" = "1" ]; then
-  # Neuinstallation: CCU3 startet neu (Exit-Code 10)
-  exit 10
-else
-  # Update: kein Neustart nötig
-  exit 0
-fi
+sync
+
+exit $EXITCODE

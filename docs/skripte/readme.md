@@ -96,7 +96,8 @@ Dieses Skript legt alle Systemvariablen an, die für das Berechnungs- und das Sc
 | :--------------- | :--------- |
 | HK2-Grundtemperatur | Grundtemperatur für alle Räume außerhalb einer Heizphase |
 | HK2-A.Temp.Grenze | Außentemperatur ab der kein Heizen mehr erfolgt |
-| HK2-Aussentemperatur | Aktuelle Außentemperatur (wird durch Skript _HK-Außentemperatur-Open-Meteo.hsc_) gesetzt oder alternativ durch einen Außentemperatursensor. |
+| HK2-Aussentemperatur | Gleitende Durchschnitts-Außentemperatur über das konfigurierte Zeitfenster. Wird durch Skript _HK-Außentemperatur-Open-Meteo.hsc_ gesetzt oder alternativ durch einen Außentemperatursensor. |
+| HK2-Aussentemperatur-Aktuell | Optional. Momentaner Außentemperaturwert der letzten vollen Stunde (kein Durchschnitt). Wird vom AT-Skript geschrieben, nur wenn die Variable vorhanden ist. Dient zur Anzeige und als Diagnosewert. |
 | HK2-Hand-Temp | Wenn `true` Vorrang einer manuell am Thermostat eingestellten Temperatur beim Ausschalten |
 | HK2-Hand-Grundtemp | Wenn `true` aktiviert die Nachtschaltung. `HK-Skript 3` prüft täglich zwischen 00:57 und 01:03 Uhr alle Räume und setzt sie auf Grundtemperatur, sofern kein aktiver Termin (Schaltzustand=1) vorliegt. Bei Heizräumen (HSFlag=H) wird die Solltemperatur am Thermostat gesetzt, bei Schaltaktoren (HSFlag=S/HS) wird der Aktor ausgeschaltet. Die Prüfung erfolgt direkt am Aktor, nicht nur in der Systemvariablen. |
 | HK2-VorzeitAus | Globale Grundoffsetzeit in Minuten, um die vor Terminende ausgeschaltet wird. Wird nur bei Heizvorgängen angewendet, nicht bei reinem Schalten. Gegenstück zu HK2-Kurvenversatz (Einschalt-Offset). Default: 0 |
@@ -238,26 +239,33 @@ Alle weiteren hier aufgeführten Skripte sind für den Betrieb des Heizkalenders
 
 ### HK-Außentemperatur-Open-Meteo.hsc
 
-Wenn kein Außenthermostat zur Verfügung steht, kann mit diesem Skript über die Geodaten der CCU und den Deutschen Wetterdienst (Open-Meteo API) eine Außentemperatur ermittelt werden. Das Skript verwendet nicht den aktuellen Momentanwert, sondern berechnet einen gleitenden Durchschnitt über ein konfigurierbares Zeitfenster aus Vergangenheit und Prognose.
+Wenn kein Außenthermostat zur Verfügung steht, kann mit diesem Skript über die Geodaten der CCU und den [Deutschen Wetterdienst (DWD ICON-D2 über die Open-Meteo API)](https://open-meteo.com/en/docs/dwd-api) eine Außentemperatur ermittelt werden. Das Skript verwendet nicht den aktuellen Momentanwert, sondern berechnet einen gleitenden Durchschnitt über ein konfigurierbares Zeitfenster aus Vergangenheit und Prognose.
 
 Konfigurierbare Parameter (im variablen Bereich des Skripts):
 
 | Parameter | Standard | Bedeutung |
 | :--- | :--- | :--- |
-| `stundenZurueck` | 18 | Stunden in die Vergangenheit (max. 48) |
+| `stundenZurueck` | 18 | Stunden in die Vergangenheit (max. 24) |
 | `stundenVoraus` | 6 | Stunden Prognose voraus (max. 24) |
 
 Der Durchschnitt wird über das gesamte Fenster (`stundenZurueck + stundenVoraus`) gebildet. Empfehlung laut Kommentar im Skript: `18/6` für Fußbodenheizungen, `12/3` für Heizkörper.
 
-Das Skript schreibt einen Log-Eintrag mit aktuellem Messwert, berechnetem Durchschnitt und dem verwendeten Zeitfenster, z.B.:
+Das Skript schreibt einen Log-Eintrag mit aktuellem Messwert, Durchschnitt und dem verwendeten Zeitfenster, z.B.:
 
 ```text
-Akt. Außentemperatur= 20.5°C / Durchsch. Außentemperatur= 14.8°C (Zeitfenster: -18h/+6h)
+Akt. AT= 4.2°C / Durchschn. AT= 6.1°C (Fenster: -18h/+6h)
 ```
 
 Dieses Skript sollte jede Stunde einmal laufen.
 
-Das Skript trägt die berechnete Durchschnittstemperatur in die Variable `HK2-Aussentemperatur` ein.
+Das Skript schreibt folgende Variablen:
+
+| Variable | Bedeutung |
+| :--- | :--- |
+| `HK2-Aussentemperatur` | Gleitender Durchschnitt über das Zeitfenster (immer geschrieben) |
+| `HK2-Aussentemperatur-Aktuell` | Momentanwert der letzten vollen Stunde (nur wenn die Variable vorhanden ist) |
+
+`HK2-Aussentemperatur-Aktuell` ist eine optionale Variable: Das Skript schreibt sie nur, wenn sie auf der CCU bereits angelegt ist. Sie kann mit `HK-Init-Skript 2+3.hsc` angelegt werden.
 
 ### HK-Heizkurvenkontrolle.hsc
 
@@ -271,7 +279,15 @@ Dabei werden die folgenden Informationen im Systemprotokoll aufgezeichnet:
 - Ende der Heizphase
 - Ende des Termines
 
-Protokolliert werden Außentemperatur (beim Start), aktuelle Temperatur, bisher erreichte maximale Temperatur.
+Protokolliert werden die effektive Außentemperatur (beim Start), aktuelle Raumtemperatur, bisher erreichte maximale Raumtemperatur.
+
+Ist die optionale Systemvariable `HK2-Aussentemperatur-Aktuell` vorhanden, wird die AT im erweiterten Format geloggt:
+
+```
+AT: 4.1 (akt=8.8)
+```
+
+Der Wert vor der Klammer ist der Durchschnitt, der für die VLZ-Berechnung verwendet wird. In der Klammer steht die aktuelle Temperatur. Ohne die optionale Variable wird nur der Durchschnitt geloggt (`AT: 4.1`).
 
 Einträge tragen den Namen `HK-LogHeizkurvenkontrolle`.
 

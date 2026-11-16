@@ -1,6 +1,6 @@
 !// Skript 3 für das Schalten der Heizgruppen
 !//================================================================================================
-!// Stand:    06.11.2026
+!// Stand:    15.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,10 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-11-15 Bounds-Check gegen Endlosschleife in AUS-Suppression ergaenzt;
+!// TT:  2026-11-13 Überlappende Termine: AUS-Befehl unterdrücken wenn ein anderer aktiver
+!//                 Eintrag für denselben Raum existiert (SDFlag>=0, EIN<=NOW<AUS).
+!//                 Verhindert unnötige AUS/EIN-Zyklen bei Räumen mit mehreren Terminen.
 !// TT:  2026-11-06 Kommentar RESET-Bedingung korrigiert (erlaubt jetzt alle Zustaende ausser EIN)
 !// MRi: 2026-11-06 Diverse Fixes Aufgrund einer statischen Code-Analyse
 !// MRi: 2026-11-06 Nachtschaltung berücksichtigt Dauer-Ein/Aus falsch.
@@ -140,13 +144,13 @@ string SLEintrag;
 if(DEBUG){WriteLine("SListe=" # SListe);}
 foreach(SLEintrag,SListe.Split("#")){
   if(DEBUG){WriteLine("SLEintrag=" # SLEintrag);}
-  if (SLEintrag=="") 
+  if (SLEintrag=="")
   {
-    continue; 
+    continue;
   }
-  
+
   !// Listenelement auslesen
-  !// Parameter für aktuellen Schaltvorgang. 
+  !// Parameter für aktuellen Schaltvorgang.
   string  RVN     = SLEintrag.StrValueByIndex(";",0);
   integer SDFlag  = SLEintrag.StrValueByIndex(";",3).ToInteger();
   integer EIN     = SLEintrag.StrValueByIndex(";",4).ToTime().ToInteger();
@@ -155,8 +159,8 @@ foreach(SLEintrag,SListe.Split("#")){
   !// Erzeuge einen Namen ohne prefixe
   string RVNName = RVN.Replace(vrp#"HKG-Raum-","");
 
-  !// Anzeigename fürs Log. 
-  string RaumLogName = RVNName;  
+  !// Anzeigename fürs Log.
+  string RaumLogName = RVNName;
   if(DEBUG){WriteLine("RVN=" # RVN);}
   object objRVN = dom.GetObject(RVN);
   if (!objRVN){
@@ -168,7 +172,7 @@ foreach(SLEintrag,SListe.Split("#")){
   if(DEBUG){WriteLine("RVI=" # RVI);}
 
   if(log){logObj.State(RaumLogName # " Raumvariable: " # RVN # "=" # RVI);}
-  
+
   !// Raum Parameter bestimmen
   !// Aktoren, Heizen oder Schalten oder beides
   !// Grundtemperatur individuell bestimmen
@@ -178,7 +182,7 @@ foreach(SLEintrag,SListe.Split("#")){
     GT=GTStandard;
   }
 
-  !// Temperaturen individuell bestimmen. Ist 
+  !// Temperaturen individuell bestimmen. Ist
   !//  SDFlag>0   individuelle Temperatur
   !//  SDFlag==0  Normaltemperatur verwenden
   !//  SDFlag==-1 AUS
@@ -188,7 +192,7 @@ foreach(SLEintrag,SListe.Split("#")){
   if(SDFlag<=0){
     RTemp=RVI.StrValueByIndex(";",3).StrValueByIndex("/",0).ToFloat();
   }
-    
+
   !// Schaltparameter bestimmen
   AGF = RVI.StrValueByIndex(";",2);
   AGFParam = "AGFParam"#AGF.ToUpper();
@@ -199,8 +203,8 @@ foreach(SLEintrag,SListe.Split("#")){
   if (HSFlag!="H"){
     Param="STATE";
   }
-  
-  !// DUP: AktorenListe-Block (Referenz-Implementierung). 
+
+  !// DUP: AktorenListe-Block (Referenz-Implementierung).
   !//      und in HK-Test-Skript.hsc. Aenderungen an allen Stellen nachziehen.
   !// AktorenListe aufbauen. Das ist alles ab der siebte Eintrag der Raumliste. Das dient dazu
   !// Die Liste für spätere Schaltvorgänge bereit zu halten. Der alte Code hat damit gerechnet
@@ -237,14 +241,14 @@ foreach(SLEintrag,SListe.Split("#")){
   }else{
     string strTemp1 = "Schalten";
     if (HSFlag=="H"){
-      strTemp1 = "Heizen"; 
+      strTemp1 = "Heizen";
     }elseif (HSFlag=="HS"){
-      strTemp1 = "Heizen / Schalten"; 
+      strTemp1 = "Heizen / Schalten";
     } elseif (HSFlag=="V"){
       strTemp1 = "Variable setzen";
-    } 
-  }  
-  
+    }
+  }
+
   !// Dauerschaltstatus anzeigen, wenn es den gibt.
   !// 0=Aus, 1=Ein, 2=Dauer AUS, 3=Dauer EIN
   string strTemp2 = "";
@@ -259,10 +263,10 @@ foreach(SLEintrag,SListe.Split("#")){
     strTemp2 = "Dauer-EIN!";
   }
 
-  !// Log schreiben für diesen Raum  
+  !// Log schreiben für diesen Raum
   if(log) {logObj.State(RaumLogName # " - " # strTemp1 # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " - Aktueller Schaltzustand: " # strTemp2);}
   if(DEBUG)  {WriteLine(RaumLogName # " - " # strTemp1 # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " / " # AUS.ToTime().Format("%X").Substr(0,5) # " - Aktueller Schaltzustand: " # strTemp2);}
-  
+
 
   !// Verhindern dass Ausschaltpunkt vor Einschaltpunkt liegt
   if(AUS<=EIN){
@@ -359,6 +363,33 @@ foreach(SLEintrag,SListe.Split("#")){
     if(((AUS-160)<NOW) && ((AUS+160)>NOW)){
       !// Aber auch nur wenn er aktuell an ist, sonst müssen wir nicht ausschalten
       if(aktuellerSchaltZustand==1){
+        !// Prüfe ob eine andere aktive EIN-Phase für diesen Raum besteht (SDFlag>=0).
+        !// Wenn ja, wird nicht ausgeschaltet — der älteste Schaltbefehl gilt weiter
+        !// für die gesamte überlappende Zeit. Das vermeidet unnötige AUS/EIN-Zyklen.
+        boolean hatAktivePhase = false;
+        string grdSL = "#" # SListe;
+        integer grdPos = grdSL.Find("#" # RVN # ";");
+        while (grdPos >= 0) {
+          string grdRest = grdSL.Substr(grdPos + 1);
+          string grdEntry = grdRest.StrValueByIndex("#", 0);
+          if (grdEntry != SLEintrag) {
+            integer grdSD = grdEntry.StrValueByIndex(";", 3).ToInteger();
+            if (grdSD >= 0) {
+              integer grdEIN = grdEntry.StrValueByIndex(";", 4).ToTime().ToInteger();
+              integer grdAUS = grdEntry.StrValueByIndex(";", 5).ToTime().ToInteger();
+              if ((grdEIN <= NOW) && (grdAUS > NOW)) {
+                hatAktivePhase = true;
+              }
+            }
+          }
+          if (grdEntry.Length() == 0) { break; }
+          grdSL = "-" # grdRest.Substr(grdEntry.Length());
+          grdPos = grdSL.Find("#" # RVN # ";");
+        }
+        if (hatAktivePhase) {
+          if(log) {logObj.State(RaumLogName # " AUS unterdrückt - überlappender Termin aktiv");}
+          if(DEBUG) {WriteLine(RaumLogName # " AUS unterdrückt - überlappender Termin aktiv");}
+        } else {
         foreach(AktAktor,AktorenListe.Split(";")){
           objAktor = dom.GetObject(AktAktor);
           if (AktAktor && objAktor){
@@ -404,6 +435,7 @@ foreach(SLEintrag,SListe.Split("#")){
         }
         dom.GetObject(RVN).State("0;" # RVI.Substr(2,RVI.Length()-2));
         continue;
+        } !// else !hatAktivePhase
       }
     }
   }
@@ -496,7 +528,7 @@ if((Flag_Hand_Grundtemp!=false) && (NOW.ToTime().Format("%H%M")>="0057") && (NOW
     if (GepruefteGeraete.Contains(";" # RVN # ";")){
       continue;
     }
-    
+
     !// Eintrag in die geprüfte liste übernehmen
     GepruefteGeraete = GepruefteGeraete # RVN # ";";
 
@@ -541,7 +573,7 @@ if((Flag_Hand_Grundtemp!=false) && (NOW.ToTime().Format("%H%M")>="0057") && (NOW
       !// Bestimme den passenden Zustand für 0=Aus, 2=Dauer AUS, 3=Dauer EIN
       integer sollZustand = 1;
       if ((aktuellerSchaltZustand==0) || (aktuellerSchaltZustand==2)){
-        !// Einstellungen für 0=Aus, 2=Dauer AUS      
+        !// Einstellungen für 0=Aus, 2=Dauer AUS
         !// Grundtemperatur individuell bestimmen
         GT=RVI.StrValueByIndex(";",3).StrValueByIndex("/",1).ToFloat();
         if(GT==0){
@@ -769,4 +801,3 @@ foreach(RVN,RVNListe.Split(";")) {
 
 if(log){logObj.State("Ende Schaltskriptlauf=========================");}
 WriteLine("Ende Schaltskriptlauf");
-

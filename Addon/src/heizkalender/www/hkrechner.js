@@ -174,7 +174,7 @@ function berechnen() {
 
     var effEl = document.getElementById("hkr-r-effektiv");
     effEl.textContent = fmtDE(effektiv_min, 1);
-    effEl.className = "";
+    effEl.className = effektiv_min > gesamt_min ? "hkr-mindest-aktiv" : "";
 
     setText("hkr-r-quotient", fmtDE(quotient, 2));
 
@@ -226,7 +226,6 @@ function zeichneF2Kurve(gt, ziel, ka, ist, f2Aktuell) {
     canvas.style.width  = cssW + "px";
     canvas.style.height = cssH + "px";
 
-    var W = canvas.width, H = canvas.height;
     var ctx = canvas.getContext("2d");
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, cssW, cssH);
@@ -614,13 +613,6 @@ function zeichneZeitbalken(vhzRoh, atRoh, f1, f2, vhzSkal, atSkal, mindest, effe
     ctx.font = "14px sans-serif";
 }
 
-function labelSegment(ctx, x, y, w, h, text, color) {
-    if (w < 20) return;
-    ctx.fillStyle = color;
-    ctx.textAlign = "center";
-    var tx = x + w / 2;
-    ctx.fillText(text, tx, y + h / 2 + 4);
-}
 
 // ---------------------------------------------------------------------------
 // Event-Listener

@@ -71,7 +71,7 @@ $$
 | $V$ | | Raumspezifische Basisheizzeit in Minuten (aus Raumvariable) |
 | $f_1$ | `faktor1HK2Kurve` | Raumspezifischer Multiplikator auf die HK2-Kurve |
 | $T_{\text{ist}}$ | | Aktuelle Raumtemperatur (°C) |
-| $T_{\text{at}}$ | | Aktuelle Außentemperatur (°C) |
+| $T_{\text{at}}$ | | Außentemperatur (°C), aus `HK2-Aussentemperatur` (gleitender Mittelwert) |
 | HK2 | | Heizzeit als Funktion der Außentemperatur (linear interpoliert) |
 
 ### faktor2HeizBedarf (Zwei-Geraden-Modell)

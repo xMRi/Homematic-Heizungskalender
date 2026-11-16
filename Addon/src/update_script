@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 # Installationsskript für das Heizkalender-Addon
 # Basiert auf der Vorlage aus https://github.com/homematic-community/ccu-addon-howto
 
@@ -28,7 +29,7 @@ fi
 
 # Addon-Dateien kopieren
 cp VERSION "${ADDON_DIR}/VERSION"
-cp -r heizkalender/www/* "${ADDON_DIR}/www/"
+cp -r heizkalender/www/. "${ADDON_DIR}/www/"
 
 # rc.d-Script installieren
 cp rc.d/heizkalender "${RCD_DIR}/${ADDON}"

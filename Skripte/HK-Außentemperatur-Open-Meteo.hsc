@@ -1,6 +1,6 @@
 !// Bestimmen der Außentemperatur für den Heizkalender
 !//================================================================================================
-!// Stand:    04.10.2026
+!// Stand:    15.11.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -13,15 +13,23 @@
 !// Doku siehe hier https://open-meteo.com/en/docs/dwd-api?forecast_days=1
 !//
 !// Dieser Aufruf liefert eine Temperatur Prognose für die entsprechenden Geokoordinaten für
-!// die nächsten 24h und die Daten der letzten 48h.
+!// die nächsten 24h und die Daten der letzten 24h.
 !// Die Geokoordinaten selbst werden aus den Daten der CCU3 ausgelesen.
 !// In dieser Variante ist es möglich eine Durchschnittstemperatur zu nutzen, die dadurch
 !// den Temperaturverlauf nach oben/unten abdämpft. Die Anzahl der Stunden kann zwischen
-!// 1h und 48h eingestellt werden für die Vergangenheit und 24h für die Prognose in die Zukunft
+!// 1h und 24h eingestellt werden für die Vergangenheit und 24h für die Prognose in die Zukunft
 !// angegeben werden.
 !//
 !// Das Skript sollte jede volle Stunde laufen
 
+!// TT: 2026-11-15 models=dwd_icon_d2_native (icon_d2 wird 2026-11-30 abgeschaltet);
+!//                Division durch Null bei n==0 behoben; aktuellerWert initialisiert;
+!// TT: 2026-11-14 DWD ICON-D2 statt icon_seamless (dwd-icon-Endpunkt, models=icon_d2);
+!//                past_days von 2 auf 1 reduziert; stundenZurueck.Min(48) auf Min(24),
+!//                ueberspringen-Formel von h+48 auf h+24 angepasst;
+!//                current=temperature_2m aus URL entfernt (wird nicht ausgewertet).
+!// TT: 2026-11-13 aktuelle AT-Stunde ergaenzt (HK2-Aussentemperatur-Aktuell, optional).
+!//                Log-Text in Variable atLogText ausgelagert.
 !// TT: 2026-10-04 Log-Eintrag um Zeitfenster ergaenzt (Fenster: -Xh/+Yh);
 !//                Tippfehler in Kommentaren korrigiert; + durch # in DEBUG-Ausgaben ersetzt;
 !//                Abbruch mit Log-Eintrag wenn keine Geokoordinaten in der CCU hinterlegt
@@ -41,13 +49,13 @@ string vrp="";
 boolean DEBUG=0;
 
 !// Max Stunden in die Vergangenheit für die die Durchschnittstemperatur ermittelt werden soll
-!// Maximal dürfen hier 48h eingegeben werden. Und ebenso die Voraussage für die nächsten Stunden,
+!// Maximal dürfen hier 24h eingegeben werden. Und ebenso die Voraussage für die nächsten Stunden,
 !// es können maximal 24h voraus berücksichtigt werden. Über diese komplette Anzahl von Stunden
 !// wird der Durchschnitt berechnet.
 !// Laut Chat/GPT ist 18/6 ein guter Wert für Fussbodenheizungen. Bei normalen Heizkörpern bietet sich
 !// 12/3 an. Das thermische Gedächtnis von Häusern liegt bei ca. 10h.
 !// Da unsere Termine selten länger als 3h sind wird die Vorheizzeit kaum von der Zukunft beeinflusst
-integer stundenZurueck = 18;    !// maximal 48h
+integer stundenZurueck = 18;    !// maximal 24h
 integer stundenVoraus = 6;      !// Maximal 24h
 
 !// Logging in "Log" mit 1 zwingend einschalten oder mit -1 zwingend Ausschalten
@@ -98,8 +106,10 @@ if (lat=="" || lon=="" || lat.ToFloat()==0.0 || lon.ToFloat()==0.0){
   WriteLine("Open-Meteo: Keine Geokoordinaten in der CCU hinterlegt!");
 } else {
 
-  !// Temperaturwerte lesen 48h davor, 24h (heute) in die Zukunft.
-  command = "wget --timeout=3 -O - 'https://api.open-meteo.com/v1/forecast?latitude=" # lat # "&longitude=" # lon # "&hourly=temperature_2m&models=icon_seamless&current=temperature_2m&timezone=Europe%2FBerlin&past_days=2&forecast_days=2'";
+  !// Temperaturwerte lesen: 24h davor (past_days=1), heute+morgen voraus (forecast_days=2).
+  !// DWD ICON-D2: 2,2km Aufloesung, Zentraleuropa, alle 3h aktualisiert.
+  !// forecast_days=2 noetig damit das 6h-Voraus-Fenster auch abends genug Daten hat.
+  command = "wget --timeout=3 -O - 'https://api.open-meteo.com/v1/dwd-icon?latitude=" # lat # "&longitude=" # lon # "&models=dwd_icon_d2_native&hourly=temperature_2m&past_days=1&forecast_days=2&timezone=Europe%2FBerlin'";
 
   !// Da es immer wieder mal zu Fehlern kommt, wiederholen wir die Anfrage im Abstand von 1 Sekunde mehrfach
   integer iRetry = 10;
@@ -148,13 +158,13 @@ if (lat=="" || lon=="" || lat.ToFloat()==0.0 || lon.ToFloat()==0.0){
     integer n=0;
 
     !// Bestimmen ab wann wir von den alten Daten Temperaturen übernehmen.
-    !// Wir nehmen exakt 48h rückwärts zur aktuellen Uhrzeit
+    !// Array beginnt 24h vor Mitternacht (past_days=1). Heute 00:00 = Index 24.
     integer h = system.Date("%H").ToInteger();
 
     !// Begrenzungen festlegen
-    stundenZurueck = stundenZurueck.Min(48).Max(1);
+    stundenZurueck = stundenZurueck.Min(24).Max(1);
     stundenVoraus = stundenVoraus.Min(24).Max(0);
-    integer ueberspringen = h+48-stundenZurueck;
+    integer ueberspringen = h+24-stundenZurueck;
 
     if (DEBUG){
       WriteLine("Uhrzeit:        " # h);
@@ -174,22 +184,28 @@ if (lat=="" || lon=="" || lat.ToFloat()==0.0 || lon.ToFloat()==0.0){
 
     !// Werte berechnen
     integer i=0;
-    real aktuellerWert;
+    real aktuellerWert = 0.0;
+    real tempWert = 0.0;
     foreach (temp, stemp.Split(","))
     {
       !// Werte bis zur aktuellen Stunde überspringen wir.
       if ((i>h) && i>ueberspringen){
+        tempWert = temp.ToFloat();
         if (DEBUG){
           WriteLine((i % 24) # ": " # temp);
         }
-        summe = summe+temp.ToFloat();
-        n = n+1;
+        !// Durchschnitt: nur die ersten stundenZurueck+stundenVoraus Werte
+        if (n<(stundenZurueck+stundenVoraus)){
+          summe = summe+tempWert;
+          n = n+1;
+        }
         if (n==stundenZurueck){
-          aktuellerWert = temp.ToFloat();
+          aktuellerWert = tempWert;
           if (DEBUG){
-            WriteLine("<-- Letzter Wert");
+            WriteLine("<-- Aktueller Wert");
           }
         }
+        !// Abbruch wenn Durchschnitt fertig
         if (n>=(stundenZurueck+stundenVoraus)) {
           break;
         }
@@ -197,29 +213,24 @@ if (lat=="" || lon=="" || lat.ToFloat()==0.0 || lon.ToFloat()==0.0){
       i = i+1;
     }
 
-    !// Letzter Wert = Aktuell gemeldete Temperatur
-
     if (DEBUG){
       WriteLine("---------");
       WriteLine(summe);
       WriteLine(n);
     }
-    temp = (summe/n).ToString(1);
-    WriteLine("Akt. Außentemperatur= " # aktuellerWert.ToString(1) # "°C / Durchsch. Außentemperatur= " # temp # "°C (Zeitfenster: -" # stundenZurueck.ToInteger() # "h/+" # stundenVoraus.ToInteger() # "h)");
-
-    if (log) {
-      if (n!=0) {
-        logObj.State("Akt. Außentemperatur= " # aktuellerWert.ToString(1) # "°C / Durchsch. Außentemperatur= " # temp # "°C (Zeitfenster: -" # stundenZurueck.ToInteger() # "h/+" # stundenVoraus.ToInteger() # "h)");
-      } else {
-        logObj.State("Keine Werte für die Außentemperatur gefunden!");
-      }
-    }
-
     !// Ergebnis schreiben
     if (n!=0){
+      temp = (summe/n).ToString(1);
+      string atLogText = "Akt. AT= " # aktuellerWert.ToString(1) # "°C / Durchschn. AT= " # temp # "°C (Fenster: -" # stundenZurueck.ToInteger() # "h/+" # stundenVoraus.ToInteger() # "h)";
+      WriteLine(atLogText);
+      if (log) { logObj.State(atLogText); }
       dom.GetObject(vrp+"HK2-Aussentemperatur").State(temp);
+      !// Optionale Variable: aktuelle Temperatur (wird nur geschrieben wenn sie existiert)
+      var svAkt = dom.GetObject(vrp+"HK2-Aussentemperatur-Aktuell");
+      if (svAkt) { svAkt.State(aktuellerWert.ToString(1)); }
       break;
     } else {
+      if (log) { logObj.State("Keine Werte für die Außentemperatur gefunden!"); }
       !// Unerwünschtes Ergebnis/Fehler, also ein Retry mehr
       iRetry = iRetry-1;
       !// Verzögern
@@ -228,4 +239,4 @@ if (lat=="" || lon=="" || lat.ToFloat()==0.0 || lon.ToFloat()==0.0){
     }
   }
 
-} !// Ende Geokoordinaten-Prüfung
+}

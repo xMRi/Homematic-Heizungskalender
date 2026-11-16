@@ -13,6 +13,37 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+
+- AT-Skript: Momentanwert der letzten vollen Stunde wird in optionale Variable `HK2-Aussentemperatur-Aktuell` geschrieben.
+- Init-Skript 2+3: Neue Variable `HK2-Aussentemperatur-Aktuell` wird angelegt.
+- Addon hkkurve.cgi: AT-Spalte zeigt Durchschnitt aus `HK2-Aussentemperatur`, in eckigen Klammern den Aktuell-Wert aus `HK2-Aussentemperatur-Aktuell` (z.B. `1.8 °C [akt 1.6 °C]`).
+- Addon: Version 0.10.3.
+
+### Geändert
+
+- AT-Skript: Wechsel von `icon_seamless` auf DWD ICON-D2 (`dwd-icon`-Endpunkt, `models=icon_d2`, 2,2 km Auflösung, alle 3h aktualisiert); `past_days` von 2 auf 1 reduziert; maximale `stundenZurueck` von 48 auf 24 begrenzt.
+
+### Behoben
+
+- Heizkurvenkontrolle: Letzter Listeneintrag wurde nicht gefunden (fehlendes abschliessendes `#` in Suche).
+- Heizkurvenkontrolle: Absturz bei gelöschter Raumvariable — Null-Check für `dom.GetObject(RVN)` ergänzt.
+- Heizkurvenkontrolle: Heizbeginn eines zweiten überlappenden Eintrags wurde unterdrückt — Status-Reset auf Bit 5 bei neuem Heizvorgang.
+- Heizkurvenkontrolle: Zieltemperatur konnte ohne aktiven Heizvorgang geloggt werden — Bit-0-Guard ergänzt.
+- Addon: Heizkurvenkontrolle-Seite lieferte Rega-Redirect wegen ungültigem Kommentarzeichen (`!#`) in Tcl-Datei.
+- Addon: `gt_fmt` blieb bei nicht-numerischem `HK2-Grundtemperatur`-Wert ungesetzt — Fallback-Zuweisung vor `catch` ergänzt.
+- Skript 3: AUS-Befehl wird bei überlappenden Terminen unterdrückt, wenn ein
+  anderer aktiver Eintrag für denselben Raum existiert. Verhindert unnötige
+  AUS/EIN-Zyklen (z.B. Flur mit 3 Buchungen).
+- Heizkurvenkontrolle: RaumParameter-Verlust im bearbeiteteRaeume-Guard bei 3+
+  überlappenden Einträgen behoben — verursachte falsches Heizbeginn alle 5 min.
+
+### Hinzugefügt (aus vorherigem Unveröffentlicht)
+
+- Heizkurvenkontrolle: Feld 3 (`ausTerminMax`) in RaumParameter — trackt das
+  späteste Terminende bei überlappenden Buchungen. Terminende-Event und
+  Zieltemperatur-Guard nutzen den letzten statt den ersten Termin.
+
 ## [2026-11-12]
 
 ### Hinzugefügt

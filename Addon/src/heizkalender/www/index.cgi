@@ -106,6 +106,8 @@ set rega_script {
     var sv1 = dom.GetObject("HK1-Schaltliste");
     var sv2 = dom.GetObject("HK1-R-Liste");
     var sv3 = dom.GetObject("HK2-Aussentemperatur");
+    var sv3a = dom.GetObject("HK2-Aussentemperatur-Aktuell");
+    var sv3m = dom.GetObject("HK2-Aussentemperatur-Prognose-Min");
     var sv4 = dom.GetObject("HK2-HKG-Liste");
     var sv5 = dom.GetObject("HK2-Schaltzeiten");
     string sl = "";
@@ -116,6 +118,8 @@ set rega_script {
     if (sv1) { sl = sv1.Value(); }
     if (sv2) { rl = sv2.Value(); }
     if (sv3) { at = sv3.Value(); }
+    if (sv3a) { at = at # "\t" # sv3a.Value(); }
+    if (sv3m) { at = at # "\t" # sv3m.Value(); }
     if (sv4) { hkgl = sv4.Value(); }
     if (sv5) { vlz = sv5.Value(); }
     result = sl # "\n===SL===\n" # rl # "\n===RL===\n" # at # "\n===AT===\n" # hkgl # "\n===HKG===\n";
@@ -155,7 +159,13 @@ set rega_script {
     WriteLine(result);
 }
 
-set raw [extract_stdout [rega_script $rega_script]]
+set rega_raw ""
+if {[catch {set rega_raw [rega_script $rega_script]} err]} {
+    puts "Content-Type: text/html; charset=utf-8\r\n\r\n"
+    puts "<html><body><p>Fehler: ReGa nicht erreichbar. ($err)</p></body></html>"
+    return
+}
+set raw [extract_stdout $rega_raw]
 
 # Sechs Abschnitte trennen
 set sl_sep    "\n===SL===\n"
@@ -462,14 +472,35 @@ puts {  <link rel="stylesheet" href="heizkalender.css">
 
 set deg "&deg;"
 set aussentemp_str ""
+set at_akt_str ""
+set at_min_str ""
 if {![string equal $aussentemp_raw ""]} {
-    set at 0.0
-    catch {set at [expr {double($aussentemp_raw)}]}
-    set aussentemp_str "[format "%.1f" $at] ${deg}C"
+    # Tab-separiert: Durchschnitt[\tAktuell[\tMin12h]]
+    set at_parts [split $aussentemp_raw "\t"]
+    set at_avg 0.0
+    catch {set at_avg [expr {double([lindex $at_parts 0])}]}
+    set aussentemp_str "[format "%.1f" $at_avg] ${deg}C"
+    if {[llength $at_parts] >= 2 && ![string equal [lindex $at_parts 1] ""]} {
+        set at_a 0.0
+        catch {set at_a [expr {double([lindex $at_parts 1])}]}
+        set at_akt_str "[format "%.1f" $at_a] ${deg}C"
+    }
+    if {[llength $at_parts] >= 3 && ![string equal [lindex $at_parts 2] ""]} {
+        set at_m 0.0
+        catch {set at_m [expr {double([lindex $at_parts 2])}]}
+        set at_min_str "[format "%.1f" $at_m] ${deg}C"
+    }
 }
 
 if {![string equal $aussentemp_str ""]} {
-    puts "  <p class=\"hk-hint\">Au&szlig;entemperatur f&uuml;r Vorheizzeit-Berechnung (gleitender Durchschnitt): <strong>$aussentemp_str</strong></p>"
+    set at_line "Au&szlig;entemperatur (gleitender Durchschnitt): <strong>$aussentemp_str</strong>"
+    if {![string equal $at_akt_str ""]} {
+        append at_line " / Aktuell: <strong>$at_akt_str</strong>"
+    }
+    if {![string equal $at_min_str ""]} {
+        append at_line " / Min. Prognose 12h: <strong>$at_min_str</strong>"
+    }
+    puts "  <p class=\"hk-hint\">${at_line}</p>"
 }
 
 if {[llength $raeume] == 0} {

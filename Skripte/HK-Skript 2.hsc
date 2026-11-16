@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    11.11.2026
+!// Stand:    15.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-11-15 Tote Variable zeitNachlauf entfernt;
 !// MRi: 2026-11-11 Abgelaufene Termine erst entfernen, wenn sie nicht mehr in der HK1-Schaltliste sind
 !// TT:  2026-11-10 Kurvenanpassungsfaktor ueber optionale Systemvariable HK2-Kurvenanpassung konfigurierbar (0.3..1.0, Vorgabe 0.8)
 !// MRi: 2026-11-09 Minimale Heizzeit (default 15min) eingeführt
@@ -88,7 +89,6 @@ object objDP;
 string HK2VLZListe="";
 string SchaltListeAlt=dom.GetObject(vrp # "HK2-Schaltliste").State();
 string SchaltListeNeu="";
-integer zeitNachlauf=30;      !// 30 Minuten
 
 !// Logging vorbereiten
 var logObj=dom.GetObject(vrp # "HK2-Log");
@@ -310,7 +310,7 @@ foreach(TLEintrag,TerminListe){
       !// Wir prüfen den alten Schaltlisteneintrag. Befinden wir uns schon in der Schaltphase?
       !// Dann wird dieser Eintrag nicht mehr geändert.
       !// Das gilt nicht für Sonderbefehle (SDFlag<0).
-      !// Sollte der Termin abgelaufen sein, dann lassen wir ihn stehen, bis er aus der 
+      !// Sollte der Termin abgelaufen sein, dann lassen wir ihn stehen, bis er aus der
       !// HK1-Schaltliste verschwindet.
       if ((EIN<NOW) && (SDFlag>=0)){
         !// Der Termin ist noch nicht abgeschaltet aber er befindet sich in der Heizphase.
@@ -486,16 +486,16 @@ foreach(TLEintrag,TerminListe){
           if(DEBUG) {WriteLine(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " existiert nicht!");}
         }
 
-        !// Wenn wir keine IstTemperatur gemeldet bekommen (also 0°C), dann übernehmen wir einfach den alten Schaltlisten 
-        !// Eintrag. Eine Berechnung mit 0°C würde eine utopische Vorheizzeit auslösen. 
+        !// Wenn wir keine IstTemperatur gemeldet bekommen (also 0°C), dann übernehmen wir einfach den alten Schaltlisten
+        !// Eintrag. Eine Berechnung mit 0°C würde eine utopische Vorheizzeit auslösen.
         if (ISTTemperatur==0){
           !// Log schreiben, das wir keine Temperaturdaten haben
           if(log){logObj.State(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " liefert aktuell keine Daten!");}
           if(DEBUG) {WriteLine(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " liefert aktuell keine Daten!");}
-          
-          !// Wir suchen den vorherigen Schaltlisten Eintrag. 
+
+          !// Wir suchen den vorherigen Schaltlisten Eintrag.
           if (strAlterListenEintrag!=""){
-            !// Wir haben ja alles schon berechnet. Es wird sich kaum etwas geändert haben, also behalten wir vorerst diese 
+            !// Wir haben ja alles schon berechnet. Es wird sich kaum etwas geändert haben, also behalten wir vorerst diese
             !// alten Daten.
             SchaltListeNeu = SchaltListeNeu # strAlterListenEintrag # "#";
             if(log){logObj.State(RaumLogName # ": Alter Schaltlisteneintrag wird übernommen, es erfolgt vorerst keine Neuberechnung!");}
@@ -508,7 +508,7 @@ foreach(TLEintrag,TerminListe){
           }
           continue;
         }
-        
+
         !// Luftfeuchte optional auslesen (nur wenn Datenpunkt vorhanden und Wert > 0).
         !// Wert 0 bedeutet: kein Sensor vorhanden (z.B. IP-Thermostat ohne Feuchtigkeitssensor).
         string HUMText = "";
@@ -560,7 +560,7 @@ foreach(TLEintrag,TerminListe){
 
         !// Mögliche Log-Ausgabe
         !//if(log) {logObj.State("faktor2HeizBedarf=" # faktor2HeizBedarf.ToString(2) # " - " # AT.ToString(1) # "/" # GT.ToString(1) # "/" # ISTTemperatur.ToString(1) # "°C offsetRaumAn=" # (offsetRaumAn/60) # " offsetTempAn=" # (offsetTempAn/60));}
-        
+
         !// Reale Schaltzeiten berechnen
         !// Mindest-Vorlaufzeit: Obergrenze für den (negativen) Gesamtoffset; Offsets sind negativ (Vorverschiebung).
         !// MindestSekunden ist negativ, .Min() wählt den betragsmäßig größeren Wert (weiter in der Vergangenheit).
@@ -583,7 +583,7 @@ foreach(TLEintrag,TerminListe){
         AUS = AUS + offsetRaumAus;
         logText = logText # (offsetRaumAus/60).ToInteger() # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
         HK2VLZListe = HK2VLZListe # RVN # ";" # ((EIN_Org.ToTime().ToInteger()-EIN)/60) # ";" # EIN.ToTime() # ";" # EIN_Org # ";" # AUS.ToTime() # ";" # ((AUS_Org.ToTime().ToInteger()-AUS)/60) # "~";
-        
+
         !// Jetzt die Logzeile ausgeben
         if(log) {logObj.State(logText);}
         if(DEBUG)  {WriteLine(logText);}
@@ -604,7 +604,7 @@ foreach(TLEintrag,TerminListe){
         AUS = AUS + offsetRaumAus;
         logText = logText # (offsetRaumAus/60).ToInteger() # "min = " # AUS.ToTime().Format("%X").Substr(0,5);
         HK2VLZListe = HK2VLZListe # RVN # ";" # ((EIN_Org.ToTime().ToInteger()-EIN)/60) # ";" # EIN.ToTime() # ";" # EIN_Org # ";" # AUS.ToTime() # ";" # ((AUS_Org.ToTime().ToInteger()-AUS)/60) # "~";
-        
+
         !// Jetzt die Logzeile ausgeben
         if(log) {logObj.State(logText);}
         if(DEBUG)  {WriteLine(logText);}

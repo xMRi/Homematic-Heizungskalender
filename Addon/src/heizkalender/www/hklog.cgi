@@ -61,7 +61,7 @@ foreach param [split $query_string "&"] {
 # ---------------------------------------------------------------------------
 # USB-Stick: verfügbare Log-Dateien (neueste zuerst, max. 30 Tage)
 # ---------------------------------------------------------------------------
-set usb_dir "/media/usb1"
+set usb_dir "/media/usb0"
 set log_files {}
 if {[file isdirectory $usb_dir]} {
     set cutoff_secs [expr {[clock seconds] - 60 * 86400}]
@@ -100,13 +100,13 @@ if {$has_file_param} {
             lappend all $line
         }
         close $fh
-        if {[string equal $filter "nacht"]} {
-            set log_lines $all
-        } else {
+        if {[string equal $filter "alle"]} {
             set total [llength $all]
             set start [expr {$total - $lines_to_show}]
             if {$start < 0} { set start 0 }
             set log_lines [lrange $all $start end]
+        } else {
+            set log_lines $all
         }
     }
 }
@@ -168,6 +168,10 @@ if {$filter_is_hk1 || $filter_is_hk2 || $filter_is_hk3 || $filter_is_hka || $fil
         }
     }
     set log_lines $filtered
+    set total [llength $log_lines]
+    set start [expr {$total - $lines_to_show}]
+    if {$start < 0} { set start 0 }
+    set log_lines [lrange $log_lines $start end]
 }
 
 # ---------------------------------------------------------------------------
@@ -311,7 +315,7 @@ if {$count == 0} {
     puts {  </table></div>}
 }
 
-puts {  <p class="hk-hint">Die Logdateien werden auf einem USB-Stick gespeichert, der an der CCU angeschlossen ist (<code>/media/usb1/HK-Log_JJJJ-MM-TT.log</code>). Es werden die Eintr&auml;ge der letzten 60 Tage angezeigt. Da <em>HK-SystemProtokoll sichern.hsc</em> alle 29 Minuten l&auml;uft, kann die Anzeige bis zu 29 Minuten hinter dem aktuellen Geschehen zur&uuml;ckliegen.</p>}
+puts {  <p class="hk-hint">Die Logdateien werden auf einem USB-Stick gespeichert, der an der CCU angeschlossen ist (<code>/media/usb0/HK-Log_JJJJ-MM-TT.log</code>). Es werden die Eintr&auml;ge der letzten 60 Tage angezeigt. Da <em>HK-SystemProtokoll sichern.hsc</em> alle 29 Minuten l&auml;uft, kann die Anzeige bis zu 29 Minuten hinter dem aktuellen Geschehen zur&uuml;ckliegen.</p>}
 
 puts {</div>
 </body>

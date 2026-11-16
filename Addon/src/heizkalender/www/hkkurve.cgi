@@ -113,7 +113,6 @@ proc log_raumname {logname} {
 set filter_raum "alle"
 set filter_tage "1"
 set filter_ereignis "alle"
-set submitted 1
 
 set query_string ""
 catch {set query_string $env(QUERY_STRING)}
@@ -162,7 +161,7 @@ if {[string equal $filter_tage "0"]} {
 # Datei einschließen wenn Dateiname >= datum_ab minus 7 Tage. Wochendateien
 # (Dateiname = Startdatum der Woche) können bis zu 7 Tage jüngere Einträge
 # enthalten als der Dateiname andeutet. Die Zeilenebene filtert dann genau.
-set usb_dir "/media/usb1"
+set usb_dir "/media/usb0"
 set log_files {}
 if {[file isdirectory $usb_dir]} {
     set tage_fuer_filter [expr {[string equal $filter_tage "0"] ? 1 : ([string equal $filter_tage "24"] ? 1 : int($filter_tage))}]
@@ -184,7 +183,8 @@ set hkk_src "HK-LogHeizkurvenkontrolle"
 # HK2-HKK-Zieltemperatur (optional): "Kritisch-vor;Perfekt-von;Perfekt-bis;Kritisch-nach"
 #   Default: -45;-20;5;15
 # ---------------------------------------------------------------------------
-set hkg_raw [extract_stdout [rega_script {
+set hkg_raw ""
+if {[catch {set hkg_raw [extract_stdout [rega_script {
     string result = "";
     string id;
     foreach(id, dom.GetObject(ID_SYSTEM_VARIABLES).EnumUsedIDs()) {
@@ -200,7 +200,11 @@ set hkg_raw [extract_stdout [rega_script {
     if (zs) {
         WriteLine("ZS:" # zs.Value());
     }
-}]]
+}]]} err]} {
+    puts "Content-Type: text/html; charset=utf-8\r\n\r\n"
+    puts "<html><body><p>Fehler: ReGa nicht erreichbar. ($err)</p></body></html>"
+    return
+}
 
 # alle_raeume: Suffix von HKG-Raum-* (= Raumname im Log), nach Name sortiert
 # Zieltemperatur-Schwellen: Defaults nach Martins Vorgabe
@@ -238,7 +242,7 @@ set alle_raeume [lsort -index 1 $alle_raeume]
 # ---------------------------------------------------------------------------
 set alle_ereignisse {}
 
-if {$submitted && [llength $log_files] > 0} {
+if {[llength $log_files] > 0} {
     # grep liefert nur die relevanten Zeilen; das spart 99% der Laufzeit
     set fpaths {}
     foreach lf $log_files { lappend fpaths "$usb_dir/$lf" }
@@ -275,7 +279,7 @@ if {$submitted && [llength $log_files] > 0} {
         set sep [string first " - " $msg]
         set dp  [string first ":" $msg]
 
-        if {$sep >= 0} {
+        if {$sep >= 0 && ($dp < 0 || $dp > $sep)} {
             # Neues Format: "RaumName - Ereignis: ..."
             set raumname [string range $msg 0 [expr {$sep-1}]]
             set rest     [string range $msg [expr {$sep+3}] end]
@@ -300,7 +304,11 @@ if {$submitted && [llength $log_files] > 0} {
                 set ereignis [string trim [string range $rest 0 [expr {$cdp-1}]]]
                 set detail   [string trim [string range $rest [expr {$cdp+1}] end]]
                 set c1 [string first "," $detail]
-                if {$c1 > 0} {
+                if {[string equal $ereignis "Fehler"] || [string equal $ereignis "Termin entfernt"]} {
+                    set delta $detail
+                } elseif {$c1 < 0} {
+                    set delta $detail
+                } elseif {$c1 > 0} {
                     set delta [string trim [string range $detail 0 [expr {$c1-1}]]]
                     set rest2 [string trim [string range $detail [expr {$c1+1}] end]]
                     set ip [string first "Ist:" $rest2]
@@ -325,10 +333,8 @@ if {$submitted && [llength $log_files] > 0} {
                     }
                     set ap [string first "AT:" $rest2]
                     if {$ap >= 0} {
-                        set after [string trim [string range $rest2 [expr {$ap+3}] end]]
-                        set sp3 [string first " " $after]
-                        if {$sp3 > 0} { set at_val [string range $after 0 [expr {$sp3-1}]] } else { set at_val $after }
-                        set at_val [string trimright $at_val ","]
+                        # AT ist immer das letzte Feld: alles nach "AT:" uebernehmen
+                        set at_val [string trim [string range $rest2 [expr {$ap+3}] end]]
                     }
                 }
             }
@@ -420,6 +426,7 @@ foreach {eval elabel} {
     Zieltemperatur "Zieltemperatur"
     Heizende    "Heizende"
     Terminende  "Terminende"
+    {Termin entfernt} "Termin entfernt"
     Fehler      "Fehler"
 } {
     set sel [expr {[string equal $eval $filter_ereignis] ? " selected" : ""}]
@@ -430,8 +437,6 @@ puts "        <button type=\"submit\">Anzeigen</button>"
 puts {      </fieldset>}
 puts "    </form>"
 puts {  </div>}
-
-if {$submitted} {
 
 if {[llength $log_files] == 0} {
     puts {  <p class="hk-empty">Kein USB-Stick gefunden oder keine HK-Log-Dateien vorhanden.</p>}
@@ -470,12 +475,13 @@ if {[llength $log_files] == 0} {
         set ist_str  [expr {![string equal $ist  ""] ? "$ist ${deg}C" : ""}]
         set ziel_str [expr {![string equal $ziel ""] ? "$ziel ${deg}C" : ""}]
         set max_str  [expr {![string equal $max_val ""] ? "$max_val ${deg}C" : ""}]
-        set at_str   [expr {![string equal $at_val ""] ? "$at_val ${deg}C" : ""}]
+        set at_str ""
+        if {![string equal $at_val ""]} {
+            set at_str "${at_val} ${deg}C"
+        }
         set delta_str $delta
-        if {[string equal $ereignis "Fehler"]} {
-            set delta_str ""
-            set max_str   ""
-            set at_str    $delta
+        if {[string equal $ereignis "Fehler"] || [string equal $ereignis "Termin entfernt"]} {
+            set max_str ""
         }
 
         # Indikator: Dreieck in der Ist-Temperatur-Spalte
@@ -497,11 +503,15 @@ if {[llength $log_files] == 0} {
         puts "      <td>[htmlquote $raumname]</td>"
         puts "      <td>[htmlquote $ts]</td>"
         puts "      <td>[htmlquote $ereignis]</td>"
-        puts "      <td>[htmlquote $delta_str]</td>"
-        puts "      <td>${ist_str}${indikator}</td>"
-        puts "      <td>${ziel_str}</td>"
-        puts "      <td>${max_str}</td>"
-        puts "      <td>${at_str}</td>"
+        if {[string equal $ereignis "Fehler"] || [string equal $ereignis "Termin entfernt"]} {
+            puts "      <td colspan=\"5\">[htmlquote $delta_str]</td>"
+        } else {
+            puts "      <td>[htmlquote $delta_str]</td>"
+            puts "      <td>${ist_str}${indikator}</td>"
+            puts "      <td>${ziel_str}</td>"
+            puts "      <td>${max_str}</td>"
+            puts "      <td>${at_str}</td>"
+        }
         puts "    </tr>"
     }
     puts {  </table></div>}
@@ -517,7 +527,6 @@ puts "      <span class=\"hk-kurve-ziel-gelb hk-kurve-badge\">Zieltemp. akzeptab
 puts "      <span class=\"hk-kurve-ziel-rot hk-kurve-badge\">Zieltemp. kritisch (&lt; [fmt_delta $ziel_rot_unten] oder &gt; [fmt_delta $ziel_rot_oben] min)</span>"
 puts "    </p>"
 puts {  </fieldset>}
-}
 
 puts {</div>
 </body>

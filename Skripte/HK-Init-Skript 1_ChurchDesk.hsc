@@ -1,6 +1,6 @@
 !// Skript zum Anlegen der Systemvariablen für Skript 1 (ChurchDesk)
 !//================================================================================================
-!// Stand:    04.11.2026
+!// Stand:    15.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -25,6 +25,7 @@
 !// automatisch alle benötigten Variablen automatisch erzeugt.
 
 
+!// TT:  2026-11-15 API-Token nicht mehr im Fehler-Log ausgeben;
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// TT:  2026-10-18 HK1-Vorlaufzeit: neue optionale Systemvariable (Integer, Default 720 min)
 !// TT:  2026-09-18 color-Guard iPos>=0 statt iPos&& (verfehlte Position 0 / -1).
@@ -336,7 +337,7 @@ if (apiToken && organizationId){
       }
     }else{
       !// Kein Zugriff möglich
-      WriteLine("Fehler:\n" # cmd # "\n" # stdout # "\n" # stderr);
+      WriteLine("Fehler:\n" # stdout # "\n" # stderr);
     }
   }
 }

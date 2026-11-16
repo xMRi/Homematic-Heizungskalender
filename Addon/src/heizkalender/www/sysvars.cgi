@@ -30,7 +30,12 @@ set rega_script {
 # zurück. Enthält <inhalt> geschweifte Klammern oder Sonderzeichen, schlägt
 # array set fehl. Daher manuell: alles zwischen dem ersten "{" nach "STDOUT "
 # und dem zugehörigen abschließenden "}" extrahieren.
-set rega_raw [rega_script $rega_script]
+set rega_raw ""
+if {[catch {set rega_raw [rega_script $rega_script]} err]} {
+    puts "Content-Type: text/html; charset=utf-8\r\n\r\n"
+    puts "<html><body><p>Fehler: ReGa nicht erreichbar. ($err)</p></body></html>"
+    return
+}
 set raw ""
 set stdout_start [string first "STDOUT {" $rega_raw]
 if {$stdout_start >= 0} {
@@ -103,6 +108,7 @@ set doc_skripte_ct  "${doc_skripte}#hk-init-skript-1_churchtoolshsc"
 set doc_skripte_gk  "${doc_skripte}#hk-init-skript-1_googlehsc"
 set doc_skripte_ics "${doc_skripte}#hk-init-skript-1_icalhsc"
 set doc_skripte_s2  "${doc_skripte}#hk-init-skript-2hsc"
+set doc_skripte_at  "${doc_skripte}#hk-außentemperatur-open-meteohsc"
 set doc_awh         "${doc_base}/heizkalender/anwenderhandbuch/"
 set doc_awh_global  "${doc_awh}#globale-einstellungen-systemvariablen-f%C3%BCr-skript-2"
 set doc_awh_kurve   "${doc_awh}#die-heizkurve-hk2-kurve"
@@ -141,7 +147,8 @@ set doc_links [list \
     HK3-Log                       $doc_skripte_log \
     HK3-Logging                   $doc_skripte_log \
     HK2-A.Temp.Grenze             $doc_skripte_s2 \
-    HK2-Aussentemperatur          $doc_skripte_s2 \
+    HK2-Aussentemperatur          $doc_skripte_at \
+    HK2-Aussentemperatur-Aktuell  $doc_skripte_at \
     HK2-Grundtemperatur           $doc_skripte_s2 \
     HK2-Hand-Grundtemp            $doc_skripte_s2 \
     HK2-Hand-Temp                 $doc_skripte_s2 \
@@ -398,6 +405,7 @@ proc format_temp {val} {
 proc is_temp_var {name} {
     if {[string equal $name "HK2-A.Temp.Grenze"]}   { return 1 }
     if {[string equal $name "HK2-Aussentemperatur"]} { return 1 }
+    if {[string equal $name "HK2-Aussentemperatur-Aktuell"]} { return 1 }
     if {[string equal $name "HK2-Grundtemperatur"]}  { return 1 }
     return 0
 }
@@ -454,10 +462,6 @@ proc render_table {varlist} {
     return $html
 }
 
-proc decode_hkk_status {s} {
-    return $s
-}
-
 proc render_hk_raeume_hkk {val} {
     if {[string equal $val ""]} { return "<em>(leer)</em>" }
     set entries [split $val "#"]
@@ -475,7 +479,7 @@ proc render_hk_raeume_hkk {val} {
         set cnt   [lindex $parts 1]
         set temp  [lindex $parts 2]
         catch {set temp [format "%.1f" $temp]}
-        set status_text [decode_hkk_status $cnt]
+        set status_text $cnt
         append html "  <tr><td>[htmlquote $rvar]</td><td>[htmlquote $status_text]</td><td>[htmlquote $temp]</td></tr>\n"
     }
     append html "</table>\n"
@@ -561,6 +565,7 @@ proc render_room_table {varlist {gt_default ""}} {
         }
         if {[string equal $gtemp ""]} {
             if {![string equal $gt_default ""]} {
+            set gt_fmt $gt_default
                 catch {set gt_fmt [format "%.1f" $gt_default]}
                 append html "<td><i>[htmlquote $gt_fmt]</i> &deg;C</td>"
             } else {

@@ -1,6 +1,6 @@
 !// Skript zum Erstellen der Systemvariablen des Heizkalender für das Logging
 !//================================================================================================
-!// Stand:    04.11.2026
+!// Stand:    15.11.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -18,6 +18,7 @@
 !// Code stammt von:
 !//   https://www.blogging-it.com/code-snippet-homematic-systemvariablen-ueber-ein-script-automatisch-erzeugen/hausautomatisierung-smart-home/homematic-ip/homematic-script.html
 !// 
+!// TT:  2026-11-15 vu-Array auf 11 leere Eintraege gesetzt (konsistent mit anderen Arrays);
 !// MRi:  2026-11-03 Neue Variable für Skript3, HK3-Log...
 !//  
 
@@ -83,7 +84,17 @@ string vl=  "1;" #
             ";";
 
 !// Einheit (z.B. °C)
-string vu=  "";
+string vu=  ";" #
+            ";" #
+            ";" #
+            ";" #
+            ";" #
+            ";" #
+            ";" #
+            ";" #
+            ";" #
+            ";" #
+            ";";
 
 !// Zusätzliche Info Texte für
 !//   - Boolean   - Werte für eine Variable durch + getrennt

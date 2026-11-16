@@ -1,6 +1,6 @@
 !// Script zum Erzeugen der Systemvariablen des Heizkalenders für Skript 2+3
 !//================================================================================================
-!// Stand:    10.11.2026
+!// Stand:    13.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -18,6 +18,7 @@
 !// Ich (MRi) habe diesen Code dann erweitert, korrigiert und verbessert um sie an die Nutzung in
 !// meiner Gemeinde anzupassen.
 !//
+!// TT:   2026-11-13 HK2-Aussentemperatur-Aktuell ergaenzt
 !// TT:   2026-11-10 HK2-Kurvenanpassung: optionaler Kurvenanpassungsfaktor fuer das Zwei-Geraden-Modell (0.3..1.0, Vorgabe 0.8)
 !// MRi:  2026-11-03 Neue Variable für Skript3, HK2-Schaltliste
 !// TT:   2026-10-25 HK2-Schaltzeiten: Schlüssel von ResID auf Raumvariablenname (RVN) umgestellt.
@@ -45,7 +46,8 @@ string nm=  "HK2-HKG-Liste;" #
             "HK2-Kurve;" #
             "HK2-Kurvenanpassung;" #
             "HK2-Schaltliste;" #
-            "HK2-Schaltzeiten";
+            "HK2-Schaltzeiten;" #
+            "HK2-Aussentemperatur-Aktuell";
 
 !// Beschreibungstexte
 string be=  "Liste der HK-Raum-Variablen;" #
@@ -59,7 +61,8 @@ string be=  "Liste der HK-Raum-Variablen;" #
             "Hzg.-Vorlaufzeit: Eingeben in Minuten zu Außentemperaturen kleiner als -10, -5, 0, 8, 10, 12, 15, 17,5;" #
             "Kurvenanpassungsfaktor fuer das Zwei-Geraden-Modell der Vorheizzeit-Berechnung (0.3 bis 1.0). Vorgabe 0.8;" #
             "Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!;" #
-            "Berechnete Schaltzeiten pro Raum von Skript 2 für das Addon. Hier bitte nichts verändern!";
+            "Berechnete Schaltzeiten pro Raum von Skript 2 für das Addon. Hier bitte nichts verändern!;" #
+            "Aktuelle Außentemperatur (letzte volle Stunde, von Open-Meteo). Wird vom AT-Skript geschrieben.";
 
 !// Typen
 string tp=  "string;" #
@@ -73,7 +76,8 @@ string tp=  "string;" #
             "string;" #
             "integer;" #
             "string;" #
-            "string";
+            "string;" #
+            "integer";
 
 !// Vorgabe Werte
 !// Komma wird ersetzt durch Semikolon
@@ -88,7 +92,8 @@ string vl=  ";" #
             "162,130,100,59,50,41,30,20;" #
             "0.8;" #
             ";" #
-            "";
+            ";" #
+            "0.0";
 
 !// Einheit (z.B. °C)
 string vu=  ";" #
@@ -102,7 +107,8 @@ string vu=  ";" #
             "min;" #
             ";" #
             ";" #
-            "";
+            ";" #
+            "°C";
 
 !// Zusätzliche Info Texte für
 !//   - Boolean   - Werte für eine Variable durch + getrennt
@@ -118,7 +124,8 @@ string wr=  ";" #
             ";" #
             "0.3+1.0;" #
             ";" #
-            "";
+            ";" #
+            "-50+50";
 
 !// Protokollierungs Flags
 string pr=  "1;" #
@@ -132,7 +139,8 @@ string pr=  "1;" #
             "1;" #
             "1;" #
             "1;" #
-            "0";
+            "0;" #
+            "1";
 
 !//------------------------------------------------------------------------------------------------
 !// Ab hier Standard Code zum erzeugen von Variablen

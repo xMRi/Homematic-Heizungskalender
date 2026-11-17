@@ -5,10 +5,18 @@
 var AT_GRENZEN = [-10, -5, 0, 8, 10, 12, 15, 17.5];
 
 function linearInterpolate(at, kurve) {
-    // Gibt die AT-abhaengige Vorheizzeit in Minuten zurueck (>= 0)
+    // Gibt die AT-abhaengige Vorheizzeit in Minuten zurueck (>= 0).
+    // Ausserhalb der Stuetzwerte wird die aeussere Gerade fortgesetzt
+    // (analog zu Skript 2), nicht auf den Randwert begrenzt.
     var v = parseFloat(at);
-    if (v <= AT_GRENZEN[0]) return Math.max(0, kurve[0]);
-    if (v >= AT_GRENZEN[7]) return Math.max(0, kurve[7]);
+    if (v <= AT_GRENZEN[0]) {
+        var slope = (kurve[1] - kurve[0]) / (AT_GRENZEN[1] - AT_GRENZEN[0]);
+        return Math.max(0, kurve[0] + slope * (v - AT_GRENZEN[0]));
+    }
+    if (v >= AT_GRENZEN[7]) {
+        var slope = (kurve[7] - kurve[6]) / (AT_GRENZEN[7] - AT_GRENZEN[6]);
+        return Math.max(0, kurve[7] + slope * (v - AT_GRENZEN[7]));
+    }
     for (var i = 0; i < 7; i++) {
         if (v >= AT_GRENZEN[i] && v < AT_GRENZEN[i+1]) {
             var lx = AT_GRENZEN[i], ux = AT_GRENZEN[i+1];
@@ -157,6 +165,11 @@ function berechnen() {
     var gesamt_min  = vhzSkal_min + atSkal_min;
     var effektiv_min = Math.max(gesamt_min, mindest);
 
+    // Aussentemperaturgrenze: oberhalb ATG keine Heizung (wie Skript 2)
+    if (!isNaN(atg) && at >= atg) {
+        effektiv_min = 0;
+    }
+
     // Erwaermungsquotient (Grad/h), Sonderfall gesamt_min == 0
     var quotient = effektiv_min > 0 ? (ziel - ist) / (effektiv_min / 60) : 0;
 
@@ -197,7 +210,7 @@ function berechnen() {
         var aktiverRaum = "";
         var sel = document.getElementById("hkr-raum");
         if (sel) aktiverRaum = sel.value;
-        zeichneVergleich(at, kv, kurve, ka, ist, aktiverRaum);
+        zeichneVergleich(at, kv, kurve, ka, ist, aktiverRaum, atg);
     }, 0);
 }
 
@@ -686,7 +699,7 @@ function setFeld(id, val) {
 // ---------------------------------------------------------------------------
 // Hilfsfunktion: VLZ_eff fuer einen Raum berechnen (mit f2, Ist-Temp aus Eingabefeld)
 // ---------------------------------------------------------------------------
-function berechneVLZ(raum, at, kv, kurve, ka, ist) {
+function berechneVLZ(raum, at, kv, kurve, ka, ist, atg) {
     var f1      = Math.max(0.20, Math.min(5.0, parseFloat(raum.f1) || 1.0));
     var vhz     = parseFloat(raum.vhz) || 0;
     var mindest = parseFloat(raum.mindest) || 15;
@@ -708,14 +721,15 @@ function berechneVLZ(raum, at, kv, kurve, ka, ist) {
     var vhzAnteil = (vhz + kv) * f2;
     var atAnteil  = f1 * f2 * atRoh;
     var gesamt    = vhzAnteil + atAnteil;
-    return { effektiv: Math.max(gesamt, mindest), gesamt: gesamt,
+    var effektiv = (!isNaN(atg) && at >= atg) ? 0 : Math.max(gesamt, mindest);
+    return { effektiv: effektiv, gesamt: gesamt,
              vhzAnteil: vhzAnteil, atAnteil: atAnteil, mindest: mindest };
 }
 
 // ---------------------------------------------------------------------------
 // Canvas: Raumvergleich
 // ---------------------------------------------------------------------------
-function zeichneVergleich(at, kv, kurve, ka, ist, aktiverRaum) {
+function zeichneVergleich(at, kv, kurve, ka, ist, aktiverRaum, atg) {
     var canvas = document.getElementById("hkr-canvas-vergleich");
     if (!canvas || !canvas.getContext) return;
     if (typeof HKR_RAEUME === "undefined" || HKR_RAEUME.length === 0) return;
@@ -724,7 +738,7 @@ function zeichneVergleich(at, kv, kurve, ka, ist, aktiverRaum) {
     var ergebnisse = [];
     for (var i = 0; i < HKR_RAEUME.length; i++) {
         var r = HKR_RAEUME[i];
-        var vlz = berechneVLZ(r, at, kv, kurve, ka, ist);
+        var vlz = berechneVLZ(r, at, kv, kurve, ka, ist, atg);
         var label = r.name.replace(/^HKG-Raum-/, "");
         ergebnisse.push({ label: label, name: r.name, vlz: vlz });
     }
@@ -745,7 +759,13 @@ function zeichneVergleich(at, kv, kurve, ka, ist, aktiverRaum) {
 
     var cw      = cssW - padL - padR;
     var maxVal  = ergebnisse[0].vlz.effektiv;
-    if (maxVal <= 0) return;
+    if (maxVal <= 0) {
+        ctx.fillStyle = "#555";
+        ctx.font = "14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Keine Heizung: Au\u00dfentemperaturgrenze erreicht.", cssW / 2, cssH / 2);
+        return;
+    }
 
     function xLen(v) { return Math.max(0, (v / maxVal) * cw); }
 
@@ -810,6 +830,13 @@ function zeichneVerlauf(gt, ziel, ist, ka, vlzEff) {
     var ctx = canvas.getContext("2d");
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, cssW, cssH);
+    if (vlzEff <= 0) {
+        ctx.fillStyle = "#555";
+        ctx.font = "14px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Keine Aufheizung: Vorheizzeit ist 0 Minuten.", cssW / 2, cssH / 2);
+        return;
+    }
     var pad = {l: 50, r: 20, t: 15, b: 35};
     var cw = cssW - pad.l - pad.r;
     var ch = cssH - pad.t - pad.b;

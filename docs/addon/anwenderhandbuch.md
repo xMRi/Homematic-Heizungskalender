@@ -44,7 +44,7 @@ Die Raumübersicht zeigt für jeden konfigurierten Raum den aktuellen Heizstatus
 
 | Spalte | Bedeutung |
 | ------ | --------- |
-| Status | `EIN` wenn der Raum gerade heizt, `AUS` wenn nicht |
+| Status | `Ein`, `Aus`, `Dauer-Ein` oder `Dauer-Aus` entsprechend dem Schaltzustand |
 | Raum | Name des Raums (aus der Raum-Systemvariablen `HKG-Raum-*`) |
 | Modus | Heizmodus: Heizen, Schalten oder Heizen+Schalten |
 | Ist-Temp. | Aktuelle Raumtemperatur (wenn ein Sensor zugeordnet ist) |
@@ -56,7 +56,7 @@ Die Raumübersicht zeigt für jeden konfigurierten Raum den aktuellen Heizstatus
 
 Die Spalten **Vorlauf** und **Heizen ab** werden nur angezeigt, wenn die Systemvariable `HK2-Schaltzeiten` auf der CCU vorhanden ist. Ist sie nicht angelegt, entfallen diese beiden Spalten.
 
-**Statusermittlung:** Der Status wird direkt aus Feld 0 der jeweiligen `HKG-Raum-*`-Systemvariablen gelesen (0 = `AUS`, 1 = `EIN`). Die Spalte „Termin" zeigen die Zeiten aus der Schaltliste (`HK1-Schaltliste`).
+**Statusermittlung:** Der Status wird direkt aus Feld 0 der jeweiligen `HKG-Raum-*`-Systemvariablen gelesen (0 = `Aus`, 1 = `Ein`, 2 = `Dauer-Aus`, 3 = `Dauer-Ein`). `Ein` und `Dauer-Ein` werden aktiv hervorgehoben. Andere Statuswerte erscheinen als `Unbekannt`. Die Spalte „Termin" zeigen die Zeiten aus der Schaltliste (`HK1-Schaltliste`).
 
 Ganz oben wird, falls vorhanden, die aktuelle Außentemperatur (gleitender Mittelwert) angezeigt, die für die Vorheizzeitberechnung verwendet wird.
 
@@ -141,7 +141,7 @@ Die Vorbelegung der Felder stammt direkt aus den Systemvariablen der CCU (`HK2-K
 | :--- | :--- | :--- |
 | Außentemperatur | Aktuelle oder hypothetische Außentemperatur | -40 bis 40 °C |
 | Grundtemperatur | Globale Grundtemperatur aus `HK2-Grundtemperatur`; wird als Fallback für Räume ohne raumindividuelle Abweichung verwendet | 5 bis 30 °C |
-| Außentemp.-Grenze | Außentemperatur-Grenze aus `HK2-A.Temp.Grenze`; oberhalb dieses Wertes heizt das Skript nicht; wird im Heizkurven-Verlauf als rote gestrichelte Linie angezeigt | -40 bis 40 °C |
+| Außentemp.-Grenze | Außentemperatur-Grenze aus `HK2-A.Temp.Grenze`; ab diesem Wert heizt das Skript nicht; wird im Heizkurven-Verlauf als rote gestrichelte Linie angezeigt | -40 bis 40 °C |
 | Vorzeitiger Heizbeginn (Global) | Wert aus `HK2-Kurvenversatz`; wird zur raumspezifischen Vorheizzeit *addiert* (nicht überschrieben) | 0 bis 960 min |
 | Individuelle Eigenschaften des Raumes laden | Dropdown zum Übernehmen der Werte aus einer Raumvariable der CCU. Es erscheinen nur Räume mit Modus H, HS oder S (nicht Modus V). | |
 | Ist-Temperatur | Aktuelle Raumtemperatur; wird beim Raumwechsel automatisch aus dem Thermostat-Sensor des gewählten Raums übernommen (Fallback: 18 °C) | -40 bis 40 °C |
@@ -155,6 +155,8 @@ Die Vorbelegung der Felder stammt direkt aus den Systemvariablen der CCU (`HK2-K
 **Ergebnisanzeige:**
 
 Die Ergebnistabelle schlüsselt alle Zwischenwerte auf. Jede Zeile zeigt den Beschreibungstext gefolgt vom Formelzeichen aus der Legende. Wenn die Mindest-Vorlaufzeit greift, wird die Ergebniszeile rot hervorgehoben.
+
+Erreicht oder überschreitet die Außentemperatur die eingetragene Außentemperaturgrenze, beträgt die effektive Vorheizzeit 0 Minuten, auch im Raumvergleich. Der Raumvergleich zeigt dann einen Abschalthinweis statt Heizzeiten. Im Temperaturverlauf erscheint bei 0 Minuten ein Hinweis statt einer Aufheizkurve. Ist das Grenzfeld leer, wird diese Abschaltung nicht angewendet.
 
 **Berechnungsformeln:**
 

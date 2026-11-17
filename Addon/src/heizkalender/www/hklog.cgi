@@ -2,7 +2,7 @@
 # Heizkalender-Addon: HK-Log-Anzeige
 # Zielplattform: CCU3, Tcl 8.2.3
 #
-# Datenquelle: HK-Log-Dateien auf dem USB-Stick (/media/usb1/HK-Log_*.log).
+# Datenquelle: HK-Log-Dateien auf dem USB-Stick (/media/usb0/HK-Log_*.log).
 # Die Dateien werden von "HK-SystemProtokoll sichern.hsc" befuellt, das alle
 # 29 Minuten laeuft. Die Anzeige im Addon kann daher bis zu 29 Minuten
 # hinter dem aktuellen Geschehen zurueckliegen.

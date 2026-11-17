@@ -547,12 +547,20 @@ if {[llength $raeume] == 0} {
             set entry [lindex $entries 0]
         }
 
+        switch -- $status {
+            0 { set status_label "Aus" }
+            1 { set status_label "Ein" }
+            2 { set status_label "Dauer-Aus" }
+            3 { set status_label "Dauer-Ein" }
+            default { set status_label "Unbekannt" }
+        }
+
         set rowclass ""
-        if {[string equal $status "1"]} {
+        if {[string equal $status "1"] || [string equal $status "3"]} {
             set rowclass " class=\"hk-sl-aktiv\""
-            set status_cell {<td class="hk-sl-status-aktiv"><span>&#9632;</span> Ein}
+            set status_cell "<td class=\"hk-sl-status-aktiv\"><span>&#9632;</span> $status_label"
         } else {
-            set status_cell {<td class="hk-sl-status-inaktiv"><span>&#9675;</span> Aus}
+            set status_cell "<td class=\"hk-sl-status-inaktiv\"><span>&#9675;</span> $status_label"
         }
         set ein_str ""
         set aus_str ""

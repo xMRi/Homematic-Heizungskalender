@@ -203,6 +203,7 @@ set erster_raum_hat_gt 0
 set erster_raum_vhz   "0"
 set erster_raum_f1    "1.0"
 set erster_raum_mindest "15"
+set erster_raum_ist   "18"
 
 if {[llength $raeume_namen] > 0} {
     set rname [lindex $raeume_namen 0]
@@ -227,6 +228,9 @@ if {[llength $raeume_namen] > 0} {
     }
     if {[llength $parts] >= 3} {
         catch { set erster_raum_mindest [format "%g" [lindex $parts 2]] }
+    }
+    if {[info exists raeume_ist($rname)]} {
+        set erster_raum_ist $raeume_ist($rname)
     }
 }
 
@@ -329,8 +333,8 @@ puts {  </script>
             <div class="hkr-field">
               <label for="hkr-at">Au&szlig;entemperatur (&deg;C)</label>}
 # Vorbelegung: aktuelle AT bevorzugen, Fallback auf Durchschnitt
+# Durchschnittliche AT verwenden (wie Skript 2), nicht die aktuelle
 set at_prefill $ccu_at
-if {![string equal $ccu_at_akt ""]} { set at_prefill $ccu_at_akt }
 puts "              <input type=\"number\" id=\"hkr-at\" step=\"0.1\" maxlength=\"6\""
 puts "                     value=\"[htmlquote $at_prefill]\" placeholder=\"z.B. 5\">"
 puts {              <span class="hkr-err" id="hkr-at-err"></span>
@@ -390,9 +394,10 @@ puts {              </select>
             </div>
 
             <div class="hkr-field">
-              <label for="hkr-ist">Ist-Temperatur (&deg;C)</label>
-              <input type="number" id="hkr-ist" step="0.1" maxlength="5"
-                     value="18" placeholder="z.B. 18">
+              <label for="hkr-ist">Ist-Temperatur (&deg;C)</label>}
+puts "              <input type=\"number\" id=\"hkr-ist\" step=\"0.1\" maxlength=\"5\""
+puts "                     value=\"[htmlquote $erster_raum_ist]\" placeholder=\"z.B. 18\">"
+puts {
               <span class="hkr-err" id="hkr-ist-err"></span>
             </div>
 

@@ -1,6 +1,6 @@
 !// Sichern des Systemprotokolls auf dem USB Stick
 !//================================================================================================
-!// Stand:    23.01.2026
+!// Stand:    17.11.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -21,10 +21,13 @@
 !// Die Anzahl der zu erhaltenen LOG Dateien kann eingestellt werden.
 !// Eine Log-Datei wird ca. 250KB bis 1MB groß, je nach Anzahl der Schaltvorgänge.
 
+!// TT:  2026-11-17 Bei Schreibfehlern mit Dateiname abbrechen, damit keine Daten in Folgedateien gelangen.
 !// MRi: 2026-01-14 Wöchentliche oder tägliche Logs erlauben
 
-!// Der Pfad sollte keine Leerzeichen enthalten
-string pfad = "/media/usb1/";
+!// Der Pfad sollte keine Leerzeichen enthalten.
+!// /media/usb0 ist der CCU-Default (Symlink auf den ersten USB-Stick).
+!// Muss mit usb_dir in hklog.cgi übereinstimmen, damit Logs im Addon sichtbar sind.
+string pfad = "/media/usb0/";
 !// Prefix für den Namen, er wird dann mit dem Datum und der Extension .LOG erweitert:
 !// Also z.B. HK-LOG_2025-11-20.log!
 string prefix = "HK-Log_";
@@ -188,11 +191,21 @@ while (true){
           !// Zeilenschaltung entfernen, denn den haben wir schon
           if(DEBUG){WriteLine("Dateiname="#dateiname);}
           if(DEBUG){WriteLine("Daten schreiben 1: " # dateiname # " Bytes: " # zuSchreiben.Length());}
-          cmd = "echo -n '" # zuSchreiben # "' >> '" # dateiname # "' &";
+          string logTextShell = zuSchreiben.Replace("'", "'\\''");
+          string dateinameShell = dateiname.Replace("'", "'\\''");
+          cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'; echo $?";
           if (!DEBUG){
-            system.Exec(cmd);
+            stdout = ""; stderr = "";
+            system.Exec(cmd, &stdout, &stderr);
+            if (stdout.Trim() == "0") {
+              zuSchreiben = "";
+            } else {
+              WriteLine("FEHLER Protokollsicherung 1: Datei=" # dateiname # " Fehler=" # stderr);
+              quit;
+            }
+          } else {
+            zuSchreiben = "";
           }
-          zuSchreiben = "";
         }else{
           !// Sollten wir gerade in den Schreibmodus gegangen sein, aber nun einen Dateiwechsel
           !// haben, dann hatten wir gerade den letzten Datensatz gefunden. Und wir suchen auch in dern
@@ -421,11 +434,21 @@ while (true){
       if (zuSchreiben.Length()>10000){
         !// Zeilenschaltung entfernen, denn den haben wir schon
         if(DEBUG){WriteLine("Daten schreiben 2: " # dateiname # " Bytes: " # zuSchreiben.Length());}
-        string cmd = "echo -n '" # zuSchreiben # "' >> '" # dateiname # "' &";
+        string logTextShell = zuSchreiben.Replace("'", "'\\''");
+        string dateinameShell = dateiname.Replace("'", "'\\''");
+        string cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'; echo $?";
         if (!DEBUG){
-          system.Exec(cmd);
+          stdout = ""; stderr = "";
+          system.Exec(cmd, &stdout, &stderr);
+          if (stdout.Trim() == "0") {
+            zuSchreiben = "";
+          } else {
+            WriteLine("FEHLER Protokollsicherung 2: Datei=" # dateiname # " Fehler=" # stderr);
+            quit;
+          }
+        } else {
+          zuSchreiben = "";
         }
-        zuSchreiben = "";
       }
     }
   }
@@ -449,9 +472,16 @@ while (true){
 if (zuSchreiben.Length()>0){
   !// Zeilenschaltung entfernen, denn den haben wir schon
   if(DEBUG){WriteLine("Daten schreiben 3: " # dateiname # " Bytes: " # zuSchreiben.Length());}
-  string cmd = "echo -n '" # zuSchreiben # "' >> '" # dateiname # "' &";
+  string logTextShell = zuSchreiben.Replace("'", "'\\''");
+  string dateinameShell = dateiname.Replace("'", "'\\''");
+  string cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'; echo $?";
   if (!DEBUG){
-    system.Exec(cmd);
+    stdout = ""; stderr = "";
+    system.Exec(cmd, &stdout, &stderr);
+    if (stdout.Trim() != "0") {
+      WriteLine("FEHLER Protokollsicherung 3: Datei=" # dateiname # " Fehler=" # stderr);
+      quit;
+    }
   }
 }else{
   if(DEBUG){WriteLine("Daten schreiben 3: Keine Daten zu schreiben " # dateiname);}

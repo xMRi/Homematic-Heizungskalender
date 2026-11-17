@@ -13,6 +13,17 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [Veröffentlicht]
+
+## [2026-11-17]
+
+### Geändert
+
+- HeizkalenderInstallation: Verison 5.1.0
+- HeizkalenderInstallation: Außentemperatur aktuell ergänzt.
+
+## [2026-11-15]
+
 ### Hinzugefügt
 
 - AT-Skript: Momentanwert der letzten vollen Stunde wird in optionale Variable `HK2-Aussentemperatur-Aktuell` geschrieben.
@@ -43,6 +54,14 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Heizkurvenkontrolle: Feld 3 (`ausTerminMax`) in RaumParameter — trackt das
   späteste Terminende bei überlappenden Buchungen. Terminende-Event und
   Zieltemperatur-Guard nutzen den letzten statt den ersten Termin.
+
+## [2026-11-12]
+
+### Hinzugefügt
+
+- HeizkalenderInstallation: Kurvenanpassung ergänzt
+- HeizkalenderInstallation: Spin-Buttons für 0.1 Werte arbeitet evtl. nicht korrekt.
+- HeizkalenderInstallation: Verison 5.0.6
 
 ## [2026-11-12]
 
@@ -218,8 +237,6 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Addon: `hkkurve.cgi` — Hinweise und Legende werden jetzt auch ohne Log-Daten angezeigt
 - `HK-Skript 2`: AT-Guard: Klammern um `!isHeizModus` ergänzt — HM-Script wertet Ausdrücke ohne Operatorrangfolge von rechts nach links aus
 - `HK-Skript 2`: AT-Guard verwendet Whitelist (`isHeizModus`) statt Blacklist (`HSFlag=="S"`). Modus V wurde bei Außentemperatur über Schwellwert nie geschaltet (#69)
-
-## [Veröffentlicht]
 
 ## [2026-10-27] Release
 

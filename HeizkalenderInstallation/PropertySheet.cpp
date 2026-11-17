@@ -699,6 +699,7 @@ void CPageSettings::DoDataExchange(CDataExchange* pDX)
 
 	DDX_Control(pDX, IDC_ED_ATEMPGRENZE, m_edATempGrenze);
 	DDX_Control(pDX, IDC_ED_GRUNDTEMP, m_edGrungTemp);
+	DDX_Control(pDX, IDC_ED_KANPASSUNG, m_edKAnpassung);
 	// Muss aufsteigend sein
 	ASSERT(
 		IDC_ED_KURVE_1<IDC_ED_KURVE_2 &&
@@ -752,6 +753,7 @@ void CPageSettings::DoDataExchange(CDataExchange* pDX)
 		{
 			IDC_ED_ATEMPGRENZE,		_T("HK2-A.Temp.Grenze"),
 			IDC_ED_GRUNDTEMP,		_T("HK2-Grundtemperatur"),
+			IDC_ED_KANPASSUNG,		_T("HK2-Kurvenanpassung"),
 		};
 		for (auto const& e : aVarListDouble)
 		{
@@ -808,9 +810,15 @@ BOOL CPageSettings::OnInitDialog()
 	m_edGrungTemp.SetMinMax(0,30);
 	m_edGrungTemp.SetPrecision(1);
 	m_edGrungTemp.CreateSpinBtnCtrl();
+	m_edGrungTemp.SetStepValue(0.1);
 	m_edATempGrenze.SetMinMax(0,30);
 	m_edATempGrenze.SetPrecision(1);
 	m_edATempGrenze.CreateSpinBtnCtrl();
+	m_edATempGrenze.SetStepValue(0.1);
+	m_edKAnpassung.SetPrecision(1);
+	m_edKAnpassung.SetMinMax(0.3,1.0);
+	m_edKAnpassung.CreateSpinBtnCtrl();
+	m_edKAnpassung.SetStepValue(0.1);
 	for (int i = 0; i<_countof(m_edKurve); ++i)
 	{
 		auto& ed = m_edKurve[i];

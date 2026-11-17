@@ -403,4 +403,4 @@ foreach(vid, svIDs){
 WriteLine(svListStr);
 
 WriteLine("___________________________________________________________________________");
-WriteLine("Ausgabe beednet");
+WriteLine("Ausgabe beendet");

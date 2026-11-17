@@ -163,6 +163,8 @@
 #define IDC_ED_KURVE_8                  1034
 #define IDC_CB_GERAETETYP               1034
 #define IDC_CB_AKTOR1                   1035
+#define IDC_ED_GRUNDTEMP2               1035
+#define IDC_ED_KANPASSUNG               1035
 #define IDC_ED_TEMP                     1036
 #define IDC_ED_NAME                     1037
 #define IDC_ED_WERT_NEU                 1038

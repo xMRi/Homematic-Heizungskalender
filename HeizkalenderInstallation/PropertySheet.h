@@ -82,6 +82,7 @@ public:
 #endif
 	CEditDouble	m_edGrungTemp;
 	CEditDouble	m_edATempGrenze;
+	CEditDouble	m_edKAnpassung;
 	CEditInt	m_edKurve[8];
 
 	DECLARE_MESSAGE_MAP()

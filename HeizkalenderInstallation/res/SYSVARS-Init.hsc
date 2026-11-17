@@ -118,7 +118,7 @@ if (oSV) {
 		oSV.Variable ("0.000000".ToFloat());}
 } elseif (bcreate) {
 	neu=neu+1;oSV = dom.CreateObject (1089); rSV.Add (oSV.ID()); oSV.Name (svName); oSV.ValueType (4); oSV.ValueSubType (0);
-	oSV.DPInfo("Zu verwendende Außentemperatur"); oSV.ValueUnit("°C"); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
+	oSV.DPInfo("Außentemperatur für Vorheizzeit-Berechnung (gleitender Durchschnitt)"); oSV.ValueUnit("°C"); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
 	oSV.DPArchive (true && barchive);
 	oSV.Variable ("0.000000".ToFloat ()); oSV.ValueMin ("-50".ToFloat()); oSV.ValueMax ("50".ToFloat ());
 	WriteLine (svName # neut);}
@@ -341,6 +341,30 @@ if (oSV) {
 	oSV.DPInfo("Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
 	oSV.DPArchive (true && barchive); 
 		oSV.Variable ("");
+	WriteLine (svName # neut);}
+!------------
+svName= "%1%HK2-Kurvenanpassung"; oSV=rSV.Get (svName);
+if (oSV) {
+	if ((oSV.ValueType()==4) && (oSV.ValueSubType()==0) && bupdate && (oSV.Type()!=OT_ALARMDP)) {
+		WriteLine (svName # altt);act=act+1;
+		oSV.Variable ("0.800000".ToFloat());}
+} elseif (bcreate) {
+	neu=neu+1;oSV = dom.CreateObject (1089); rSV.Add (oSV.ID()); oSV.Name (svName); oSV.ValueType (4); oSV.ValueSubType (0);
+	oSV.DPInfo("Kurvenanpassungsfaktor für das Zwei-Geraden-Modell der Vorheizzeit-Berechnung (0.3 bis 1.0). Vorgabe 0.8"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
+	oSV.DPArchive (true && barchive);
+	oSV.Variable ("0.800000".ToFloat ()); oSV.ValueMin ("0.3".ToFloat()); oSV.ValueMax ("1.0".ToFloat ());
+	WriteLine (svName # neut);}
+!------------
+svName= "%1%HK2-Aussentemperatur-Aktuell"; oSV=rSV.Get (svName);
+if (oSV) {
+	if ((oSV.ValueType()==4) && (oSV.ValueSubType()==0) && bupdate && (oSV.Type()!=OT_ALARMDP)) {
+		WriteLine (svName # altt);act=act+1;
+		oSV.Variable ("0.000000".ToFloat());}
+} elseif (bcreate) {
+	neu=neu+1;oSV = dom.CreateObject (1089); rSV.Add (oSV.ID()); oSV.Name (svName); oSV.ValueType (4); oSV.ValueSubType (0);
+	oSV.DPInfo("Aktuelle Außentemperatur (letzte volle Stunde, von Open-Meteo). Wird vom AT-Skript geschrieben."); oSV.ValueUnit("°C"); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
+	oSV.DPArchive (true && barchive);
+	oSV.Variable ("0.000000".ToFloat ()); oSV.ValueMin ("-50".ToFloat()); oSV.ValueMax ("50".ToFloat ());
 	WriteLine (svName # neut);}
 !------------
 dom.RTUpdate(0);

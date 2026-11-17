@@ -251,7 +251,7 @@ BOOL CRaumDlg::OnInitDialog()
 	m_edFaktor.SetMinMax(0.25,3.0);
 	m_edFaktor.SetPrecision(2);
 	m_edFaktor.CreateSpinBtnCtrl();
-	m_edFaktor.SetStepValue(0.25);
+	m_edFaktor.SetStepValue(0.1);
 	
 	// Endgültige Daten laden
 	UpdateData(FALSE);

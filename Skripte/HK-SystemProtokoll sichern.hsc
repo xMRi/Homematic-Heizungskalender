@@ -10,7 +10,7 @@
 !// Es besteht keinerlei Garantie oder Haftung. Nutzung auf eigene Verantwortung.
 !//================================================================================================
 !//
-!// Das grundsätzliche Problem ist, das das Systemprotokoll fülchtig ist. Alte Einträge werden
+!// Das grundsätzliche Problem ist, das das Systemprotokoll flüchtig ist. Alte Einträge werden
 !// automatisch verworfen, wenn es voll wird. Weiterhin überlebt es auch keinen Reboot der CCU
 !// Für einen Reboot sollte also unbedingt unser Programm Tool-Reboot benutzt werden um vor dem
 !// Reboot das Protokoll zu sichern.
@@ -22,6 +22,8 @@
 !// Eine Log-Datei wird ca. 250KB bis 1MB groß, je nach Anzahl der Schaltvorgänge.
 
 !// TT:  2026-11-17 Bei Schreibfehlern mit Dateiname abbrechen, damit keine Daten in Folgedateien gelangen.
+!//               printf statt echo -n (Apostrophe); Fehlerprüfung über stderr statt echo $? (system.Exec-Kompatibilität).
+!//               Verfügbarkeitsprüfung über test -d statt mount | grep (funktioniert auch bei Symlinks wie usb0->usb1).
 !// MRi: 2026-01-14 Wöchentliche oder tägliche Logs erlauben
 
 !// Der Pfad sollte keine Leerzeichen enthalten.
@@ -34,7 +36,7 @@ string prefix = "HK-Log_";
 !// Anzahl der Dateien die erhalten bleiben sollen. Die ältesten Dateien werden automatisch gelöscht.
 integer AnzahlDateien=30;
 
-!// Debug Mouds, wir haben mehrere Levels 0
+!// Debug Modus, wir haben mehrere Levels 0
 integer DEBUG=0;
 
 !// Wöchentliche Logs = 1, Logs getrennt für jeden Tag = 0
@@ -48,14 +50,14 @@ string stdout;
 string stderr;
 string dateiname;
 
-!// Prüfen ob USB1 überhaupt verfügbar ist
+!// Prüfen ob USB0 überhaupt verfügbar ist
 dateiname = pfad;
 if (dateiname.EndsWith("/")) {
   !// Ausgabe in mount hat kein endenden Slash
   dateiname = dateiname.Substr(0,dateiname.Length()-1);
 }
-system.Exec("mount | grep " # dateiname, &stdout, &stderr);
-if (!stdout) {
+system.Exec("test -d '" # dateiname # "' && ls '" # dateiname # "' > /dev/null 2>&1 && echo OK", &stdout, &stderr);
+if (stdout.Trim() != "OK") {
     WriteLine(pfad # " is NOT available.");
     quit;
 }
@@ -81,7 +83,7 @@ foreach(dateiname,stdout.Trim().Split("\n")) {
 !// Maximale Anzahl des Systemprotokolls
 integer cnt = dom.GetHistoryDataCount();
 if (cnt==0){
-  if(DEBUG){WriteLine("Keine Daten Systemprotokoll Daten. Abbruch!");}
+  if(DEBUG){WriteLine("Keine Systemprotokoll-Daten. Abbruch!");}
   quit;
 }
 integer rCount;
@@ -127,7 +129,7 @@ if (stdout!=""){
   }
 
   !// Wenn wir den Start haben, gehen wir so weit zurück bis wir den ersten Datensatz
-  !// mit diesem Datum haben. Es is möglich, das wir nicht auf dem ersten Datenatz landen
+  !// mit diesem Datum haben. Es is möglich, das wir nicht auf dem ersten Datensatz landen
   !// mit der binären Suche
   while((start>0)){
     if(dom.GetHistoryData(start-1,1,&rCount).StrValueByIndex(";",3)!=suchtext){
@@ -193,14 +195,15 @@ while (true){
           if(DEBUG){WriteLine("Daten schreiben 1: " # dateiname # " Bytes: " # zuSchreiben.Length());}
           string logTextShell = zuSchreiben.Replace("'", "'\\''");
           string dateinameShell = dateiname.Replace("'", "'\\''");
-          cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'; echo $?";
+          cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'";
           if (!DEBUG){
             stdout = ""; stderr = "";
             system.Exec(cmd, &stdout, &stderr);
-            if (stdout.Trim() == "0") {
+            if (stderr.Trim() == "") {
               zuSchreiben = "";
             } else {
               WriteLine("FEHLER Protokollsicherung 1: Datei=" # dateiname # " Fehler=" # stderr);
+              system.Exec("logger -p user.err 'FEHLER Protokollsicherung 1: Datei=" # dateiname # " Fehler=" # stderr # "'");
               quit;
             }
           } else {
@@ -208,7 +211,7 @@ while (true){
           }
         }else{
           !// Sollten wir gerade in den Schreibmodus gegangen sein, aber nun einen Dateiwechsel
-          !// haben, dann hatten wir gerade den letzten Datensatz gefunden. Und wir suchen auch in dern
+          !// haben, dann hatten wir gerade den letzten Datensatz gefunden. Und wir suchen auch in der
           !// neuen Datei weiter
           modusSuchen = true;
         }
@@ -284,7 +287,7 @@ while (true){
             boolean btoNumber = ( (itoVT==ivtFloat)   && (itoST==istGeneric) );
             boolean btoAlarm  = ( (itoVT==ivtBinary)  && (itoST==istAlarm)   );
             boolean btoString  = ( (itoVT==ivtString)  && (itoST==istChar8859));
-    !// MRi: Wir geben den  Variablen Typ nicht aus
+    !// MRi: Wir geben den Variablen Typ nicht aus
     !        if( (btoLogic || btoAlarm) && ((sRecordedValue == "0") || (sRecordedValue == "")) ) {
     !          sRet=sRet#to.ValueName0(); } else { sRet=sRet#to.ValueName1();
     !        }
@@ -410,7 +413,7 @@ while (true){
         sCollectedValues = sCollectedValues # sRecordedValue;
       }
 
-      !// Auf nächsten Datehnsatz
+      !// Auf nächsten Datensatz
       iDatensatz = iDatensatz+1;
     }
 
@@ -436,14 +439,15 @@ while (true){
         if(DEBUG){WriteLine("Daten schreiben 2: " # dateiname # " Bytes: " # zuSchreiben.Length());}
         string logTextShell = zuSchreiben.Replace("'", "'\\''");
         string dateinameShell = dateiname.Replace("'", "'\\''");
-        string cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'; echo $?";
+        string cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'";
         if (!DEBUG){
           stdout = ""; stderr = "";
           system.Exec(cmd, &stdout, &stderr);
-          if (stdout.Trim() == "0") {
+          if (stderr.Trim() == "") {
             zuSchreiben = "";
           } else {
             WriteLine("FEHLER Protokollsicherung 2: Datei=" # dateiname # " Fehler=" # stderr);
+            system.Exec("logger -p user.err 'FEHLER Protokollsicherung 2: Datei=" # dateiname # " Fehler=" # stderr # "'");
             quit;
           }
         } else {
@@ -474,12 +478,13 @@ if (zuSchreiben.Length()>0){
   if(DEBUG){WriteLine("Daten schreiben 3: " # dateiname # " Bytes: " # zuSchreiben.Length());}
   string logTextShell = zuSchreiben.Replace("'", "'\\''");
   string dateinameShell = dateiname.Replace("'", "'\\''");
-  string cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'; echo $?";
+  string cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'";
   if (!DEBUG){
     stdout = ""; stderr = "";
     system.Exec(cmd, &stdout, &stderr);
-    if (stdout.Trim() != "0") {
+    if (stderr.Trim() != "") {
       WriteLine("FEHLER Protokollsicherung 3: Datei=" # dateiname # " Fehler=" # stderr);
+      system.Exec("logger -p user.err 'FEHLER Protokollsicherung 3: Datei=" # dateiname # " Fehler=" # stderr # "'");
       quit;
     }
   }
@@ -488,5 +493,4 @@ if (zuSchreiben.Length()>0){
 }
 
 WriteLine("Alles fertig...");
-
-
+system.Exec("logger -p user.info 'HK-Protokollsicherung: Alles fertig'");

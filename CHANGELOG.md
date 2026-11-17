@@ -74,6 +74,12 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 ### Behoben
 
 - Skripte: `HK-SystemProtokoll sichern.hsc`: Apostrophe in Log-Daten und Dateinamen werden korrekt maskiert (`printf` statt `echo -n`); Schreiben ist synchron (kein `&`); bei Schreibfehler wird Dateiname und Fehlerausgabe protokolliert und das Skript bricht ab.
+- Skripte: `HK-SystemProtokoll sichern.hsc`: Verfügbarkeitsprüfung des USB-Pfads verwendet jetzt `test -d` statt `mount | grep`; funktioniert auch bei Symlinks (z.B. `usb0 -> usb1`).
+- Skripte: `HK-SystemProtokoll sichern.hsc`: Fehlerprüfung nach `system.Exec` verwendet `stderr` statt `echo $?`; `echo $?` lieferte in der CCU-Umgebung keinen verwertbaren Rückgabewert.
+
+### Hinzugefügt
+
+- Skripte: `HK-SystemProtokoll sichern.hsc`: Fehlermeldungen werden per `logger -p user.err` ins syslog geschrieben; Erfolgsmeldung per `logger -p user.info` (`HK-Protokollsicherung: Alles fertig`).
 
 ## [2026-11-12]
 

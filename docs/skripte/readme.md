@@ -298,7 +298,7 @@ Um über einen längeren Zeitraum die Systemprotokolle und damit auch die Heizku
 Das Speichern des Protokolls erfolgt wochenweise. Üblicherweise werden maximal 30 Protokolle gespeichert bevor das älteste Protokoll gelöscht wird.
 Dieses Skript sollte jeweils alle 23-87min laufen.
 
-Bei einem Schreibfehler gibt das Skript den betroffenen Dateinamen und die Fehlerausgabe aus und bricht sofort ab. Bereits teilweise geschriebene Daten werden dabei nicht zurückgesetzt.
+Bei einem Schreibfehler gibt das Skript den betroffenen Dateinamen und die Fehlerausgabe aus und bricht sofort ab. Bereits teilweise geschriebene Daten werden dabei nicht zurückgesetzt. Fehlermeldungen werden zusätzlich per `logger` als `user.err` ins syslog (`/var/log/messages`) geschrieben. Der erfolgreiche Abschluss erscheint dort als `user.info`-Eintrag (`HK-Protokollsicherung: Alles fertig`).
 
 Beachten Sie, dass ein Neustart oder Stromausfall zum Verlust der Einträge im Systemprotokoll führen kann, die in diesem Zeitraum noch nicht wieder gespeichert wurden.
 

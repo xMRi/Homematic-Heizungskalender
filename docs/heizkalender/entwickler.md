@@ -54,7 +54,7 @@ flowchart TD
     KAL -->|"Termine"| Skript1
     Skript1 -->|"schreibt HK1-Schaltliste"| SysVar
     OpenMeteo -->|"Außentemperatur"| ATSkript
-    ATSkript -->|"schreibt HK2-Aussentemperatur"| SysVar
+    ATSkript -->|"schreibt HK2-Aussentemperatur\n+ optional: -Aktuell"| SysVar
     SysVar -->|"liest HK1-Schaltliste"| Skript2
     Skript1 --> Skript2
     Skript2 --> Skript3

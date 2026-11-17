@@ -24,9 +24,9 @@ if {[string equal $cmd "download"]} {
 } else {
     puts -nonewline "Content-Type: text/plain; charset=utf-8\r\n\r\n"
     catch {
-        set newversion [exec /usr/bin/wget -qO- $checkURL]
+        set newversion [exec /usr/bin/wget -qO- --timeout=10 --tries=1 $checkURL]
     }
-    if {[info exists newversion]} {
+    if {[info exists newversion] && [regexp {^[0-9]+\.[0-9]+\.[0-9]+$} $newversion]} {
         puts $newversion
     } else {
         puts "n/a"

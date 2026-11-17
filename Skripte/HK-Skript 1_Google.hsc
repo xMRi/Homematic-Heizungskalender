@@ -1,6 +1,6 @@
 !// Skript 1 um die Termine aus Google auszulesen
 !//================================================================================================
-!// Stand:    04.11.2026
+!// Stand:    15.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -23,6 +23,7 @@
 !//
 
 !// MRi: 2026-10-19 Neuen Modus "V" für das setzen einer Variable eingebaut
+!// TT:  2026-11-15 minRaumNachlauf-Berechnung ergaenzt (konsistent mit anderen Skript-1-Varianten);
 !// TT:  2026-10-18 HK1-Vorlaufzeit: zeitVorlauf aus optionaler Systemvariable lesen (Default 12h)
 !// TT:  2026-10-01 Vorlauf von 8h auf 12h vereinheitlicht (alle Skript-1-Varianten jetzt
 !//                 12h). DIVERGENZ-Hinweis entfernt.
@@ -55,7 +56,25 @@ object objVorlaufzeit = dom.GetObject(vrp#"HK1-Vorlaufzeit");
 if(objVorlaufzeit) {
   zeitVorlauf = objVorlaufzeit.State().ToInteger();
 }
-integer zeitNachlauf=30;		!// 30 Minuten
+!// Die Raumvariable enthält die individuelle Ausschaltverschiebung in Feld 5.
+!// Ein negativer Wert verschiebt das Ausschalten nach hinten. Die Schaltliste muss
+!// daher bis 30 Minuten nach der spätesten individuellen Ausschaltzeit erhalten bleiben.
+integer minRaumNachlauf=0;
+integer raumNachlauf;
+object objRaumNachlauf;
+foreach(RaumVar, HKGListe.Replace("+",";").Split(";")){
+  if(RaumVar!=""){
+    objRaumNachlauf=dom.GetObject(RaumVar);
+    if(objRaumNachlauf){
+      raumNachlauf=objRaumNachlauf.State().StrValueByIndex(";",5).ToInteger();
+      if(raumNachlauf<minRaumNachlauf){
+        minRaumNachlauf=raumNachlauf;
+      }
+    }
+  }
+}
+integer zeitNachlauf=30-minRaumNachlauf;
+if(DEBUG){WriteLine("Schaltliste-Nachlauf: " # zeitNachlauf # " Minuten");}
 
 
 !// Der Code wurde in weiten teilen von der ChurchDesk iCal Variante genommen

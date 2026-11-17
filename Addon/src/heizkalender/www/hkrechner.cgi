@@ -20,7 +20,7 @@ proc htmlquote {s} {
 }
 
 proc jsquote {s} {
-    return [string map {\\ \\\\ \" \\\" ' \\' \n \\n \r {}} $s]
+    return [string map {\\ \\\\ \" \\\" ' \\' \n \\n \r {} / \\/} $s]
 }
 
 proc extract_stdout {rega_raw} {
@@ -55,6 +55,7 @@ proc extract_stdout {rega_raw} {
 set ccu_kurve ""
 set ccu_kv ""
 set ccu_at ""
+set ccu_at_akt ""
 set ccu_ka "0.8"
 set ccu_grundtemp "10"
 set ccu_atg ""
@@ -68,6 +69,8 @@ catch {
         if (sv) { WriteLine("KV:" # sv.Value()); }
         sv = dom.GetObject("HK2-Aussentemperatur");
         if (sv) { WriteLine("AT:" # sv.Value()); }
+        sv = dom.GetObject("HK2-Aussentemperatur-Aktuell");
+        if (sv) { WriteLine("ATAKT:" # sv.Value()); }
         sv = dom.GetObject("HK2-Kurvenanpassung");
         if (sv) { WriteLine("KA:" # sv.Value()); }
         sv = dom.GetObject("HK2-Grundtemperatur");
@@ -93,6 +96,10 @@ catch {
         if {[string match "GT:*"    $line]} {
             catch { set ccu_grundtemp [format "%.1f" [string range $line 3 end]] } \
                   { set ccu_grundtemp [string range $line 3 end] }
+        }
+        if {[string match "ATAKT:*" $line]} {
+            catch { set ccu_at_akt [format "%.1f" [string range $line 6 end]] } \
+                  { set ccu_at_akt [string range $line 6 end] }
         }
         if {[string match "ATG:*"   $line]} {
             catch { set ccu_atg [format "%.1f" [string range $line 4 end]] } \
@@ -321,8 +328,11 @@ puts {  </script>
 
             <div class="hkr-field">
               <label for="hkr-at">Au&szlig;entemperatur (&deg;C)</label>}
+# Vorbelegung: aktuelle AT bevorzugen, Fallback auf Durchschnitt
+set at_prefill $ccu_at
+if {![string equal $ccu_at_akt ""]} { set at_prefill $ccu_at_akt }
 puts "              <input type=\"number\" id=\"hkr-at\" step=\"0.1\" maxlength=\"6\""
-puts "                     value=\"[htmlquote $ccu_at]\" placeholder=\"z.B. 5\">"
+puts "                     value=\"[htmlquote $at_prefill]\" placeholder=\"z.B. 5\">"
 puts {              <span class="hkr-err" id="hkr-at-err"></span>
             </div>
 

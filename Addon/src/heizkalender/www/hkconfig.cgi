@@ -89,7 +89,12 @@ set rega_script {
     WriteLine(result);
 }
 
-set rega_result [rega_script $rega_script]
+set rega_result ""
+if {[catch {set rega_result [rega_script $rega_script]} err]} {
+    puts "Content-Type: text/html; charset=utf-8\r\n\r\n"
+    puts "<html><body><p>Fehler: ReGa nicht erreichbar. ($err)</p></body></html>"
+    return
+}
 # "result"-Key direkt aus dem Dict lesen — robuster als Brace-Zaehlung
 set raw ""
 set rpos [string first "result " $rega_result]

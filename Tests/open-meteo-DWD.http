@@ -1,0 +1,31 @@
+// VS Code extension httpYac
+// https://httpyac.github.io/guide/installation_vscode.html
+
+// DWD ICON API REST API
+// https://open-meteo.com/en/docs/dwd-api
+
+
+###
+# @name getForecast
+# @title Get DWD forecast (icon_d2, bis 2026-11-30)
+# @description Open data weather forecasts from the German weather service DWD
+@latitude=50.1155
+@longitude=8.6842
+@models=icon_d2
+GET https://api.open-meteo.com/v1/dwd-icon?latitude={{latitude}}&longitude={{longitude}}&models={{models}}&hourly=temperature_2m&past_days=1&forecast_days=2&timezone=Europe%2FBerlin
+Content-Type: application/json
+
+?? status == 200
+
+###
+# @name getForecastNative
+# @title Get DWD forecast (dwd_icon_d2_native, ab 2026-12-01)
+# @description Nachfolger von icon_d2 nach DWD-Feed-Migration; gleiche Aufloesung, natives Gitter
+@latitude=50.1155
+@longitude=8.6842
+@models=dwd_icon_d2_native
+GET https://api.open-meteo.com/v1/dwd-icon?latitude={{latitude}}&longitude={{longitude}}&models={{models}}&hourly=temperature_2m&past_days=1&forecast_days=2&timezone=Europe%2FBerlin
+Content-Type: application/json
+
+?? status == 200
+

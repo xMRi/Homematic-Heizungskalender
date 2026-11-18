@@ -1,12 +1,12 @@
 # `HeizkalenderInstallation.exe`
 
-Die `HeizkalenderInstallation.exe` ist ein Tool zur Erstellung von Heizkalendern für die Homematic auf Basis von Daten aus ChurchTools, ChurchDesk, iCal oder Google Kalender.
+Die `HeizkalenderInstallation.exe` ist ein Installations- und Konfigurationstool für die Heizkalender-Software auf Homematic CCU und OpenCCU. Der Heizkalender steuert auf Basis von Kalenderdaten aus ChurchTools, ChurchDesk, iCal oder Google Kalender die Thermostate und Schaltgeräte einer Homematic-Installation entsprechend den gebuchten Raumbelegungen.
 
-Sie ermöglicht die Neuinstallation sowie Updates bestehender Installationen und bietet eine benutzerfreundliche Oberfläche zur Konfiguration der Heizkalender. Außerdem unterstützt sie die Generierung von Skripten und der notwendigen Systemvariablen, die in der Homematic CCU oder ähnlichen Systemen verwendet werden können.
+Das Installationstool ermöglicht sowohl die Neuinstallation als auch die Aktualisierung bestehender Installationen. Über eine benutzerfreundliche Oberfläche können die erforderlichen Einstellungen vorgenommen werden. Außerdem erstellt es automatisch alle für den Betrieb benötigten Skripte, Programme und Systemvariablen.
 
-Dabei legt die `HeizkalenderInstallation.exe` alle für den Betrieb des Heizkalenders erforderlichen Programme und Systemvariablen an. Einzig die Geräte müssen angemeldet und nach Möglichkeit in Heizgruppen zusammengefasst werden.
+Lediglich die verwendeten Geräte müssen zuvor an der CCU bzw. OpenCCU angemeldet und nach Möglichkeit in Heizgruppen zusammengefasst werden.
 
-Bei der Nutzung von ChurchTools/ChurchDesk werden bei Bedarf auch alle Raumvariablen automatisch erzeugt und zugewiesen.
+Bei der Verwendung von ChurchTools oder ChurchDesk werden zusätzlich die benötigten Raum-Systemvariablen automatisch angelegt und den entsprechenden Räumen zugewiesen.
 
 ## Systemvoraussetzungen
 
@@ -16,7 +16,9 @@ Bei der Nutzung von ChurchTools/ChurchDesk werden bei Bedarf auch alle Raumvaria
     Alternativ kann der Zugriff auch über den  CloudMatic Fernzugriff erfolgen oder eine VPN-Lösung wie WireGuard.
 - Alle Skripte, die installiert werden sollen, müssen im Programmverzeichnis der `HeizkalenderInstallation.exe` liegen. Die Namen sind vorgegeben und dürfen nicht verändert werden. Es können weitere Tool-Skripte hinzugefügt werden. Diese werden ebenfalls installiert und später aktualisiert, solange die entsprechenden Dateien im Verzeichnis der `HeizkalenderInstallation.exe` liegen.
 - Um auf Ressourcen und externe Kalender zugreifen zu können, muss der Rechner mit dem Internet verbunden sein.
-- Eine lauffähige Kopie der `HeizkalenderInstallation.exe` liegt im Skripte-Verzeichnis.
+- Eine Installation über einen funktionierenden CloudMatic Zugang ist möglich. 
+
+Eine lauffähige Kopie der `HeizkalenderInstallation.exe` liegt im Skripte-Verzeichnis.
 
 ## Vorsichtsmaßnahmen
 
@@ -29,7 +31,7 @@ Bei der Nutzung von ChurchTools/ChurchDesk werden bei Bedarf auch alle Raumvaria
 
 ## Vorbereiten der CCU
 
-Um auf dei CCU Zugreifen zu können müssen auch die Sicherheitseinstellungen diesen Zugriff erlauben.
+Um auf die CCU Zugreifen zu können müssen auch die Sicherheitseinstellungen diesen Zugriff erlauben.
 
 ### Netzwerkeinstellungen 
 
@@ -71,7 +73,9 @@ Außer der `HeizkalenderInstallation.exe` sind keine weiteren Programme oder Skr
 1. **Verbinden mit der CCU** anklicken
 1. Ressourcenquelle auswählen (ChurchTools/ChurchDesk/iCal/Google)
 1. **Ressourcen / Räume einlesen** anklicken
-1. Einstellungen vornehmen
+1. Evtl. weitere Räume anlegen, die zusätzlich geschaltet werden sollen (Foyer, WCs)
+1. Räume den Kalendereinträgen zuordnen
+1. Einstellungen vornehmen (evtl. nicht benötigte Ressourcen löschen)
 1. **OK** anklicken
 
 ### Parameter ändern oder Update installieren
@@ -86,21 +90,21 @@ Für ein Update oder das Ändern der aktuellen Parameter starten Sie die `Heizka
 ### Anpassung der Raumliste
 
 > [!WARNING]
-> Die Raumliste sollte nur dann neu eingelesen werden, wenn sich die Räume oder die Anzahl der zu verwaltenden Ressourcen ändern. Andernfalls können Einstellungen verloren gehen.
+> Die Raumliste sollte nur dann neu eingelesen werden, wenn sich die Räume oder die Anzahl der zu verwaltenden Ressourcen ändern. Andernfalls können Einstellungen verloren gehen oder es werden bereits entfernte Räume/Ressourcen, die nicht zum Heizungssystem gehören wieder neu angelegt.
 
 1. `HeizkalenderInstallation.exe` starten
 1. **Verbinden mit der CCU** anklicken
 1. **Ressourcen / Räume einlesen** anklicken und die angezeigten Fragen und Warnungen beantworten
-1. Anpassungen durchführen
+1. Anpassungen durchführen (evtl. nicht benötigte Ressourcen wieder löschen)
 1. **OK** anklicken
 
 ## Beschreibung der `HeizkalenderInstallation.exe`
 
 Im Folgenden werden die einzelnen Seiten der `HeizkalenderInstallation.exe` beschrieben.
 
-Grundsätzlich kann die *Eigenschaftseite Verbindung zur CCU* nicht verlassen werden, solange keine Verbindung erfolgreich hergestellt wurde.
+Grundsätzlich kann die *Eigenschaftsseite Verbindung zur CCU* nicht verlassen werden, solange keine Verbindung erfolgreich hergestellt wurde.
 
-Die Eigenschaftseiten *Programme, Einstellungen, Kalenderzuordnungen, Räume* und *Systemvariablen* werden im nachfolgenden beschrieben.
+Die Eigenschaftsseiten *Programme, Einstellungen, Kalenderzuordnungen, Räume* und *Systemvariablen* werden im nachfolgenden beschrieben.
 
 ### Eigenschaftsseite *Verbinden mit der CCU*
 
@@ -492,25 +496,28 @@ Dieser Dialog zeigt den aktuellen Status einer Systemvariablen: die interne ID, 
 
 Die Einstellungen werden gespeichert, indem Sie im Hauptdialog auf den Schalter **OK** klicken.
 
+Änderungen werden jedoch nicht vorgenommen, solange diese durch den Nutzer nicht kontrolliert wurden.
+
 - Sind Programme vorhanden, die aktualisiert oder installiert werden müssen wird automatisch auf die Änderungen hingewiesen, wenn die *Eigenschaftsseite Programme/Skripte* bisher nicht kontrolliert wurde.
     ![Geänderte Programme](bilder/HKI-ProgrammeGeändert.png)
-    Nach Betätigen des **OK**-Schalters wird die Eigenschaftseite zur Kontrolle aufgerufen.
+    Nach Betätigen des **OK**-Schalters wird die Eigenschaftsseite zur Kontrolle aufgerufen.
 
 - Wurden neue Räume eingelesen und die *Eigenschaftsseite Kalenderzuordnung* bisher nicht kontrolliert, wird auf die Änderungen hingewiesen um eine Kontrolle zu ermöglichen.
     ![Geänderte Raumliste](bilder/HKI-RaumListeGeändert.png)
-    Nach Betätigen des **OK**-Schalters wird die Eigenschaftseite zur Kontrolle aufgerufen.
+    Nach Betätigen des **OK**-Schalters wird die Eigenschaftsseite zur Kontrolle aufgerufen.
 
 - Wurden Systemvariablen geändert oder angepasst und die *Eigenschaftsseite Systemvariablen* bisher nicht kontrolliert, wird auf die Änderungen hingewiesen um eine Kontrolle zu ermöglichen.
     ![Geänderte Systemvariablen](bilder/HKI-SystemvariablenGeändert.png)
-    Nach Betätigen des **OK**-Schalters wird die Eigenschaftseite zur Kontrolle aufgerufen.
+    Nach Betätigen des **OK**-Schalters wird die Eigenschaftsseite zur Kontrolle aufgerufen.
 
 **Wurden alle Einstellungen kontrolliert erfolgt vor dem Update der CCU die folgende Frage:**
 ![Änderungen speichern](bilder/HKI-ÄnderungenSpeichern2.png)
 
-Wird diese Frage mit **Ja** beantwortet, erfolgt ein Update der CCU.Beachten Sie, dass viele der Änderungen, insbesondere bei Änderungen der Kalenderquelle oder dem Aktualisieren der Raumliste, nicht rückgängig gemacht werden können.
-Halten Sie aus diesem Grund immer ein aktuelle Backup bereit.
+Wird diese Frage mit **Ja** beantwortet, erfolgt ein Update der CCU.  
+Beachten Sie, dass viele der Änderungen, insbesondere bei Änderungen der Kalenderquelle oder dem Aktualisieren der Raumliste, nicht rückgängig gemacht werden können.
+Halten Sie aus diesem Grund immer ein aktuelles Backup bereit.
 
-Wird die Frage mit **Nein** beantwortet kehrt man in das Installationsprogramm zurück und kann weitere Korrekturen oder Änderungen vornehmen.
+Wird die Frage mit **Nein** beantwortet kehrt man in das Installationsprogramm zurück und kann weitere Korrekturen oder Änderungen vornehmen. Es werden keine Daten an die CCU übermittelt.
 
 **Wenn die Daten erfolgreich gespeichert werden wird dies durch die folgende Meldung bestätigt.**
 ![Änderungen gespeichert](bilder/HKI_Gespeichert.png)
@@ -541,7 +548,7 @@ Die Ausgabe der Log-Dateien erfolgt automatisch im zugehörigen Ordner für temp
 - `HeizkalenderInstallation_Devices.log`
     Diese Datei enthält eine Liste der auf der CCU installierten Geräte. Für jedes Gerät wird eine Ausgabezeile erzeugt.
 - `HeizkalenderInstallation_Programs.log`
-    Alle installierten Programme werden heruntergeladen und in dieser Protokolldatei gespeichert. Für jedes Gerät wird eine Ausgabezeile erzeugt. Zeielnschaltungen innerhalb des Programmes werden durch ein %0A ersetzt. Auch bestimmte Sonderzeichen werden auf diese Weise substituiert.
+    Alle installierten Programme werden heruntergeladen und in dieser Protokolldatei gespeichert. Für jedes Gerät wird eine Ausgabezeile erzeugt. Zeilenschaltungen innerhalb des Programms werden durch ein %0A ersetzt. Auch bestimmte Sonderzeichen werden auf diese Weise substituiert.
 - `HeizkalenderInstallation_SysVars.log`
     Bei Programmstart werden alle Systemvariablen, deren Inhalt und Typ in dieser Datei ausgegeben.
 

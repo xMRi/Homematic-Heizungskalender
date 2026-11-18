@@ -1,6 +1,6 @@
 !// Skript zum Anlegen der Systemvariablen für Skript 1 (ChurchDesk)
 !//================================================================================================
-!// Stand:    15.11.2026
+!// Stand:    18.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -25,6 +25,7 @@
 !// automatisch alle benötigten Variablen automatisch erzeugt.
 
 
+!// TT:  2026-11-18 HK1-CD-Token: Archivierung deaktiviert (Zugangsdaten nicht ins Systemprotokoll)
 !// TT:  2026-11-15 API-Token nicht mehr im Fehler-Log ausgeben;
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// TT:  2026-10-18 HK1-Vorlaufzeit: neue optionale Systemvariable (Integer, Default 720 min)
@@ -72,7 +73,7 @@ string nm=  "HK1-Schaltliste;" #
 string be=  "Gelesene Termine aus Skript 1. Hier bitte nichts verändern!;" #
             "Zuordnung der Räume aus der Ressourcenverwaltung;" #
             "Organisations ID in ChurchDesk;" #
-            "API-Token für ChurchDesk;" #
+            "API-Token für ChurchDesk (keine Protokollierung);" #
             "Liste der HK-Raum-Variablen;" #
             "Zeithorizont fuer Terminabfrage in Minuten (Default 720, max. 1380)";
 
@@ -114,7 +115,7 @@ string wr=  ";" #
 string pr=  "1;" #
             "1;" #
             "1;" #
-            "1;" #
+            "0;" #
             "1;" #
             "1";
 

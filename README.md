@@ -4,10 +4,10 @@
 [![Downloads](https://img.shields.io/github/downloads/xMRi/Homematic-Heizungskalender/total?label=Downloads)](https://github.com/xMRi/Homematic-Heizungskalender/releases)
 [![Dokumentation](https://img.shields.io/badge/Dokumentation-xmri.github.io-4f46e5?logo=materialformkdocs&logoColor=white)](https://xmri.github.io/Homematic-Heizungskalender/)
 
-# HomeMatic-Heizungskalender
+# Homematic-Heizungskalender / Heizkalender
 
-Der HomeMatic-Heizungskalender dient zur Steuerung der Homematic über ChurchTool, ChurchDesk, iCal oder Google.
-Er umfasst Skripte, Tools und eine Installations- und Update-Software. Die Skripte werden intern über Systemvariablen gesteuert.
+Der HomeMatic-Heizungskalender / [Heizkalender](https://heizkalender.de/) dient zur Steuerung der HomeMatic über ChurchTool, ChurchDesk, iCal oder Google. Er steuert die Thermostate passend zur Raumnutzung.
+Er bietet raumbezogene Vorheizzeiten, einen Windows-Installer, ein CCU-Add-on sowie eine Dokumentation und Werkzeuge. Er ist ideal für unregelmäßig genutzte Räume.
 
 ## Allgemeines
 
@@ -16,7 +16,8 @@ Stadtmission Arheilgen angewendet. Lukas Helduser entwickelte 2023 auf der Basis
 das Heizkalender-Programm für die Allgemeinheit, inkl. Varianten.
 Dank an die seitherigen Anwender für ihre Verbesserungsvorschläge, insbesondere an die Pilot-
 Gemeinden. Dieser Code wurde im Rahmen der Heizkalender-Implementierung der Baptisten Gemeinde
-Hanau von Martin Richter stark optimiert und erweitert.
+Hanau von Martin Richter stark optimiert und erweitert.  
+Weiterer Dank gilt Thomas Tatzel für sein Addin und weitreichende Verbesserungen am Projekt.
 
 Das Heizkalender-Team freut sich, dass Sie den kostenlosen Heizkalender anwenden und somit einen
 Beitrag zum Umweltschutz leisten. Es wäre schön, wenn Sie die Nutzung per E-Mail anzeigen an: <info@heizkalender.de>

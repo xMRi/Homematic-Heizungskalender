@@ -7,7 +7,8 @@ ADDONS_DIR=/usr/local/addons
 ADDON_DIR=$ADDONS_DIR/$ADDON
 CONF_DIR=/usr/local/etc/config
 WWW_DIR=$CONF_DIR/addons/www/$ADDON
-EXITCODE=10
+# 0 = update (OpenCCU startet nicht automatisch neu)
+EXITCODE=0
 
 mount | grep /usr/local 2>&1 >/dev/null
 if [ $? -eq 1 ]; then

@@ -217,6 +217,8 @@ Sowie weitere Raum-Variablen `HKG-Raum-*`
 
 Das Skript 3 ist ein Hauptskript um die Thermostate zu schalten.
 
+Temperatur-Sondervorgaben aus `HK2-Schaltliste` werden mit Nachkommastellen übernommen und an die Thermostate weitergegeben, beispielsweise 21,5 °C statt 21 °C.
+
 Benötigte Variablen: `HK2-Schaltliste`, `HK2-A.Temp.Grenze`, `HK2-Aussentemperatur`, `HK2-Grundtemperatur`, `HK2-HKG-Liste`, `HK2-Hand-Grundtemp`, `HK2-Hand-Temp`, `HK3-Log`, `HK3-Logging`. Optional (wird beschrieben falls vorhanden): `HK2-Schaltzeiten`
 Sowie weitere Raum-Variablen `HKG-Raum-*`
 

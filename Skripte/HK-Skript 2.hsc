@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    15.11.2026
+!// Stand:    18.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-11-18 SDFlag als real deklariert (war integer): Temperatur-Sondervorgaben mit Nachkommastellen gehen nicht verloren
 !// TT:  2026-11-15 Tote Variable zeitNachlauf entfernt;
 !// MRi: 2026-11-11 Abgelaufene Termine erst entfernen, wenn sie nicht mehr in der HK1-Schaltliste sind
 !// TT:  2026-11-10 Kurvenanpassungsfaktor ueber optionale Systemvariable HK2-Kurvenanpassung konfigurierbar (0.3..1.0, Vorgabe 0.8)
@@ -159,12 +160,12 @@ foreach(TLEintrag,TerminListe){
   string  HSFlag      = TLEintrag.StrValueByIndex(";",4);
   integer EIN_Org     = TLEintrag.StrValueByIndex(";",1);
   integer AUS_Org     = TLEintrag.StrValueByIndex(";",2);
-  integer SDFlag_Org  = TLEintrag.StrValueByIndex(";",3);
+  string SDFlag_Org   = TLEintrag.StrValueByIndex(";",3);
 
   !// Arbeitswerte bestimmen
   integer EIN     = EIN_Org.ToTime().ToInteger();
   integer AUS     = AUS_Org.ToTime().ToInteger();
-  integer SDFlag  = SDFlag_Org.ToInteger();
+  real SDFlag     = SDFlag_Org.ToFloat();
 
   !// Nun suchen wir über die Ressource Id den Raum Index und den Namen. Leider hat dieser auch einen
   !// Raumname optional, das gestaltet die Suche etwas schwieriger
@@ -272,7 +273,7 @@ foreach(TLEintrag,TerminListe){
     !// sie frisch aus den Original Schaltlisten Daten bezogen!
     integer EIN     = EIN_Org.ToTime().ToInteger();
     integer AUS     = AUS_Org.ToTime().ToInteger();
-    integer SDFlag  = SDFlag_Org.ToInteger();
+    real SDFlag     = SDFlag_Org.ToFloat();
 
     if(DEBUG){WriteLine("RVN=" # RVN);}
     object objRVN = dom.GetObject(RVN);
@@ -303,7 +304,7 @@ foreach(TLEintrag,TerminListe){
       if(DEBUG) {WriteLine("strAlterListenEintrag=" # strAlterListenEintrag);}
 
       !// Alte berechnete Schaltzeiten bestimmen
-      SDFlag  = strAlterListenEintrag.StrValueByIndex(";",3).ToInteger();
+      SDFlag  = strAlterListenEintrag.StrValueByIndex(";",3).ToFloat();
       EIN     = strAlterListenEintrag.StrValueByIndex(";",4).ToTime().ToInteger();
       AUS     = strAlterListenEintrag.StrValueByIndex(";",5).ToTime().ToInteger();
 
@@ -346,7 +347,7 @@ foreach(TLEintrag,TerminListe){
     !// Originaldaten noch mal laden
     EIN     = EIN_Org.ToTime().ToInteger();
     AUS     = AUS_Org.ToTime().ToInteger();
-    SDFlag  = SDFlag_Org.ToInteger();
+    SDFlag  = SDFlag_Org.ToFloat();
 
     !// Dieser Termin ist noch nicht in der Schaltliste oder er ist nicht in der Heizphase,
     !// wir berechnen nun die Schaltzeiten neu.

@@ -269,6 +269,11 @@ Um die Funktionsweise des Heizkalenders transparent zu machen, wird das Systempr
 
 Beachten Sie, dass das Systemprotokoll nicht unendlich lang ist. Um das Heizverhalten über einen längeren Zeitraum beobachten zu können, sollten Sie einen USB-Stick einstecken und das Skript `HK-Systemprotokoll sichern` aktivieren. Dieses Skript speichert ältere Einträge des Systemprotokolls zyklisch auf dem USB-Stick. Ist kein USB-Stick eingesteckt, hat das Programm keine Wirkung.
 
+#### Termineinstellungen
+
+- **Legt fest, wie weit Skript 1 bei der Kalenderabfrage in die Zukunft schaut:**
+    Legt fest, wie viele Minuten im Voraus `HK-Skript 1` Kalendertermine berücksichtigt und für die Heizungssteuerung vorbereitet. (Standard: 720min = 12 Stunden).
+
 #### Rückstellungsverhalten
 
 - **Alle Räume Nachts um 01:00 Uhr auf Grundtemperatur zurückgestellt werden**

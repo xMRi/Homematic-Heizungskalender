@@ -1,6 +1,6 @@
 !// Sichern des Systemprotokolls auf dem USB Stick
 !//================================================================================================
-!// Stand:    17.11.2026
+!// Stand:    18.11.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -21,6 +21,7 @@
 !// Die Anzahl der zu erhaltenen LOG Dateien kann eingestellt werden.
 !// Eine Log-Datei wird ca. 250KB bis 1MB groß, je nach Anzahl der Schaltvorgänge.
 
+!// TT:  2026-11-18 Vollständige Syslog-Fehlermeldungen maskieren, damit Apostrophe den logger-Aufruf nicht beschädigen.
 !// TT:  2026-11-17 Bei Schreibfehlern mit Dateiname abbrechen, damit keine Daten in Folgedateien gelangen.
 !//               printf statt echo -n (Apostrophe); Fehlerprüfung über stderr statt echo $? (system.Exec-Kompatibilität).
 !//               Verfügbarkeitsprüfung über test -d statt mount | grep (funktioniert auch bei Symlinks wie usb0->usb1).
@@ -49,6 +50,7 @@ string cmd = "";
 string stdout;
 string stderr;
 string dateiname;
+string logFehler;
 
 !// Prüfen ob USB0 überhaupt verfügbar ist
 dateiname = pfad;
@@ -197,13 +199,15 @@ while (true){
           string dateinameShell = dateiname.Replace("'", "'\\''");
           cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'";
           if (!DEBUG){
-            stdout = ""; stderr = "";
+            stdout = "";
+            stderr = "";
             system.Exec(cmd, &stdout, &stderr);
             if (stderr.Trim() == "") {
               zuSchreiben = "";
             } else {
-              WriteLine("FEHLER Protokollsicherung 1: Datei=" # dateiname # " Fehler=" # stderr);
-              system.Exec("logger -p user.err 'FEHLER Protokollsicherung 1: Datei=" # dateiname # " Fehler=" # stderr # "'");
+              logFehler = "FEHLER Protokollsicherung 1: Datei=" # dateiname # " Fehler=" # stderr;
+              WriteLine(logFehler);
+              system.Exec("logger -p user.err '" # logFehler.Replace("'", "'\\''") # "'");
               quit;
             }
           } else {
@@ -441,13 +445,15 @@ while (true){
         string dateinameShell = dateiname.Replace("'", "'\\''");
         string cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'";
         if (!DEBUG){
-          stdout = ""; stderr = "";
+          stdout = "";
+          stderr = "";
           system.Exec(cmd, &stdout, &stderr);
           if (stderr.Trim() == "") {
             zuSchreiben = "";
           } else {
-            WriteLine("FEHLER Protokollsicherung 2: Datei=" # dateiname # " Fehler=" # stderr);
-            system.Exec("logger -p user.err 'FEHLER Protokollsicherung 2: Datei=" # dateiname # " Fehler=" # stderr # "'");
+            logFehler = "FEHLER Protokollsicherung 2: Datei=" # dateiname # " Fehler=" # stderr;
+            WriteLine(logFehler);
+            system.Exec("logger -p user.err '" # logFehler.Replace("'", "'\\''") # "'");
             quit;
           }
         } else {
@@ -480,11 +486,13 @@ if (zuSchreiben.Length()>0){
   string dateinameShell = dateiname.Replace("'", "'\\''");
   string cmd = "printf '%s' '" # logTextShell # "' >> '" # dateinameShell # "'";
   if (!DEBUG){
-    stdout = ""; stderr = "";
+    stdout = "";
+    stderr = "";
     system.Exec(cmd, &stdout, &stderr);
     if (stderr.Trim() != "") {
-      WriteLine("FEHLER Protokollsicherung 3: Datei=" # dateiname # " Fehler=" # stderr);
-      system.Exec("logger -p user.err 'FEHLER Protokollsicherung 3: Datei=" # dateiname # " Fehler=" # stderr # "'");
+      logFehler = "FEHLER Protokollsicherung 3: Datei=" # dateiname # " Fehler=" # stderr;
+      WriteLine(logFehler);
+      system.Exec("logger -p user.err '" # logFehler.Replace("'", "'\\''") # "'");
       quit;
     }
   }

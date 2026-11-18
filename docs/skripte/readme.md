@@ -300,6 +300,8 @@ Dieses Skript sollte jeweils alle 23-87min laufen.
 
 Bei einem Schreibfehler gibt das Skript den betroffenen Dateinamen und die Fehlerausgabe aus und bricht sofort ab. Bereits teilweise geschriebene Daten werden dabei nicht zurückgesetzt. Fehlermeldungen werden zusätzlich per `logger` als `user.err` ins syslog (`/var/log/messages`) geschrieben. Der erfolgreiche Abschluss erscheint dort als `user.info`-Eintrag (`HK-Protokollsicherung: Alles fertig`).
 
+Sonderzeichen in Dateinamen und Fehlerausgaben werden für den Syslog-Aufruf maskiert, damit insbesondere Apostrophe die Übertragung der Fehlermeldung nicht verhindern.
+
 Beachten Sie, dass ein Neustart oder Stromausfall zum Verlust der Einträge im Systemprotokoll führen kann, die in diesem Zeitraum noch nicht wieder gespeichert wurden.
 
 ### HK-Test-Skript.hsc

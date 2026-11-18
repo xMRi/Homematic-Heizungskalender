@@ -366,10 +366,11 @@ function zeichneKurvendiagramm(kurve, f1, f2, gt, ziel, at, atg) {
     var atMin = -12, atMax = 20;
     function xPos(a) { return pad.l + (a - atMin) / (atMax - atMin) * cw; }
 
-    // Y-Achse: 0 bis max(kurve) * f1 * 1.1, mind. 10
+    // Maxima liegen an den Stuetzstellen oder den extrapolierten Bereichsraendern.
     var kurveMax = 0;
     for (var i = 0; i < kurve.length; i++) if (kurve[i] > kurveMax) kurveMax = kurve[i];
-    var yMax = Math.max(kurveMax * f1 * 1.15, 10);
+    kurveMax = Math.max(kurveMax, linearInterpolate(atMin, kurve), linearInterpolate(atMax, kurve));
+    var yMax = Math.max(kurveMax * Math.max(1, f1, f1 * f2) * 1.15, 10);
     function yPos(v) { return pad.t + ch - (v / yMax) * ch; }
 
     // Hintergrund

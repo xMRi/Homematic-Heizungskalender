@@ -15,17 +15,38 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [2026-11-19]
 
-- HeizkalenderInstallation: Version 5.1.1
-- HeizkalenderInstallation: Vorlaufzeit in den Settings ergänzt.
-- HeizkalenderInstallation: Sicherheitsrelevante Variablen nicht mehr protokollieren.
+### Hinzugefügt
 
-## [Veröffentlicht]
-
-## [2026-11-17]
+- Addon: Vorheizzeit-Rechner: Außentemperaturgrenze schaltet Vorheizzeit im Raumvergleich und Zeitbalken auf 0; Diagramme zeigen Hinweistext statt leerem Canvas.
+- Addon: Vorheizzeit-Rechner: Ist-Temperatur wird beim Seitenaufruf mit dem Sensorwert des ersten Raums vorbelegt (Fallback 18 °C).
+- Skripte: `HK-SystemProtokoll sichern.hsc`: Fehlermeldungen werden per `logger -p user.err` ins syslog geschrieben; Erfolgsmeldung per `logger -p user.info` (`HK-Protokollsicherung: Alles fertig`).
 
 ### Geändert
 
-- HeizkalenderInstallation: Verison 5.1.0
+- HeizkalenderInstallation: Version 5.1.1
+- HeizkalenderInstallation: Vorlaufzeit in den Settings ergänzt.
+- HeizkalenderInstallation: Sicherheitsrelevante Variablen nicht mehr protokollieren.
+- Addon: Vorheizzeit-Rechner: Außentemperatur-Feld wird mit dem Durchschnittswert (`HK2-Aussentemperatur`) vorbelegt, nicht mehr mit dem Aktuell-Wert; entspricht dem Verhalten von Skript 2.
+- Addon: Vorheizzeit-Rechner: Extrapolation jenseits der Kurvenstützwerte setzt die äußere Gerade fort statt den Randwert zu verwenden; entspricht dem Verhalten von Skript 2.
+- Addon: Startseite: Statusanzeige unterscheidet jetzt vier Zustände (`Ein`, `Aus`, `Dauer-Ein`, `Dauer-Aus`); `Dauer-Ein` wird wie `Ein` aktiv hervorgehoben.
+- Skripte: `HK-SystemProtokoll sichern.hsc`: USB-Pfad auf `/media/usb0` geändert (CCU-Default-Symlink auf ersten USB-Stick); muss mit `usb_dir` in `hklog.cgi` übereinstimmen.
+- Addon: `hklog.cgi`: USB-Pfad auf `/media/usb0` angepasst.
+
+### Behoben
+
+- Skripte: `HK-SystemProtokoll sichern.hsc`: Apostrophe in Log-Daten und Dateinamen werden korrekt maskiert (`printf` statt `echo -n`); Schreiben ist synchron (kein `&`); bei Schreibfehler wird Dateiname und Fehlerausgabe protokolliert und das Skript bricht ab.
+- Skripte: `HK-SystemProtokoll sichern.hsc`: Verfügbarkeitsprüfung des USB-Pfads verwendet jetzt `test -d` statt `mount | grep`; funktioniert auch bei Symlinks (z.B. `usb0 -> usb1`).
+- Skripte: `HK-SystemProtokoll sichern.hsc`: Fehlerprüfung nach `system.Exec` verwendet `stderr` statt `echo $?`; `echo $?` lieferte in der CCU-Umgebung keinen verwertbaren Rückgabewert.
+
+
+## [Veröffentlicht]
+
+## [2026-11-17] Release
+
+### Geändert
+
+- HeizkalenderInstallation: Version 5.1.0
+- Addon: Version 0.10.3
 - HeizkalenderInstallation: Außentemperatur aktuell ergänzt.
 
 ## [2026-11-15]
@@ -55,37 +76,11 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Heizkurvenkontrolle: RaumParameter-Verlust im bearbeiteteRaeume-Guard bei 3+
   überlappenden Einträgen behoben — verursachte falsches Heizbeginn alle 5 min.
 
-### Hinzugefügt (aus vorherigem Unveröffentlicht)
+### Hinzugefügt 
 
 - Heizkurvenkontrolle: Feld 3 (`ausTerminMax`) in RaumParameter — trackt das
   späteste Terminende bei überlappenden Buchungen. Terminende-Event und
   Zieltemperatur-Guard nutzen den letzten statt den ersten Termin.
-
-## [2026-11-17]
-
-### Hinzugefügt
-
-- Addon: Version 0.10.4.
-- Addon: Vorheizzeit-Rechner: Außentemperaturgrenze schaltet Vorheizzeit im Raumvergleich und Zeitbalken auf 0; Diagramme zeigen Hinweistext statt leerem Canvas.
-- Addon: Vorheizzeit-Rechner: Ist-Temperatur wird beim Seitenaufruf mit dem Sensorwert des ersten Raums vorbelegt (Fallback 18 °C).
-
-### Geändert
-
-- Addon: Vorheizzeit-Rechner: Außentemperatur-Feld wird mit dem Durchschnittswert (`HK2-Aussentemperatur`) vorbelegt, nicht mehr mit dem Aktuell-Wert; entspricht dem Verhalten von Skript 2.
-- Addon: Vorheizzeit-Rechner: Extrapolation jenseits der Kurvenstützwerte setzt die äußere Gerade fort statt den Randwert zu verwenden; entspricht dem Verhalten von Skript 2.
-- Addon: Startseite: Statusanzeige unterscheidet jetzt vier Zustände (`Ein`, `Aus`, `Dauer-Ein`, `Dauer-Aus`); `Dauer-Ein` wird wie `Ein` aktiv hervorgehoben.
-- Skripte: `HK-SystemProtokoll sichern.hsc`: USB-Pfad auf `/media/usb0` geändert (CCU-Default-Symlink auf ersten USB-Stick); muss mit `usb_dir` in `hklog.cgi` übereinstimmen.
-- Addon: `hklog.cgi`: USB-Pfad auf `/media/usb0` angepasst.
-
-### Behoben
-
-- Skripte: `HK-SystemProtokoll sichern.hsc`: Apostrophe in Log-Daten und Dateinamen werden korrekt maskiert (`printf` statt `echo -n`); Schreiben ist synchron (kein `&`); bei Schreibfehler wird Dateiname und Fehlerausgabe protokolliert und das Skript bricht ab.
-- Skripte: `HK-SystemProtokoll sichern.hsc`: Verfügbarkeitsprüfung des USB-Pfads verwendet jetzt `test -d` statt `mount | grep`; funktioniert auch bei Symlinks (z.B. `usb0 -> usb1`).
-- Skripte: `HK-SystemProtokoll sichern.hsc`: Fehlerprüfung nach `system.Exec` verwendet `stderr` statt `echo $?`; `echo $?` lieferte in der CCU-Umgebung keinen verwertbaren Rückgabewert.
-
-### Hinzugefügt
-
-- Skripte: `HK-SystemProtokoll sichern.hsc`: Fehlermeldungen werden per `logger -p user.err` ins syslog geschrieben; Erfolgsmeldung per `logger -p user.info` (`HK-Protokollsicherung: Alles fertig`).
 
 ## [2026-11-12]
 
@@ -93,7 +88,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 - HeizkalenderInstallation: Kurvenanpassung ergänzt
 - HeizkalenderInstallation: Spin-Buttons für 0.1 Werte arbeitet evtl. nicht korrekt.
-- HeizkalenderInstallation: Verison 5.0.6
+- HeizkalenderInstallation: Version 5.0.6
 
 ## [2026-11-12]
 

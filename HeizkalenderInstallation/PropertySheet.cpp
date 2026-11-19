@@ -700,6 +700,7 @@ void CPageSettings::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ED_ATEMPGRENZE, m_edATempGrenze);
 	DDX_Control(pDX, IDC_ED_GRUNDTEMP, m_edGrungTemp);
 	DDX_Control(pDX, IDC_ED_KANPASSUNG, m_edKAnpassung);
+	DDX_Control(pDX, IDC_ED_VORLAUFZEIT, m_eiVorlaufzeit);
 	// Muss aufsteigend sein
 	ASSERT(
 		IDC_ED_KURVE_1<IDC_ED_KURVE_2 &&
@@ -742,7 +743,7 @@ void CPageSettings::DoDataExchange(CDataExchange* pDX)
 		}
 	}
 
-	// Int felder
+	// Double felder
 	{
 		struct {
 			UINT	m_uiId;
@@ -763,6 +764,28 @@ void CPageSettings::DoDataExchange(CDataExchange* pDX)
 			DDX_EditDouble(pDX, e.m_uiId, dblVal);
 			if (pDX->m_bSaveAndValidate)
 				pVar->SetContent(DoubleToString(dblVal, 1));
+		}
+	}
+
+	// Int felder
+	{
+		struct {
+			UINT	m_uiId;
+			PCTSTR  m_pzVarName;
+		}
+		const aVarListDouble[] =
+
+		{
+			IDC_ED_VORLAUFZEIT,		_T("HK1-Vorlaufzeit"),
+		};
+		for (auto const& e : aVarListDouble)
+		{
+			auto* pVar = theApp.m_lstSysVars.Find(theApp.AddPrefix(e.m_pzVarName));
+			ASSERT(pVar);
+			int val = StringToInt(pVar->m_strContent);
+			DDX_EditInt(pDX, e.m_uiId, val);
+			if (pDX->m_bSaveAndValidate)
+				pVar->SetContent(IntToString(val));
 		}
 	}
 
@@ -815,6 +838,9 @@ BOOL CPageSettings::OnInitDialog()
 	m_edATempGrenze.SetPrecision(1);
 	m_edATempGrenze.CreateSpinBtnCtrl();
 	m_edATempGrenze.SetStepValue(0.1);
+	m_eiVorlaufzeit.SetMinMax(0, 60*23);
+	m_eiVorlaufzeit.SetStepValue(30);
+	m_eiVorlaufzeit.CreateSpinBtnCtrl();
 	m_edKAnpassung.SetPrecision(1);
 	m_edKAnpassung.SetMinMax(0.3,1.0);
 	m_edKAnpassung.CreateSpinBtnCtrl();

@@ -328,20 +328,18 @@ Wird im umgekehrten Fall ein Termin gelöscht dessen Heizphase bereits begonnen 
 
 ## Vorheizzeit
 
-Die Vorheizzeit bestimmt, wie lange vor Terminbeginn ein Raum von der
-Grundtemperatur auf die Wohlfühltemperatur gebracht wird. Sie setzt sich aus zwei
-Anteilen zusammen:
+Die Vorheizzeit bestimmt, wie lange vor Terminbeginn ein Raum von der Grundtemperatur auf die Wohlfühltemperatur gebracht wird. Sie setzt sich aus zwei Anteilen zusammen:
 
 1. der **individuell** in der Raum-Systemvariablen definierten Vorheizzeit und
-2. der **automatisch aus der Außentemperatur** errechneten Vorheizzeit
-   (über die Heizkurve `HK2-Kurve`).
+2. der **automatisch anhand der Außentemperatur** errechneten Vorheizzeit (über die Heizkurve `HK2-Kurve`).
 
-Ist ein Raum zu Beginn bereits wärmer als die Grundtemperatur (z.B. durch einen
-vorhergehenden Termin, Nachbarräume oder Sonneneinstrahlung), verkürzt
-`HK-Skript 2` die Vorheizzeit automatisch. Hat der Raum die Zieltemperatur schon
-erreicht, entfällt die Vorheizzeit ganz. Die Neuberechnung erfolgt alle 5 Minuten.
+Ist ein Raum zu Beginn bereits wärmer als die Grundtemperatur (z. B. durch einen vorhergehenden Termin, Nachbarräume oder Sonneneinstrahlung), verkürzt `HK-Skript 2` die Vorheizzeit automatisch. Hat der Raum die Zieltemperatur bereits erreicht, entfällt die Vorheizzeit vollständig.
 
-**Grundsätzlich sollte die in der `HK2-Kurve` angegebene Vorheizzeit so berechnet sein, dass der Raum von der jeweiligen Grundtemperatur auf die Wohlfühltemperatur gebracht werden kann.**
+**Bis zum Beginn des Heizvorgangs wird die Vorheizzeit alle 5 Minuten anhand aller relevanten Parameter (Außentemperatur, Isttemperatur und Zieltemperatur) neu berechnet.**
+
+Grundsätzlich sollte die in der `HK2-Kurve` angegebene Vorheizzeit so bemessen sein, dass der Raum bei der jeweiligen Außentemperatur von der Grundtemperatur auf die Wohlfühltemperatur gebracht werden kann.
+
+**Sobald der Heizvorgang begonnen hat, wird er nicht mehr unterbrochen. Er läuft bis zum regulären Heizende weiter, sofern der zugehörige Termin nicht vorzeitig entfernt wird.**
 
 ### Wann heizt ein Raum? (Entscheidungsablauf)
 
@@ -811,6 +809,12 @@ entscheidet `HK-Skript 1`, dass dieser Termin nicht in die Schaltliste kommt.
 - **ChurchTools (iCal), iCal, Google:** Hier werden Sonderbefehle in der
   Terminbeschreibung bzw. im Titel ausgewertet, abhängig von der jeweiligen
   Skript-1-Variante.
+  
+> [!WARNING]
+> **Wird mit einem Termineintrag eine Gruppe von Räumen geschaltet (Saal, Foyer, WCS) dann gilt ein Sonderbefehl für diese gesamte Gruppe. `#AUS#` und `#EIN#` deaktivieren oder aktivieren alle  zugeordneten Räume.**
+>
+> **Das gilt auch für Temperatur Befehle. #21# setzt die Raumtemperatur von 21 Grad für alle Räume auch wenn unterschiedliche Grund- und Wohlfühltemperaturen für diese Räume definiert sind.**
+
 
 ## Laufende Schaltlistenprüfung
 

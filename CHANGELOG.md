@@ -13,6 +13,12 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-19]
+
+- HeizkalenderInstallation: Version 5.1.1
+- HeizkalenderInstallation: Vorlaufzeit in den Settings ergänzt.
+- HeizkalenderInstallation: Sicherheitsrelevante Variablen nicht mehr protokollieren.
+
 ## [Veröffentlicht]
 
 ## [2026-11-17]

@@ -29,7 +29,7 @@ Die komplette [Dokumentation für die `HeizkalenderInstallation.exe`](../heizkal
 ## Skripte zur Initialisierung
 
 > [!WARNING]
-> __Wenn der `HeizkalenderInstallation.exe` verwendet wird, müssen die nachfolgenden Skripte für die Installation nicht benutzt werden!__
+> __Wenn die `HeizkalenderInstallation.exe` verwendet wird, müssen die nachfolgenden Skripte für die Installation nicht benutzt werden!__
 >
 > _Die Dokumentation dient nur zur Erklärung der Skript-Grundlagen und wenn es notwendig sein sollte, dass eine manuelle Installation erfolgen muss._
 
@@ -106,8 +106,6 @@ Dieses Skript legt alle Systemvariablen an, die für das Berechnungs- und das Sc
 | HK2-Kurvenanpassung | Optional. Faktor k für das Zwei-Geraden-Modell der Vorheizzeit-Berechnung (0.3..1.0). Steuert die Stärke der Reduzierung der Vorlaufzeit bei bereits vorgeheizten Räumen: 1.0 = lineare Gerade (maximale Reduzierung), 0.8 = Sicherheitskurve (Vorgabe), 0.6 = empfohlen für Brennwertkessel mit schwerer Bausubstanz und schwachen Heizkörpern. Fehlt die Variable, wird automatisch 0.8 verwendet. Werte außerhalb 0.3..1.0 werden auf diesen Bereich begrenzt. |
 | HK2-Schaltliste |  Hier werden von `HK-Skript 2` errechneten Schaltzeiten eingetragen, die von dann vom Schaltskript `HK-Skript 3` verwendet werden |
 | HK2-Schaltzeiten | Wird von `HK-Skript 2` am Ende jedes Laufs geschrieben (optional, nur wenn die Variable vorhanden ist). Enthält die berechneten Schaltzeiten aller Räume des letzten Skriptlaufs. Format: `RaumVarName;VorlaufMin;HeizenAb;TerminAb;TerminBis;NachlaufMin~...` (Einträge durch `~` getrennt). Bei Multi-Raum-Zuordnungen ein Eintrag pro Raum mit individueller Vorheizzeit. Dient zur Anzeige im Addon. Nicht manuell setzen. |
-| HK2-Log | Variable für das Schalt-Log (siehe Abschnitt _HK-Init-Variablen Logging.hsc_) |
-| HK2-Logging | Flag das Logging vom Typ `HK2-Log` steuert (siehe Abschnitt _HK-Init-Variablen Logging.hsc_) |
 
 ### HK-Init-Variablen Logging.hsc
 
@@ -137,7 +135,7 @@ Die Protokollierung erfolgt über die nachfolgenden Kategorien:
 ## Skripte zum Einlesen der Termindaten aus diversen Quellen
 
 > [!WARNING]
-> __Wenn der `HeizkalenderInstallation.exe` verwendet wird, müssen die nachfolgenden Skripte für die Installation nicht installiert werden! Das Installationsprogramm führt alle notwendigen Operationen durch.__
+> __Wenn die `HeizkalenderInstallation.exe` verwendet wird, müssen die nachfolgenden Skripte für die Installation nicht installiert werden! Das Installationsprogramm führt alle notwendigen Operationen durch.__
 >
 > _Die Dokumentation dient nur zur Erklärung der Skript-Grundlagen und wenn es notwendig sein sollte, dass eine manuelle Installation erfolgen muss._
 
@@ -200,7 +198,7 @@ Das iCal Skript unterstützt auch das `RRULE` Schlüsselwort für Terminwiederho
 ## Schaltskript
 
 > [!WARNING]
-> __Wenn der `HeizkalenderInstallation.exe` verwendet wird, müssen die nachfolgenden Skripte für die Installation nicht installiert werden! Das Installationsprogramm führt alle notwendigen Operationen durch.__
+> __Wenn die `HeizkalenderInstallation.exe` verwendet wird, müssen die nachfolgenden Skripte für die Installation nicht installiert werden! Das Installationsprogramm führt alle notwendigen Operationen durch.__
 >
 > _Die Dokumentation dient nur zur Erklärung der Skript-Grundlagen und wenn es notwendig sein sollte, dass eine manuelle Installation erfolgen muss._
 
@@ -233,7 +231,7 @@ Bei jedem Skriptlauf (alle 5 Minuten) prüft `HK-Skript 3` zusätzlich alle Räu
 ## Sonstige Skripte
 
 > [!WARNING]
-> __Wenn der `HeizkalenderInstallation.exe` verwendet wird, müssen die nachfolgenden Skripte für die Installation nicht installiert werden! Das Installationsprogramm führt alle notwendigen Operationen durch.__
+> __Wenn die `HeizkalenderInstallation.exe` verwendet wird, müssen die nachfolgenden Skripte für die Installation nicht installiert werden! Das Installationsprogramm führt alle notwendigen Operationen durch.__
 >
 > _Die Dokumentation dient nur zur Erklärung der Skript-Grundlagen und wenn es notwendig sein sollte, dass eine manuelle Installation erfolgen muss._
 

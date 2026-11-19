@@ -166,6 +166,8 @@
 #define IDC_ED_GRUNDTEMP2               1035
 #define IDC_ED_KANPASSUNG               1035
 #define IDC_ED_TEMP                     1036
+#define IDC_ED_GRUNDTEMP3               1036
+#define IDC_ED_VORLAUFZEIT              1036
 #define IDC_ED_NAME                     1037
 #define IDC_ED_WERT_NEU                 1038
 #define IDC_CB_AKTOR2                   1038

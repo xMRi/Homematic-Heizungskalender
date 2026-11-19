@@ -20,7 +20,7 @@ if (oSV) {
 } elseif (bcreate) {
 	neu=neu+1;oSV = dom.CreateObject (1089); rSV.Add (oSV.ID()); oSV.Name (svName); oSV.ValueType (20); oSV.ValueSubType (11);
 	oSV.DPInfo("API-Key für den Google-Kalender"); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
-	oSV.DPArchive (true && barchive);
+	oSV.DPArchive (false && barchive); !// Keine Protokollierung
 		oSV.Variable ("");
 	WriteLine (svName # neut);}
 !------------

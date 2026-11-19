@@ -1,6 +1,6 @@
 !// Skript zum Anlegen der Systemvariablen für Skript 1 (Churchtools)
 !//================================================================================================
-!// Stand:    04.11.2026
+!// Stand:    18.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -24,6 +24,7 @@
 !// Tipp: Sie sollten unbedingt die Variablen organizationId und apiToken vorbelegen, weil dann
 !// automatisch alle benötigten Variablen automatisch erzeugt.
 
+!// TT:  2026-11-18 HK1-CT-Token: Archivierung deaktiviert (Zugangsdaten nicht ins Systemprotokoll)
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// TT:  2026-10-18 HK1-Vorlaufzeit: neue optionale Systemvariable (Integer, Default 720 min)
 !// TT:  2026-09-18 iPos>=0-Guard vor Substr ergänzt; rohe Debug-Ausgaben durch verständliche
@@ -72,7 +73,7 @@ string nm=  "HK1-CT-Gemeindename;" #
 string be=  "Name der Gemeinde in Churchtools;" #
             "Gelesene Termine aus Skript 1. Hier bitte nichts verändern!;" #
             "Zuordnung der Räume aus der Ressourcenverwaltung;" #
-            "Sicherheitstoken für ChurchTools;" #
+            "Sicherheitstoken für ChurchTools (keine Protokollierung);" #
             "Liste der HK-Raum-Variablen;" #
             "Zeithorizont fuer Terminabfrage in Minuten (Default 720, max. 1380)";
 
@@ -114,7 +115,7 @@ string wr=  ";" #
 string pr=  "1;" #
             "1;" #
             "1;" #
-            "1;" #
+            "0;" #
             "1;" #
             "1";
 

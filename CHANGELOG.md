@@ -55,6 +55,32 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
   späteste Terminende bei überlappenden Buchungen. Terminende-Event und
   Zieltemperatur-Guard nutzen den letzten statt den ersten Termin.
 
+## [2026-11-17]
+
+### Hinzugefügt
+
+- Addon: Version 0.10.4.
+- Addon: Vorheizzeit-Rechner: Außentemperaturgrenze schaltet Vorheizzeit im Raumvergleich und Zeitbalken auf 0; Diagramme zeigen Hinweistext statt leerem Canvas.
+- Addon: Vorheizzeit-Rechner: Ist-Temperatur wird beim Seitenaufruf mit dem Sensorwert des ersten Raums vorbelegt (Fallback 18 °C).
+
+### Geändert
+
+- Addon: Vorheizzeit-Rechner: Außentemperatur-Feld wird mit dem Durchschnittswert (`HK2-Aussentemperatur`) vorbelegt, nicht mehr mit dem Aktuell-Wert; entspricht dem Verhalten von Skript 2.
+- Addon: Vorheizzeit-Rechner: Extrapolation jenseits der Kurvenstützwerte setzt die äußere Gerade fort statt den Randwert zu verwenden; entspricht dem Verhalten von Skript 2.
+- Addon: Startseite: Statusanzeige unterscheidet jetzt vier Zustände (`Ein`, `Aus`, `Dauer-Ein`, `Dauer-Aus`); `Dauer-Ein` wird wie `Ein` aktiv hervorgehoben.
+- Skripte: `HK-SystemProtokoll sichern.hsc`: USB-Pfad auf `/media/usb0` geändert (CCU-Default-Symlink auf ersten USB-Stick); muss mit `usb_dir` in `hklog.cgi` übereinstimmen.
+- Addon: `hklog.cgi`: USB-Pfad auf `/media/usb0` angepasst.
+
+### Behoben
+
+- Skripte: `HK-SystemProtokoll sichern.hsc`: Apostrophe in Log-Daten und Dateinamen werden korrekt maskiert (`printf` statt `echo -n`); Schreiben ist synchron (kein `&`); bei Schreibfehler wird Dateiname und Fehlerausgabe protokolliert und das Skript bricht ab.
+- Skripte: `HK-SystemProtokoll sichern.hsc`: Verfügbarkeitsprüfung des USB-Pfads verwendet jetzt `test -d` statt `mount | grep`; funktioniert auch bei Symlinks (z.B. `usb0 -> usb1`).
+- Skripte: `HK-SystemProtokoll sichern.hsc`: Fehlerprüfung nach `system.Exec` verwendet `stderr` statt `echo $?`; `echo $?` lieferte in der CCU-Umgebung keinen verwertbaren Rückgabewert.
+
+### Hinzugefügt
+
+- Skripte: `HK-SystemProtokoll sichern.hsc`: Fehlermeldungen werden per `logger -p user.err` ins syslog geschrieben; Erfolgsmeldung per `logger -p user.info` (`HK-Protokollsicherung: Alles fertig`).
+
 ## [2026-11-12]
 
 ### Hinzugefügt

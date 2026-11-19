@@ -215,6 +215,8 @@ Sowie weitere Raum-Variablen `HKG-Raum-*`
 
 Das Skript 3 ist ein Hauptskript um die Thermostate zu schalten.
 
+Temperatur-Sondervorgaben aus `HK2-Schaltliste` werden mit Nachkommastellen übernommen und an die Thermostate weitergegeben, beispielsweise 21,5 °C statt 21 °C.
+
 Benötigte Variablen: `HK2-Schaltliste`, `HK2-A.Temp.Grenze`, `HK2-Aussentemperatur`, `HK2-Grundtemperatur`, `HK2-HKG-Liste`, `HK2-Hand-Grundtemp`, `HK2-Hand-Temp`, `HK3-Log`, `HK3-Logging`. Optional (wird beschrieben falls vorhanden): `HK2-Schaltzeiten`
 Sowie weitere Raum-Variablen `HKG-Raum-*`
 
@@ -295,6 +297,10 @@ Um über einen längeren Zeitraum die Systemprotokolle und damit auch die Heizku
 
 Das Speichern des Protokolls erfolgt wochenweise. Üblicherweise werden maximal 30 Protokolle gespeichert bevor das älteste Protokoll gelöscht wird.
 Dieses Skript sollte jeweils alle 23-87min laufen.
+
+Bei einem Schreibfehler gibt das Skript den betroffenen Dateinamen und die Fehlerausgabe aus und bricht sofort ab. Bereits teilweise geschriebene Daten werden dabei nicht zurückgesetzt. Fehlermeldungen werden zusätzlich per `logger` als `user.err` ins syslog (`/var/log/messages`) geschrieben. Der erfolgreiche Abschluss erscheint dort als `user.info`-Eintrag (`HK-Protokollsicherung: Alles fertig`).
+
+Sonderzeichen in Dateinamen und Fehlerausgaben werden für den Syslog-Aufruf maskiert, damit insbesondere Apostrophe die Übertragung der Fehlermeldung nicht verhindern.
 
 Beachten Sie, dass ein Neustart oder Stromausfall zum Verlust der Einträge im Systemprotokoll führen kann, die in diesem Zeitraum noch nicht wieder gespeichert wurden.
 

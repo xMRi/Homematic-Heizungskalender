@@ -1,6 +1,6 @@
 !// Skript 3 für das Schalten der Heizgruppen
 !//================================================================================================
-!// Stand:    15.11.2026
+!// Stand:    18.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-11-18 Temperatur-Sondervorgaben als real einlesen, damit Nachkommastellen beim Schalten erhalten bleiben.
 !// TT:  2026-11-15 Bounds-Check gegen Endlosschleife in AUS-Suppression ergaenzt;
 !// TT:  2026-11-13 Überlappende Termine: AUS-Befehl unterdrücken wenn ein anderer aktiver
 !//                 Eintrag für denselben Raum existiert (SDFlag>=0, EIN<=NOW<AUS).
@@ -152,7 +153,7 @@ foreach(SLEintrag,SListe.Split("#")){
   !// Listenelement auslesen
   !// Parameter für aktuellen Schaltvorgang.
   string  RVN     = SLEintrag.StrValueByIndex(";",0);
-  integer SDFlag  = SLEintrag.StrValueByIndex(";",3).ToInteger();
+  real SDFlag     = SLEintrag.StrValueByIndex(";",3).ToFloat();
   integer EIN     = SLEintrag.StrValueByIndex(";",4).ToTime().ToInteger();
   integer AUS     = SLEintrag.StrValueByIndex(";",5).ToTime().ToInteger();
 

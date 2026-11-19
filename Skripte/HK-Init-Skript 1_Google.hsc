@@ -1,6 +1,6 @@
 !// Skript zum Anlegen der Systemvariablen für Skript 1 (Google)
 !//================================================================================================
-!// Stand:    04.11.2026
+!// Stand:    18.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -23,6 +23,7 @@
 !//Dieses Skript erstellt die nötigen Systemvariablen des Heizkalender für Skript 1 Google Kalender
 !//Hinweis: Ein erneutes Ausführen dieses Programms ändert bestehende Variablen und ihren Inhalt nicht
 
+!// TT:  2026-11-18 HK1-GK-API-Key: Archivierung deaktiviert (Zugangsdaten nicht ins Systemprotokoll)
 !// MRi: 2026-11-03 Aufteilung Skript2 Termine vorbereiten, Skript 3 Schalten
 !// TT:  2026-10-18 HK1-Vorlaufzeit: neue optionale Systemvariable (Integer, Default 720 min)
 
@@ -40,7 +41,7 @@ string nm=  "HK1-Schaltliste;" #
 
 !// Beschreibungstexte
 string be=  "Gelesene Termine aus Skript 1. Hier bitte nichts verändern!;" #
-            "API-Key für den Google-Kalender;" #
+            "API-Key für den Google-Kalender (keine Protokollierung);" #
             "ID des Google-Kalender;" #
             "Zuordnung der Räume aus der Ressourcenverwaltung;" #
             "Zeithorizont fuer Terminabfrage in Minuten (Default 720, max. 1380)";
@@ -77,10 +78,10 @@ string wr=  ";" #
 
 !// Protokollierungs Flags
 string pr=  "1;" #
+            "0;" #
             "1;" #
             "1;" #
-            "1;" #
-            "1";                                                                 
+            "1";
 
 !//------------------------------------------------------------------------------------------------
 !// Ab hier Standard Code zum erzeugen von Variablen

@@ -102,7 +102,7 @@ Das Archiv enthält im Root `VERSION`, `update_script` und die Verzeichnisse `he
 1. CCU entpackt das Archiv nach `/usr/local/tmp/` und ruft `update_script HM-RASPBERRYMATIC` auf.
 2. Das Script legt `/usr/local/addons/heizkalender/` an und kopiert die Dateien.
 3. Es setzt den Symlink für die Webinhalte und trägt das Addon in `hm_addons.cfg` ein.
-4. Bei Neuinstallation: Exit-Code `10` (CCU startet neu). Bei Update: Exit-Code `0`.
+4. Bei Neuinstallation und Update: Rückgabewert `0`. Das Addon fordert keinen Neustart an. OpenCCU führt daher keinen installationsbedingten Neustart aus. Die ursprüngliche CCU3-Firmware startet nach dem Hochladen unabhängig vom Rückgabewert neu.
 
 Da das Addon keinen Daemon hat, entfällt das Starten und Stoppen eines Service.
 

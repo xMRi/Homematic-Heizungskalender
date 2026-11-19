@@ -1842,10 +1842,16 @@ oSV.Variable(%2%);
 	// Die SYSVARS-Init-Skripte zuvor haben die Variablen nur angelegt.
 	for (auto const& e : m_lstSysVars)
 	{
+		// System Variablen überspringen und auch Variablen, deren Typ wir nicht kennen. Intern kennen
+		// wir nur boolean, integer und string. Alle anderen Typen ignorieren wir.
+		if ((!e.m_strName.IsEmpty() && e.m_strName[0]==_T('$')) || 
+			(e.m_dataType!=DataType::vtboolean && e.m_dataType!=DataType::vtInteger && e.m_dataType!=DataType::vtString))
+			continue;
+
+		// Wir müssen die Beschreibung prüfen, ob sie sich geändert hat. Dazu holen wir uns die Default-Variable
 		auto const *pSysVarDefault = m_lstSysVarsDefault.Find(RemovePrefix(e.m_strName));
 		bool bBeschreibungGeaendert = (pSysVarDefault && e.m_strDescription!=pSysVarDefault->m_strDescription);
 		CString strNeueBeschreibung{ bBeschreibungGeaendert ? pSysVarDefault->m_strDescription : _T("") };
-		if (((e.m_bNew || e.m_bModified || e.m_bModifiedName) || bBeschreibungGeaendert) && !e.m_bDeleted)
 		{
 			CStringA strUpdateVar = R"x(
 object oSV = dom.GetObject (ID_SYSTEM_VARIABLES).Get(%1%);

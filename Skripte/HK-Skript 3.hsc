@@ -1,6 +1,6 @@
 !// Skript 3 für das Schalten der Heizgruppen
 !//================================================================================================
-!// Stand:    18.11.2026
+!// Stand:    19.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -11,13 +11,6 @@
 !// Version 3 (GPLv3) oder neuer veröffentlicht.
 !// Es besteht keinerlei Garantie oder Haftung. Nutzung auf eigene Verantwortung.
 !//================================================================================================
-!//
-!// Der Code basiert in großen Teilen auf der Datei:
-!//  HKP-S2-3.3.1  Skript2 Schalten_Heizkalender V2.13.7.c
-!// Der ursprüngliche Code wurde geschrieben von:
-!//   Lukas Helduser (Youtube: https://www.youtube.com/LukasvandeHaag)
-!// Ich (MRi) habe diesen Code dann erweitert, korrigiert und verbessert um sie an die Nutzung in
-!// meiner Gemeinde anzupassen.
 !//
 !// Skript sollte alle 5min laufen
 !//

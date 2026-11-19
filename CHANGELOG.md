@@ -17,6 +17,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ### Hinzugefügt
 
+- Skripte: Skript2 korrigiert HK1-Vorlaufzeit, wenn eine längere Vorheizzeit benötigt wird.
 - Addon: Vorheizzeit-Rechner: Außentemperaturgrenze schaltet Vorheizzeit im Raumvergleich und Zeitbalken auf 0; Diagramme zeigen Hinweistext statt leerem Canvas.
 - Addon: Vorheizzeit-Rechner: Ist-Temperatur wird beim Seitenaufruf mit dem Sensorwert des ersten Raums vorbelegt (Fallback 18 °C).
 - Skripte: `HK-SystemProtokoll sichern.hsc`: Fehlermeldungen werden per `logger -p user.err` ins syslog geschrieben; Erfolgsmeldung per `logger -p user.info` (`HK-Protokollsicherung: Alles fertig`).

@@ -1889,7 +1889,7 @@ if (oSV) {
 	// Hide Some vars
 	{
 		PCTSTR const aFields[] = {
-			_T("HK-Log"), _T("HK1-Log"), _T("HK2-Log"), _T("HK-LogHeizkurvenkontrolle")
+			_T("HK-Log"), _T("HK1-Log"), _T("HK2-Log"), _T("HK3-Log"), _T("HK-LogHeizkurvenkontrolle")
 		};
 		for (auto const *pName : aFields)
 		{

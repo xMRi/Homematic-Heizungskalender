@@ -1856,14 +1856,17 @@ oSV.Variable(%2%);
 			CStringA strUpdateVar = R"x(
 object oSV = dom.GetObject (ID_SYSTEM_VARIABLES).Get(%1%);
 if (oSV) {
-  if (%1%!="%2%") {
-    oSV.Name("%2%");
+  var temp = %2%;
+  if (%1%!=temp) {
+    oSV.Name(temp);
   }
-  if (%4%!="") {
-	oSV.DPInfo(%4%);
+  var temp = %4%;
+  if (temp!="") {
+	oSV.DPInfo(temp);
   }
-  if (oSV.State()!=%3%) {
-    oSV.State(%3%);
+  var temp = %3%;
+  if (oSV.State()!=temp) {
+    oSV.State(temp);
   }
 }
 !//--------------------
@@ -1874,7 +1877,7 @@ if (oSV) {
 				strUpdateVar.Replace("%1%", CStringA{ IntToString(e.m_id) });
 			else 
 				strUpdateVar.Replace("%1%", CStringA{ QuoteString(e.m_strName) });
-			strUpdateVar.Replace("%2%", CStringA{ e.m_strName });
+			strUpdateVar.Replace("%2%", CStringA{ QuoteString(e.m_strName) });
 			strUpdateVar.Replace("%3%", CStringA{ e.m_dataType==DataType::vtString ? QuoteString(e.m_strContent) : e.m_strContent });
 			strUpdateVar.Replace("%4%",CStringA{ QuoteString(strNeueBeschreibung) });
 

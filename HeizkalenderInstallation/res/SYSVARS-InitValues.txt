@@ -6,11 +6,11 @@
 4363	HK1-R-Liste		Zuordnung der Räume aus der Ressourcenverwaltung	20	true	true
 4361	HK1-Schaltliste		Gelesene Termine aus Skript 1. Hier bitte nichts verändern!	20	true	true
 4365	HK1-CD-OrganisationsId		Organisations ID in ChurchDesk	20	true	true
-4367	HK1-CD-Token		API-Token für ChurchDesk	20	true	true
+4367	HK1-CD-Token		API-Token für ChurchDesk	20	false	true
 4351	HK1-CT-Gemeindename		Name der Gemeinde in Churchtools	20	true	true
-4357	HK1-CT-Token		Sicherheitstoken für ChurchTools	20	true	true
-6194	HK1-ICS-Url		URL des iCal Kalender	20	true	true
-6216	HK1-GK-API-Key		API-Key für den Google-Kalender	20	true	true
+4357	HK1-CT-Token		Sicherheitstoken für ChurchTools	20	false	true
+6194	HK1-ICS-Url		URL des iCal Kalender	20	false	true
+6216	HK1-GK-API-Key		API-Key für den Google-Kalender	20	false	true
 6218	HK1-GK-Kalender-ID		ID des Google-Kalender	20	true	true
 4330	HK1-Log		Variable um ein einfaches Log im System Protokoll zu erzeugen	20	true	true
 4328	HK1-Logging	true	Flag um das Logging für Skript 1 ein- und auszuschalten	2	true	true

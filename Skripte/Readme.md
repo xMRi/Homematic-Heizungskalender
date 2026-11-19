@@ -4,11 +4,14 @@
 > Diese Datei ist im Markdown-Format geschrieben. Wenn Sie sie in einem normalen Texteditor
 > öffnen, sind darin Formatierungszeichen (z. B. `#`, `**`, `|`) sichtbar.
 > Mit allen Formatierungen können Sie sie online ansehen unter:
-> <https://xmri.github.io/Homematic-Heizungskalender/>
+> <https://xmri.github.io/Homematic-Heizungskalender/>  
+> Das gesamte GitHub-Projekt findet sich unter:  
+> <https://github.com/xMRi/Homematic-Heizungskalender>
 
-Der HomeMatic-Heizungskalender dient zur Steuerung der Homematic über ChurchTools, ChurchDesk, iCal
-oder Google. Er umfasst Skripte, Tools und ein Installations- und Updateprogramm. Die Skripte
-werden intern über Systemvariablen gesteuert.
+Der **Heizkalender** ermöglicht die automatische, termingesteuerte Regelung von Heizkörpern und
+Raumthermostaten in Homematic und OpenCCU auf Basis von Google Kalender, iCal, ChurchTools oder ChurchDesk.  
+Das Projekt umfasst die zentralen Steuerungs-Skripte (intern gesteuert über Systemvariablen), ergänzende
+Hilfs-Tools sowie eine eigene Installations- und Update-Software.
 
 ## Allgemeines
 
@@ -16,7 +19,8 @@ Der Heizkalender geht auf eine Idee von Helmut W. Diedrichs zurück und wurde er
 Arheilgen angewendet. Lukas Helduser entwickelte 2023 auf der Basis von Homematic das Heizkalender-Programm für die 
 Allgemeinheit, einschließlich verschiedener Varianten. Vielen Dank an die bisherigen Anwender für ihre 
 Verbesserungsvorschläge, insbesondere an die Pilotgemeinden. Dieser Code wurde im Rahmen der 
-Heizkalender-Implementierung der Baptisten-Gemeinde Hanau von Martin Richter stark optimiert und erweitert.
+Heizkalender-Implementierung der Baptisten-Gemeinde Hanau von Martin Richter stark optimiert und erweitert.  
+Weiterer Dank gilt Thomas Tatzel für sein Addin und weitreichende Verbesserungen am Projekt.
 
 Das Heizkalender-Team freut sich, dass Sie den kostenlosen Heizkalender anwenden und damit einen
 Beitrag zum Umweltschutz leisten. Es wäre schön, wenn Sie uns Ihre Nutzung per E-Mail mitteilen:

@@ -16,8 +16,9 @@ Sonderbefehlen steuern.
 Durch die gesamte Installation führen folgende Dokumente:
 
 - [Struktur planen](planung.md)
-- [Zugangsdaten für Kalender beschaffen](kalender-einrichten.md)
 - [Einrichtung der CCU](ccu-einrichten.md)
+- [Remote-Zugriff](remote-zugriff.md)
+- [Zugangsdaten für Kalender beschaffen](kalender-einrichten.md)
 - [Einrichtung des Heizkalenders mir der `HeizkalenderInstallation.exe`-Anleitung](../heizkalender-installation/readme.md).
 - [Informationen zu Updates](updates.md)
 

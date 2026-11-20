@@ -13,6 +13,8 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-20]
+
 ### Geändert 
 - Docs: Erläuterung zu HK1-Vorlaufzeit verbessert.
 - HeizkalenderInstallation: Version 5.1.2

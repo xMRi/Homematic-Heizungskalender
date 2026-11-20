@@ -13,6 +13,23 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+### Geändert 
+- Docs: Erläuterung zu HK1-Vorlaufzeit verbessert.
+- HeizkalenderInstallation: Version 5.1.2
+
+### Behoben
+
+- Skript 1 Google: Berechnung Nachlaufzeit war inkorrekt. Diese war immer 0.
+- Skript 1 iCal: RRULE WEEKLY Berechnung war falsch. Es wurden aufeinanderfolgende Tage errechnet
+- HeizkalenderInstallation: Installation berücksichtigt nur noch Variablen, die in unser Namensschema passen.
+- HeizkalenderInstallation: Einige Variablen sollten nicht sichtbar sein.
+- HeizkalenderInstallation: Das Update Skript enthielt überflüssigen Code, durch Variablen wurde die Struktur extrem vereinfacht.
+- HeizkalenderInstallation: Beim Aktualisieren der Variablen kann es zu einem Syntax Fehler beim Update kommen.
+
+### Hinzugefügt
+
+- Skripte: HK1-Vorlaufzeit wird automatisch vergrößert bei Bedarf
+
 ## [2026-11-19]
 
 ### Hinzugefügt

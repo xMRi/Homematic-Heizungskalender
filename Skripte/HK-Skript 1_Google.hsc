@@ -47,36 +47,6 @@ boolean DEBUG=0;
 !// Mit 0 wird die Einstellung aus der HKx-Logging übernommen
 integer log=0;
 
-!// Zeitfenster fuer Termine: von (Terminstart minus zeitVorlauf) bis
-!// (Terminende plus zeitNachlauf). Die Haltezeit zeitNachlauf haelt einen beendeten Termin
-!// so lange in der Schaltliste, dass HK-Skript 3 ihn noch ausschalten kann.
-!// Kein Heiz-Nachlauf.
-integer zeitVorlauf=12*60;		!// 12 Stunden (Default, falls HK1-Vorlaufzeit nicht gesetzt)
-object objVorlaufzeit = dom.GetObject(vrp#"HK1-Vorlaufzeit");
-if(objVorlaufzeit) {
-  zeitVorlauf = objVorlaufzeit.State().ToInteger();
-}
-!// Die Raumvariable enthält die individuelle Ausschaltverschiebung in Feld 5.
-!// Ein negativer Wert verschiebt das Ausschalten nach hinten. Die Schaltliste muss
-!// daher bis 30 Minuten nach der spätesten individuellen Ausschaltzeit erhalten bleiben.
-integer minRaumNachlauf=0;
-integer raumNachlauf;
-object objRaumNachlauf;
-foreach(RaumVar, HKGListe.Replace("+",";").Split(";")){
-  if(RaumVar!=""){
-    objRaumNachlauf=dom.GetObject(RaumVar);
-    if(objRaumNachlauf){
-      raumNachlauf=objRaumNachlauf.State().StrValueByIndex(";",5).ToInteger();
-      if(raumNachlauf<minRaumNachlauf){
-        minRaumNachlauf=raumNachlauf;
-      }
-    }
-  }
-}
-integer zeitNachlauf=30-minRaumNachlauf;
-if(DEBUG){WriteLine("Schaltliste-Nachlauf: " # zeitNachlauf # " Minuten");}
-
-
 !// Der Code wurde in weiten teilen von der ChurchDesk iCal Variante genommen
 
 !// Logging vorbereiten
@@ -113,6 +83,37 @@ if(DEBUG){
   WriteLine("HKGListe=" # HKGListe);
   WriteLine("RIdListe=" # RIdListe);
 }
+
+!// Zeitfenster fuer Termine: von (Terminstart minus zeitVorlauf) bis
+!// (Terminende plus zeitNachlauf). Die Haltezeit zeitNachlauf haelt einen beendeten Termin
+!// so lange in der Schaltliste, dass HK-Skript 3 ihn noch ausschalten kann.
+!// Kein Heiz-Nachlauf.
+integer zeitVorlauf=12*60;		!// 12 Stunden (Default, falls HK1-Vorlaufzeit nicht gesetzt)
+object objVorlaufzeit = dom.GetObject(vrp#"HK1-Vorlaufzeit");
+if(objVorlaufzeit) {
+  zeitVorlauf = objVorlaufzeit.State().ToInteger();
+}
+
+!// Die Raumvariable enthält die individuelle Ausschaltverschiebung in Feld 5.
+!// Ein negativer Wert verschiebt das Ausschalten nach hinten. Die Schaltliste muss
+!// daher bis 30 Minuten nach der spätesten individuellen Ausschaltzeit erhalten bleiben.
+integer minRaumNachlauf=0;
+integer raumNachlauf;
+object objRaumNachlauf;
+string RaumVar;
+foreach(RaumVar, HKGListe.Replace("+",";").Split(";")){
+  if(RaumVar!=""){
+    objRaumNachlauf=dom.GetObject(RaumVar);
+    if(objRaumNachlauf){
+      raumNachlauf=objRaumNachlauf.State().StrValueByIndex(";",5).ToInteger();
+      if(raumNachlauf<minRaumNachlauf){
+        minRaumNachlauf=raumNachlauf;
+      }
+    }
+  }
+}
+integer zeitNachlauf=30-minRaumNachlauf;
+if(DEBUG){WriteLine("Schaltliste-Nachlauf: " # zeitNachlauf # " Minuten");}
 
 !// Start und Enddatum setzen, End Datum = 1+Tage
 integer versatzGMT=(system.Date("%z").Substr(1,2)).ToInteger()*3600;

@@ -491,8 +491,10 @@ foreach(RIdEintrag,RIdListe.Split(";")) {
 
         if (strFreq == "DAILY"){
           testDatum = testDatum + (86400 * iInterval);
-        }elseif (strFreq == "WEEKLY"){
+        }elseif ((strFreq == "WEEKLY") && (strBYDAY!="")){
           testDatum = testDatum + 86400;
+        }elseif ((strFreq == "WEEKLY") && (strBYDAY=="")){
+          testDatum = testDatum + 86400*7*iInterval;
         }elseif ((strFreq == "MONTHLY") || (strFreq == "YEARLY")){
           integer y = testDatum.ToTime().Year();
           integer m = testDatum.ToTime().Month();

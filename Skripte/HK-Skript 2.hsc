@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    18.11.2026
+!// Stand:    20.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -12,15 +12,9 @@
 !// Es besteht keinerlei Garantie oder Haftung. Nutzung auf eigene Verantwortung.
 !//================================================================================================
 !//
-!// Der Code basiert in großen Teilen auf der Datei:
-!//  HKP-S2-3.3.1  Skript2 Schalten_Heizkalender V2.13.7.c
-!// Der ursprüngliche Code wurde geschrieben von:
-!//   Lukas Helduser (Youtube: https://www.youtube.com/LukasvandeHaag)
-!// Ich (MRi) habe diesen Code dann erweitert, korrigiert und verbessert um sie an die Nutzung in
-!// meiner Gemeinde anzupassen.
-!//
 !// Skript sollte alle 5min laufen
 !//
+!// MRi: 2026-11-19 HK1-Vorlaufzeit automatisch erhöhen
 !// TT:  2026-11-18 SDFlag als real deklariert (war integer): Temperatur-Sondervorgaben mit Nachkommastellen gehen nicht verloren
 !// TT:  2026-11-15 Tote Variable zeitNachlauf entfernt;
 !// MRi: 2026-11-11 Abgelaufene Termine erst entfernen, wenn sie nicht mehr in der HK1-Schaltliste sind
@@ -90,6 +84,7 @@ object objDP;
 string HK2VLZListe="";
 string SchaltListeAlt=dom.GetObject(vrp # "HK2-Schaltliste").State();
 string SchaltListeNeu="";
+integer maxVorlauf = 0;
 
 !// Logging vorbereiten
 var logObj=dom.GetObject(vrp # "HK2-Log");
@@ -573,6 +568,10 @@ foreach(TLEintrag,TerminListe){
           mindestHinweis = " [Mindest]";
           offsetTempAn = (gesamtOffsetKorr-gesamtOffset)+offsetTempAn;
         }
+        
+        !// Merke Dir die länsgte Vorlaufzeit-Anzeige (Wert ist negativ in Sekunden)
+        maxVorlauf = maxVorlauf.Max(0-((offsetRaumAn + offsetTempAn)/60)).ToInteger();
+        
         string logText = RaumLogName # " - Heizen - AT " # AT.ToString(1) # "°C / GT " # GT.ToString(1) # "°C / IST " # ISTTemperatur.ToString(1) # "°C / ZIEL " # RTemp.ToString(1) # "°C" # HUMText # " - " # EIN.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
         logText = logText # (offsetRaumAn/60).ToInteger() #"min ";
@@ -595,6 +594,9 @@ foreach(TLEintrag,TerminListe){
           strTemp = " - Variable setzen - ";
         }
 
+        !// Merke Dir die länsgte Vorlaufzeit-Anzeige 
+        maxVorlauf = maxVorlauf.Max(0-(offsetRaumAn/60)).ToInteger();
+        
         !// Reale Schaltzeiten berechnen
         string logText = RaumLogName # strTemp #EIN.ToTime().Format("%X").Substr(0,5) # " ";
         if (offsetRaumAn>0){ logText=logText#"+"; }elseif(offsetRaumAn==0){ logText=logText#"-"; }
@@ -670,6 +672,26 @@ if(objVLZ) {
     objVLZ.State(HK2VLZListe);
   }
 }
+
+!// -----------------------------------------------------------------
+
+!// Kontrolle der HK1-Vorlaufzeit, ob diese im Rahmen der maxVorlauf Werte liegen, die wir errechnet haben und damit 
+!// benötigen. Wenn nicht wird HK1-Vorlaufzeit auf den errechneten höheren Wert gesetzt.
+
+object objVorlaufzeit = dom.GetObject(vrp#"HK1-Vorlaufzeit");
+if(objVorlaufzeit) {
+  !// Maximalen Vorlauf auf 30min aufrunden
+  maxVorlauf = (((maxVorlauf.ToInteger()+29)/30)*30).ToInteger();  
+  !// Prüfe aktuellen Vorlauf der für das einlesen der Termine benötigt wird
+  integer zeitVorlauf = objVorlaufzeit.State().ToInteger();
+  if (zeitVorlauf<maxVorlauf){
+    if(log) {logObj.State("HK1-Vorlaufzeit erhöht auf " # maxVorlauf # "min");}
+    if(DEBUG)  {WriteLine("HK1-Vorlaufzeit erhöht auf " # maxVorlauf # "min");}
+    objVorlaufzeit.State(maxVorlauf);
+  }
+}
+
+!// -----------------------------------------------------------------
 
 if(log){logObj.State("Ende Berechnung der Schaltzeiten==============");}
 WriteLine("Ende Berechnung der Schaltzeiten");

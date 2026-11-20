@@ -314,7 +314,9 @@ Beispiele:
 
 ### HK1-Vorlaufzeit
 
-Optionale Systemvariable (Typ Integer, Einheit: min). Legt fest, wie weit Skript 1
+Um die Vorlaufzeiten korrekt schalten zu können müssen auch alle Termine in der Zukunft aus dem entsprechenden Zeitfenster gelesen werden. Sind Vorheizzeiten sehr lange, muss dieses Zeitfenster evtl. vergrößert werden.
+
+Optionale Systemvariable (Typ Integer, Einheit: min). Legt fest, wie weit Skript 1 
 beim Einlesen des Kalenders in die Zukunft schaut (Zeithorizont für die
 Terminabfrage). Wird die Variable nicht angelegt, verwendet Skript 1 den
 hardcodierten Default von 720 min (12 Stunden).
@@ -326,10 +328,9 @@ hardcodierten Default von 720 min (12 Stunden).
 | Default (ohne Variable) | 720 |
 | Wertebereich | 0 bis 1380 (23 Stunden) |
 
-Alle fünf Skript-1-Varianten lesen die Variable beim Start; ist sie nicht vorhanden,
-bleibt der Default aktiv. Setzt der Administrator die Variable auf einen kleineren
-Wert (z.B. 120 min), schaut Skript 1 nur 2 Stunden voraus und trägt Termine nicht
-mehr frühzeitig in die Schaltliste ein.
+Alle fünf Skript-1-Varianten lesen die Variable beim Start; ist sie nicht vorhanden, bleibt der Default (720min) aktiv. Setzt der Administrator die Variable auf einen kleineren Wert (z.B. 120 min), schaut Skript 1 nur 2 Stunden voraus und trägt Termine nicht mehr frühzeitig in die Schaltliste ein, so das die Vorheizzeiten eingehalten werden können. Zu große Werte machen auch keinen Sinn, weil diese alle Skripte mit Terminen belasten, die noch nicht fällig sind. Dies kann führt dann zu unnötigen Protokolleinträgen.
+
+Das `HK-Skript2` vergrößert diese Variable automatisch, wenn eine Vorheizzeit errechnet wird die größer ist als der aktuelle Wert von `HK1-Vorlaufzeit`. Der Wert wird dabei auf volle 30min aufgerundet. D.h. beim nächsten Einlesen der Termine werden dann weitere Termine in der Zukunft berücksichtigt und damit größere Vorheizzeiten automatisch ermöglicht.
 
 ### HK2-Kurve
 

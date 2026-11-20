@@ -10,6 +10,7 @@ Stadtmission Arheilgen angewendet. Lukas Helduser entwickelte 2023 auf der Basis
 das Heizkalender-Programm für die Allgemeinheit, inkl. Varianten.
 Dank an die seitherigen Anwender für ihre Verbesserungsvorschläge, insbesondere an die Pilot-Gemeinden. Dieser Code wurde im Rahmen der Heizkalender-Implementierung der Baptisten Gemeinde
 Hanau von Martin Richter stark optimiert und erweitert.
+Weiterer Dank gilt Thomas Tatzel für sein Addin und weitreichende Verbesserungen am Projekt.
 
 Das Heizkalender-Team freut sich, dass Sie den kostenlosen Heizkalender anwenden und somit einen
 Beitrag zum Umweltschutz leisten. Es wäre schön, wenn Sie die Nutzung per E-Mail anzeigen an: <info@heizkalender.de>

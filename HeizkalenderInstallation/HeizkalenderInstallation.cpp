@@ -1842,22 +1842,31 @@ oSV.Variable(%2%);
 	// Die SYSVARS-Init-Skripte zuvor haben die Variablen nur angelegt.
 	for (auto const& e : m_lstSysVars)
 	{
+		// Typ wir nicht kennen. Intern kennen wir nur boolean, integer und string. Alle anderen Typen ignorieren wir.
+		if (!IsMatchingSysVar(e.m_strName) ||
+			e.m_strName[0]==_T('$') || 			
+			(e.m_dataType!=DataType::vtboolean && e.m_dataType!=DataType::vtInteger && e.m_dataType!=DataType::vtString))
+			continue;
+
+		// Wir müssen die Beschreibung prüfen, ob sie sich geändert hat. Dazu holen wir uns die Default-Variable
 		auto const *pSysVarDefault = m_lstSysVarsDefault.Find(RemovePrefix(e.m_strName));
 		bool bBeschreibungGeaendert = (pSysVarDefault && e.m_strDescription!=pSysVarDefault->m_strDescription);
 		CString strNeueBeschreibung{ bBeschreibungGeaendert ? pSysVarDefault->m_strDescription : _T("") };
-		if (((e.m_bNew || e.m_bModified || e.m_bModifiedName) || bBeschreibungGeaendert) && !e.m_bDeleted)
 		{
 			CStringA strUpdateVar = R"x(
 object oSV = dom.GetObject (ID_SYSTEM_VARIABLES).Get(%1%);
 if (oSV) {
-  if (%1%!="%2%") {
-    oSV.Name("%2%");
+  var temp = %2%;
+  if (%1%!=temp) {
+    oSV.Name(temp);
   }
-  if (%4%!="") {
-	oSV.DPInfo(%4%);
+  var temp = %4%;
+  if (temp!="") {
+	oSV.DPInfo(temp);
   }
-  if (oSV.State()!=%3%) {
-    oSV.State(%3%);
+  var temp = %3%;
+  if (oSV.State()!=temp) {
+    oSV.State(temp);
   }
 }
 !//--------------------
@@ -1868,7 +1877,7 @@ if (oSV) {
 				strUpdateVar.Replace("%1%", CStringA{ IntToString(e.m_id) });
 			else 
 				strUpdateVar.Replace("%1%", CStringA{ QuoteString(e.m_strName) });
-			strUpdateVar.Replace("%2%", CStringA{ e.m_strName });
+			strUpdateVar.Replace("%2%", CStringA{ QuoteString(e.m_strName) });
 			strUpdateVar.Replace("%3%", CStringA{ e.m_dataType==DataType::vtString ? QuoteString(e.m_strContent) : e.m_strContent });
 			strUpdateVar.Replace("%4%",CStringA{ QuoteString(strNeueBeschreibung) });
 
@@ -1880,7 +1889,7 @@ if (oSV) {
 	// Hide Some vars
 	{
 		PCTSTR const aFields[] = {
-			_T("HK-Log"), _T("HK1-Log"), _T("HK2-Log"), _T("HK-LogHeizkurvenkontrolle")
+			_T("HK-Log"), _T("HK1-Log"), _T("HK2-Log"), _T("HK3-Log"), _T("HK-LogHeizkurvenkontrolle")
 		};
 		for (auto const *pName : aFields)
 		{

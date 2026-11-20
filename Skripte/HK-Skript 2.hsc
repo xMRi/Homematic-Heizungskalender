@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    19.11.2026
+!// Stand:    20.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -595,7 +595,7 @@ foreach(TLEintrag,TerminListe){
         }
 
         !// Merke Dir die länsgte Vorlaufzeit-Anzeige 
-        maxVorlauf = maxVorlauf.Max(0-(offsetRaumAn/60)),ToInteger();
+        maxVorlauf = maxVorlauf.Max(0-(offsetRaumAn/60)).ToInteger();
         
         !// Reale Schaltzeiten berechnen
         string logText = RaumLogName # strTemp #EIN.ToTime().Format("%X").Substr(0,5) # " ";

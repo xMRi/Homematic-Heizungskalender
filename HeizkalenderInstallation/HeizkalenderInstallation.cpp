@@ -1842,9 +1842,9 @@ oSV.Variable(%2%);
 	// Die SYSVARS-Init-Skripte zuvor haben die Variablen nur angelegt.
 	for (auto const& e : m_lstSysVars)
 	{
-		// System Variablen überspringen und auch Variablen, deren Typ wir nicht kennen. Intern kennen
-		// wir nur boolean, integer und string. Alle anderen Typen ignorieren wir.
-		if ((!e.m_strName.IsEmpty() && e.m_strName[0]==_T('$')) || 
+		// Typ wir nicht kennen. Intern kennen wir nur boolean, integer und string. Alle anderen Typen ignorieren wir.
+		if (!IsMatchingSysVar(e.m_strName) ||
+			e.m_strName[0]==_T('$') || 			
 			(e.m_dataType!=DataType::vtboolean && e.m_dataType!=DataType::vtInteger && e.m_dataType!=DataType::vtString))
 			continue;
 

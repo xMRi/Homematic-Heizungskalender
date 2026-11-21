@@ -1,6 +1,6 @@
 !// Tool zur Kontrolle der Heizkurve
 !//================================================================================================
-!// Stand:    21.11.2026
+!// Stand:    22.11.2026
 !// Autoren:  Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -13,6 +13,7 @@
 !// Skript sollte alle 5min laufen ca. 30 Sekunden nach dem Schaltskript
 !//
 
+!// MRi: 2026-11-22 Einfachere Ermittlung, des aktuellen Termines
 !// MRi: 2026-11-21 Wenn ein Termin in der AUS Pahse ist, darf er für einen Heizbeginn nicht 
 !//                 berücksichtigt werden. Er gehört vermutlich zu einem späteren SLListen Eintrag.
 !// TT:  2026-11-15 ATLog-Format vereinfacht: kein °C-Suffix (war "[akt X.X°C]", neu "[Akt: X.X]").
@@ -136,8 +137,7 @@ string bearbeiteteRaeume=";";
 WriteLine("Beginn Heizkurvenkontrolle");
 if(DEBUG)  {WriteLine("Vollständige Raumliste: "+VarNamen);}
 
-!// Schleife über die Schaltliste. ACHTUNG: Das Ganze kann nur funktionieren, wenn die Schaltliste aufsteigend
-!// aufgebaut ist.
+!// Schleife über die Schaltliste.
 string SLEintrag;
 if(DEBUG){WriteLine("SListe=" # SListe);}
 while(SListe!=""){
@@ -153,49 +153,105 @@ while(SListe!=""){
   }
 
   !// Ersten Raumlisteneintrrag als Start nehmen
-  string  RVN = SLEintrag.StrValueByIndex(";",0);
+  string RVN = SLEintrag.StrValueByIndex(";",0);
+  if(DEBUG){WriteLine("RVN=" # RVN);}
 
-  !// Suche ob, es diesen Raum nochmal gibt. Dadurch dass wir mit dem Hashmark suchen,
-  !// finden wir nicht den ersten Eintrag.
-  string SListe2 = SListe.Substr(SLEintrag.Length()+1);
-  integer iPos = ("#" # SListe2).Find("#" # RVN # ";");
+  !// Wir merken und den aktuellen Termin.
+  !// 1. Liegt AUS in der Vergangenheit, dann ist es der Termin mit dem größten AUS. A^lso
+  !//    der Termin der am nähesten an NOW liegt.
+  !// 2. Liegt EIN in der Vergangebnheit und AUS in der Zukunft ist es der Termin mit dem kleinsten 
+  !//    EIN. D.h. der Termin, der schon am längsten im System liegt
+  !// Nur dieser Termin muss behandelt werden. Alle anderen Termine sind nicht relevant.
+  !// Jeder Raum wird damit immer nur einmal hier behandelt, mit einem relevanten Termin.
+  string SLEintrag = "";
 
-  !// Wenn es keinen weiteren Eintrag gibt, nehmen wir diesen
-  while (iPos>=0) {
-    !// Rest String ab dem zweiten Eintrag nehmen
-    SListe2 = SListe2.Substr(iPos);
-    !// Diesen Eintrag nehmen und prüfen ob der Heizbeginn früher liegt
-    string SLEintrag2 = SListe2.StrValueByIndex("#",0);
-
-    !// Prüfe und nimm den kleineren Eintrag. Wir vergleichen den ganzen Eintrag
-    !// D.h. kürzere Termine bei gleichem Terminstart werden zuerst gefunden.
-    string EIN1 = SLEintrag.StrValueByIndex(";",4) # ";" # SLEintrag.StrValueByIndex(";",5);
-    string EIN2 = SLEintrag2.StrValueByIndex(";",4) # ";" # SLEintrag2.StrValueByIndex(";",5);
-    if (EIN1>EIN2){
-      SLEintrag = SLEintrag2;
+  !// Wir arbeiten jetzt alle Einträge zu diesem einen speziellen Raum ab und versuchen
+  !// den aktuellen Termin zu finden, der aktuell relevant ist.
+  while (true){
+    !// Suche ob, es diesen Raum nochmal gibt. Dadurch dass wir mit dem Hashmark suchen,
+    !// finden wir nicht den ersten Eintrag.
+    integer iPos = ("#" # SListe).Find("#" # RVN # ";");
+    if (iPos<0){
+      !// wir haben keinen Eintrag mehr für diesen Raum.
+      break;
     }
 
-    !// Nächsten Eintrag suchen. Der aktuelle Eintrag soll nicht gefunden werden.
-    !// Also setzen wir einen falschen Prefix "-".
-    iPos = ("-" # SListe2).Find("#" # RVN # ";");
-  }
+    !// Wenn es keinen weiteren kleineren Eintrag gibt, nehmen wir diesen
+    while (iPos>=0){
+      !// Rest String ab dem zweiten Eintrag nehmen
+      string SListe2 = SListe.Substr(iPos);
 
-  !// Wir haben nun den kleinsten Schaltlisten Eintrag für diesen Raum.
-  !// Den entfernen wir nun aus der Schaltliste, weil wir ihn behandelt haben
-  !// Abschliessendes # noetig damit auch der letzte Eintrag (ohne nachfolgendes #) gefunden wird
-  iPos = ("#" # SListe # "#").Find("#" # SLEintrag # "#");
-  if (iPos<0){
-    if(DEBUG){WriteLine("Fataler Fehler. Heizlisteneintrag konnte nicht gefunden werden!");}
-    quit;
-  }
+      !// Diesen gefundenen Eintrag für den Raum RVN prüfen
+      string SLEintrag2 = SListe2.StrValueByIndex("#",0);
+      
+      !// Diesen Eintrag suchen wirt nun in der Schaltliste, weil wir ihn behandeln.
+      !// Abschliessendes # noetig damit auch der letzte Eintrag (ohne nachfolgendes #) gefunden wird
+      iPos = ("#" # SListe # "#").Find("#" # SLEintrag2 # "#");
+      if (iPos<0){
+        if(DEBUG){WriteLine("Fataler Fehler. Heizlisteneintrag konnte nicht gefunden werden!");}
+        quit;
+      }
 
-  !// Entferne ab der Position inkl. # Zeichen
-  SListe = SListe.Substr(0,iPos) # SListe.Substr(iPos+SLEintrag.Length()+1);
+      !WriteLine("SLEintrag    =" # SLEintrag);
+      !WriteLine("SLEintrag2   =" # SLEintrag2);
+
+      !// Was haben wir bisher? Kein Eintrag, dann nehmen wir den ersten
+      if (SLEintrag==""){
+        !// Dies ist der erste Eintrag, Termine in der Zukunft werden später ignoriert
+        SLEintrag = SLEintrag2;
+      }else{
+        !// Liegt der AUS Termin in der Vergangenheit, nehmen wir den größten
+        !// In der EIN-Phase nehmen wir den der am ältesten ist.
+        integer EIN1 = SLEintrag.StrValueByIndex(";",4).ToTime().ToInteger();
+        integer AUS1 = SLEintrag.StrValueByIndex(";",5).ToTime().ToInteger();
+        integer EIN2 = SLEintrag2.StrValueByIndex(";",4).ToTime().ToInteger();
+        integer AUS2 = SLEintrag2.StrValueByIndex(";",5).ToTime().ToInteger();
+
+        !// aktuellen Termin prüfen
+        if(NOW<EIN1){
+          !// Der aktuelle Termin liegt in der Zukunft, wir nehmen immer den Neuen
+          !// Der evtl. auch in der Zukunft liegt. Ist egal. Termine in der Zukunft
+          !// werden später sowieso ignoriert
+          SLEintrag = SLEintrag2;
+        }elseif(NOW<EIN2){
+          !// Der neue Termin liegt in der Zukunft, wir ignorieren ihn
+        }elseif((EIN1<=NOW) && (NOW<=AUS1)){
+          !// Der aktuelle Termin ist in der EIN Phase ist
+          if ((EIN2<=NOW) && (NOW<=AUS2)){
+            !// Der zweite Termin auch in der EIN-Phase?
+            !// Anderfalls ist der zweite Termin ist in der AUS Phase oder in der Zukunft, also bleibenden
+            !// wir bei dem alten SLEintrag
+            if (EIN2<EIN1){
+              !// Wir nehmen den ältesten Termin
+              SLEintrag = SLEintrag2;
+            }
+          }
+        }else{
+          !// Der erste Termin ist in der AUS-Phase. Der neue Termin muss alt sein oder EIN.
+          !// Liegt der zweite Termin in der EIN-Phase nehmen wir den.
+          if ((EIN2<=NOW) && (NOW<=AUS2)){
+            !// Der neue Termin ist in der EIN-Phase, wir nehmen den
+            SLEintrag = SLEintrag2;
+          }elseif(AUS1<AUS2){
+            !// Beide Termine liegen in der AUS-Phase wir nehmen den der näher an NOW Liegt
+            SLEintrag = SLEintrag2;
+          }
+        }
+      }
+      !WriteLine("SLEintrag neu=" # SLEintrag);
+
+      !// Entferne den bearbeiteten Eintrag ab der Position inkl. # Zeichen
+      SListe = SListe.Substr(0,iPos) # SListe.Substr(iPos+SLEintrag2.Length()+1);
+
+      !// Nächsten Eintrag für diesen Raum suchen. Wir durchsuchen den Rest der Liste.
+      !// Der behandelte Eintrag wurde ja entfernt.
+      iPos = ("#" # SListe).Find("#" # RVN # ";");
+    }
+  }
 
   !// Diesen Eintrag nun bearbeiten
   if(DEBUG){WriteLine("SLEintrag=" # SLEintrag);}
-  if (SLEintrag=="")
-  {
+  if (SLEintrag==""){
     continue;
   }
 
@@ -212,7 +268,6 @@ while(SListe!=""){
   integer AUS         = SLEintrag.StrValueByIndex(";",5).ToTime().ToInteger();
 
   !// Raumbestimmen
-  if(DEBUG){WriteLine("RVN=" # RVN);}
   object objRVN = dom.GetObject(RVN);
   if (!objRVN){
     if(log){logObj.State("Raumvariable " # RVN # " wurde nicht gefunden!");}
@@ -362,7 +417,7 @@ while(SListe!=""){
       !// setzt Bit 3 (kein Temperatur-Sensor vorhanden)
       status = status | 8;
     }
-    
+
     !// Räume merken, die wir bearbeitet haben.
     bearbeiteteRaeume = bearbeiteteRaeume # RVN # ";";
     !// Merker (Bit 3) erhalten, damit der Hinweis nicht bei jedem Lauf erneut kommt.
@@ -374,10 +429,10 @@ while(SListe!=""){
   maxTemperatur = maxTemperatur.Max(istTemperatur);
   if (DEBUG) { WriteLine("maxTemperatur =" # maxTemperatur.ToString(1) #  " istTemperatur=" # istTemperatur.ToString(1)); }
 
-  !// Prüfen ob Heizbeginn erkannt wird. Nur wenn bit 0 = aus. 
+  !// Prüfen ob Heizbeginn erkannt wird. Nur wenn bit 0 = aus.
   if ((aktuellerSchaltZustand==1) && ((status & 1)==0)){
-    !// Die Heizung ist an. Wir prüfen ob dieser Schaltlisteneintrag zu einem alten Termin gerhört, dessen Ausschalttermin schon 
-    !// erreicht wurde: Da die  Heizung an ist, muss jemand anderes (vermutlich ein späterer Termin) diesen Eintrag geschaltet 
+    !// Die Heizung ist an. Wir prüfen ob dieser Schaltlisteneintrag zu einem alten Termin gerhört, dessen Ausschalttermin schon
+    !// erreicht wurde: Da die  Heizung an ist, muss jemand anderes (vermutlich ein späterer Termin) diesen Eintrag geschaltet
     !// haben. Wir bearbeiten diesen Eintrag nicht!
     if (AUS<NOW){
       if (DEBUG) { WriteLine(RaumLogName # " ist bereits in der AUS-Phase, aber Heizung ist an. Es muss noch einen späteren Termin geben, der dies ausgelöst hat!"); }
@@ -390,8 +445,8 @@ while(SListe!=""){
     if (!strTemp.StartsWith("-")){
       strTemp = "+" # strTemp;
     }
-    logObj.State          (RaumLogName # " Heizbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", AT: " # ATLog);
-    if (DEBUG) { WriteLine(RaumLogName # " Heizbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", AT: " # ATLog); }
+    logObj.State          (RaumLogName # "Heizbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", AT: " # ATLog);
+    if (DEBUG) { WriteLine(RaumLogName # "Heizbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", AT: " # ATLog); }
     !// setzt Bit 0 (Heizvorgang), löscht alle anderen Zustände außer Bit 5 (Terminbeginn bereits geloggt)
     status = 1 | (status & 32);
   }
@@ -457,7 +512,7 @@ while(SListe!=""){
   if (DEBUG) { WriteLine("RaumParameter=" # RaumParameter); }
   RaumListe = RaumListe # RaumParameter;
   if (DEBUG) { WriteLine("RaumListe=" # RaumListe); }
-  
+
   !// Räume merken, die wir bearbeitet haben.
   bearbeiteteRaeume = bearbeiteteRaeume # RVN # ";";
 }
@@ -505,3 +560,4 @@ if (objVar.State()!=neueRaumListe){
 !// -----------------------------------------------------------------
 
 WriteLine("Ende Heizkurvenkontrolle");
+

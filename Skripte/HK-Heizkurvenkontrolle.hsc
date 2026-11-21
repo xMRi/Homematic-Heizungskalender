@@ -1,6 +1,6 @@
 !// Tool zur Kontrolle der Heizkurve
 !//================================================================================================
-!// Stand:    15.11.2026
+!// Stand:    21.11.2026
 !// Autoren:  Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -13,6 +13,8 @@
 !// Skript sollte alle 5min laufen ca. 30 Sekunden nach dem Schaltskript
 !//
 
+!// MRi: 2026-11-21 Wenn ein Termin in der AUS Pahse ist, darf er für einen Heizbeginn nicht 
+!//                 berücksichtigt werden. Er gehört vermutlich zu einem späteren SLListen Eintrag.
 !// TT:  2026-11-15 ATLog-Format vereinfacht: kein °C-Suffix (war "[akt X.X°C]", neu "[Akt: X.X]").
 !// TT:  2026-11-14 ATLog-Format: eckige Klammern statt runde (war "(akt=X.X)", neu "[akt X.X°C]").
 !// TT:  2026-11-13 Überlappende Termine: ausTerminMax (Feld 3 in RaumParameter) trackt das
@@ -319,9 +321,6 @@ while(SListe!=""){
     }
   }
 
-  !// Räume merken, die geschaltet werden.
-  bearbeiteteRaeume = bearbeiteteRaeume # RVN # ";";
-
   !// Vorgegebene Temperatur oder Raumtemperatur bestimmen
   if(SDFlag<=0){
     !// Temperaturen individuell bestimmen
@@ -363,6 +362,9 @@ while(SListe!=""){
       !// setzt Bit 3 (kein Temperatur-Sensor vorhanden)
       status = status | 8;
     }
+    
+    !// Räume merken, die wir bearbeitet haben.
+    bearbeiteteRaeume = bearbeiteteRaeume # RVN # ";";
     !// Merker (Bit 3) erhalten, damit der Hinweis nicht bei jedem Lauf erneut kommt.
     RaumListe = RaumListe # "#" # RVN # ";" # status # ";" # maxTemperatur.ToString(1) # ";" # ausTerminMax;
     continue;
@@ -372,8 +374,15 @@ while(SListe!=""){
   maxTemperatur = maxTemperatur.Max(istTemperatur);
   if (DEBUG) { WriteLine("maxTemperatur =" # maxTemperatur.ToString(1) #  " istTemperatur=" # istTemperatur.ToString(1)); }
 
-  !// Prüfen ob Heizbeginn erkannt wird. Nur wenn bit 0 = aus
+  !// Prüfen ob Heizbeginn erkannt wird. Nur wenn bit 0 = aus. 
   if ((aktuellerSchaltZustand==1) && ((status & 1)==0)){
+    !// Die Heizung ist an. Wir prüfen ob dieser Schaltlisteneintrag zu einem alten Termin gerhört, dessen Ausschalttermin schon 
+    !// erreicht wurde: Da die  Heizung an ist, muss jemand anderes (vermutlich ein späterer Termin) diesen Eintrag geschaltet 
+    !// haben. Wir bearbeiten diesen Eintrag nicht!
+    if (AUS<NOW){
+      if (DEBUG) { WriteLine(RaumLogName # " ist bereits in der AUS-Phase, aber Heizung ist an. Es muss noch einen späteren Termin geben, der dies ausgelöst hat!"); }
+      continue;
+    }
     !// Sollten wir einen neuen Heizbeginn haben, setzen wir die maxTemperatur wieder auf istTemperatur
     maxTemperatur = istTemperatur;
     !// Heizbeginn erkannt
@@ -448,6 +457,9 @@ while(SListe!=""){
   if (DEBUG) { WriteLine("RaumParameter=" # RaumParameter); }
   RaumListe = RaumListe # RaumParameter;
   if (DEBUG) { WriteLine("RaumListe=" # RaumListe); }
+  
+  !// Räume merken, die wir bearbeitet haben.
+  bearbeiteteRaeume = bearbeiteteRaeume # RVN # ";";
 }
 
 if (DEBUG) { WriteLine("----------------------------------------------"); }

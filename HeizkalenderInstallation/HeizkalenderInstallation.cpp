@@ -1860,13 +1860,13 @@ if (oSV) {
   if (%1%!=temp) {
     oSV.Name(temp);
   }
-  var temp = %4%;
-  if (temp!="") {
-	oSV.DPInfo(temp);
-  }
   var temp = %3%;
   if (oSV.State()!=temp) {
     oSV.State(temp);
+  }
+  var temp = %4%;
+  if (temp!="") {
+	oSV.DPInfo(temp);
   }
 }
 !//--------------------
@@ -1878,7 +1878,14 @@ if (oSV) {
 			else 
 				strUpdateVar.Replace("%1%", CStringA{ QuoteString(e.m_strName) });
 			strUpdateVar.Replace("%2%", CStringA{ QuoteString(e.m_strName) });
-			strUpdateVar.Replace("%3%", CStringA{ e.m_dataType==DataType::vtString ? QuoteString(e.m_strContent) : e.m_strContent });
+
+			// Wir aktualisieren nur veränderte Variablen. (Dadurch bleiben Schallisten und Log Variablen unverändert
+			if (e.m_bModified)
+				strUpdateVar.Replace("%3%", CStringA{ e.m_dataType==DataType::vtString ? QuoteString(e.m_strContent) : e.m_strContent });
+			else
+				strUpdateVar.Replace("%3%", "oSV.State()");
+
+			// Neue Beschreibung wnen vorhanden
 			strUpdateVar.Replace("%4%",CStringA{ QuoteString(strNeueBeschreibung) });
 
 			// An die Liste aller Statements anfügen

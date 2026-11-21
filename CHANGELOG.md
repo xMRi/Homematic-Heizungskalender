@@ -13,6 +13,10 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## Behoben 
+
+-Skript: Heizkurvenkontrolle Wenn ein Termin in der AUS Phase ist, darf er für einen Heizbeginn nicht berücksichtigt werden. Er gehört vermutlich zu einem späteren SLListen Eintrag.
+
 ## [2026-11-20]
 
 ### Geändert 

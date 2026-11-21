@@ -562,26 +562,8 @@ Die Ausgabe der Log-Dateien erfolgt automatisch im zugehörigen Ordner für temp
 - `HeizkalenderInstallation_update.log`
     Alle Änderungen, die der Installer per Skript an der CCU vornimmt werden in diesem Update-Protokoll verzeichnet. Sollte es zu Problemen bei einem Update kommen, kann man über diese Datei nachvollziehen welche Änderungen das Installationsprogramm über das Skript-Interface durchgeführt hat.
 
-## Zugriff von außerhalb mit dem `HeizkalenderInstallation.exe`
+## Remote-Zugriff mit der `HeizkalenderInstallation.exe`
 
-Für den Fernzugriff auf die Homematic-Zentrale können unterschiedliche VPN-basierte Lösungen eingesetzt werden, beispielsweise WireGuard für den direkten Netzwerkzugriff oder CloudMatic Connect für den herstellerspezifischen Fernzugriff auf die CCU.
+Für den Fernzugriff auf die Homematic-Zentrale können unterschiedliche VPN-basierte Lösungen eingesetzt werden, beispielsweise **Tailscale** und **WireGuard** für den direkten Netzwerkzugriff oder **CloudMatic Connect** für den herstellerspezifischen Fernzugriff auf die CCU.
 
-### CloudMatic 
-
-Der externe Zugriff auf die CCU mit dem Installationsprogramm kann über die CloudMatic erfolgen. Hierbei wird entweder eine verschlüsselte HTTPS-Verbindung erzeugt über Port 44381, oder es wird unverschlüsselt über Port 8181 übertragen.  
-
-Eine Dokumentation wie der CloudMatic Fernzugang eingerichtet werden kann findet sich auf der Website von [CloudMatic/easy smarthome](https://docs.easy-smarthome.de/CloudMatic/Connect/Fernzugriff/?utm_source=chatgpt.com).  
-
-Die CloudMatic ist ein kostenpflichtiger Dienst. Für den Fernzugriff über ist mindestens das Paket *CloudMatic Connect* erforderlich. In vielen Installationen nutzen wir *CloudMatic Complete*, weil hier über den Fernzugriff hinaus auch noch eigene Diagramme, Eigene Ansichten und Darstellungen der eigenen CCU möglich sind.
-
-### WireGuard
-
-Mit einer modernen FRITZ!Box ab FRITZ!OS Version 7.50 kann dieser Zugriff einfach über WireGuard erfolgen.
-
-Auf er Webseite von ELV findet sich dazu folgende [Anleitung](
-https://ch.elv.com/elvwissen/elvprojekte/sicherheit/fernzugriff-auf-die-CCU-webui-und-hcu-web-per-wireguard-fritzbox/) zur Installation von WireGuard und dem Zugriff auf eine CCU.
-Auch ein passendes [Erklärvideo](https://www.youtube.com/watch?v=j7wpmiuKrxY) steht auf YouTube zur Verfügung.
-
-### Andere VPN Dienste
-
-Sofern ein Zugriff auf Port 8181 möglich ist, sollten auch andere VPN-Lösungen einen Zugriff mit der `HeizkalenderInstallation.exe` erlauben.
+Siehe [Remote-Zugriff](../heizkalender/remote-zugriff.md).

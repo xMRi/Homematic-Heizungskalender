@@ -367,6 +367,18 @@ if (oSV) {
 	oSV.Variable ("0.000000".ToFloat ()); oSV.ValueMin ("-50".ToFloat()); oSV.ValueMax ("50".ToFloat ());
 	WriteLine (svName # neut);}
 !------------
+svName= "%1%HK2-Aussentemperatur-Abrufzeit"; oSV=rSV.Get (svName);
+if (oSV) {
+	if ((oSV.ValueType()==20) && (oSV.ValueSubType()==11) && bupdate && (oSV.Type()!=OT_ALARMDP)) {
+		WriteLine (svName # altt);act=act+1;
+		oSV.Variable ("");}
+} elseif (bcreate) {
+	neu=neu+1;oSV = dom.CreateObject (1089); rSV.Add (oSV.ID()); oSV.Name (svName); oSV.ValueType (20); oSV.ValueSubType (11);
+	oSV.DPInfo("Letzter erfolgreicher Open-Meteo-Abruf als lokaler Datum-/Zeittext JJJJ-MM-TT HH:MM:SS. Wird vom AT-Skript geschrieben, nicht manuell ändern."); oSV.ValueUnit(""); oSV.Internal(false); oSV.Visible(true); oSV.Unerasable(false);
+	oSV.DPArchive (true && barchive);
+		oSV.Variable ("");
+	WriteLine (svName # neut);}
+!------------
 dom.RTUpdate(0);
 WriteLine ("------------------");
 WriteLine (act # " bestehende Systemvariablen aktualisiert");

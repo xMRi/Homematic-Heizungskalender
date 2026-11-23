@@ -13,6 +13,8 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-23]
+
 ### Hinzugefügt
 
 - Wetterabrufzeit: Letzten erfolgreichen Open-Meteo-Abruf speichern und im Addon mit Aktualitätswarnung anzeigen, ohne das Heizverhalten zu ändern.
@@ -27,8 +29,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ### Behoben
 
--Skript: Heizkurvenkontrolle Wenn ein Termin in der AUS Phase ist, darf er für einen Heizbeginn nicht berücksichtigt werden. Er gehört vermutlich zu einem späteren SLListen Eintrag.
-
+- Skript: Heizkurvenkontrolle Wenn ein Termin in der AUS Phase ist, darf er für einen Heizbeginn nicht berücksichtigt werden. Er gehört vermutlich zu einem späteren SListen Eintrag.
 - Skript 3: Ungültige oder leere Steuerkonfiguration verhindert im normalen H/HS-Einschaltpfad Befehle und Status EIN.
 - ChurchDesk-iCal: Zertifikatsprüfung nicht mehr deaktiviert; Abruffehler warnen bei aktiviertem Logging vor fehlenden Ressourcenterminen.
 - iCal: Monatspositionen, Wochenintervalle mit BYDAY und lokale TZID-Uhrzeiten korrigiert; Monatskandidaten nach UNTIL werden nicht übernommen.

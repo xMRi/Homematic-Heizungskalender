@@ -45,6 +45,7 @@ public:
 
 	bool m_bSimulation = {};
 	bool m_bForceUpdate = {};
+	bool m_bNoProgramUpdate = {};
 	CString m_strScriptDir;
 };
 
@@ -71,9 +72,15 @@ void CInstallerCommandLineInfo::ParseParam(const char* pszParam, BOOL bFlag, BOO
 		{
 			m_bSimulation = true;
 		}
-		else if (_stricmp(pszParam, "force")==0)
+		else if (_stricmp(pszParam, "force")==0 ||
+			     _stricmp(pszParam, "updateerzwingen")==0)
 		{
 			m_bForceUpdate = true;
+		}
+		else if (_stricmp(pszParam, "noupdate")==0 ||
+			     _stricmp(pszParam, "keinupdate")==0)
+		{
+			m_bNoProgramUpdate = true;
 		}
 		else
 			ParseParamFlag(pszParam);
@@ -180,6 +187,7 @@ BOOL CHeizkalenderInstallationApp::InitInstance()
 		m_strScriptPath = cmdInfo.m_strScriptDir;
 	m_bSimulation = cmdInfo.m_bSimulation;
 	m_bForceUpdate = cmdInfo.m_bForceUpdate;
+	m_bNoProgramUpdate = cmdInfo.m_bNoProgramUpdate;
 
 	// Warnungs dialog anzeigen
 	if (GetProfileInt(_T("General"), _T("ShowWarning"), TRUE))

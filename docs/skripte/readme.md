@@ -188,14 +188,20 @@ Benötigte Variablen: `HK1-ICS-Url`
 Sowie die Variablen: `HK1-R-Liste`, `HK2-HKG-Liste`, `HK1-Schaltliste`, `HK1-Log`, `HK1-Logging`
 Optional: `HK1-Vorlaufzeit`
 
-Das iCal Skript unterstützt auch das `RRULE` Schlüsselwort für Terminwiederholunge. Jedoch sind dann sind nur folgende Terminwiederholungsarten erlaubt:
+Die vorhandene RRULE-Verarbeitung bleibt auf einfache tägliche, wöchentliche, monatliche und jährliche Serien begrenzt. Die gezielten Korrekturen ersetzen den Parser nicht:
 
-- DAILY, WEEKLY; MONTHLY, YEARLY (Frequenz, täglich, wöchentlich, monatlich, jährlich)
-- UNTIL (bis Datum)
-- COUNT (Anzahl Termine)
-- BYDAY (Wiederholung Wöchentlich je Wochentag)
-- BYDAY (Wiederholung Monatlich erster, zweiter oder letzter Montag…)
-- INTERVAL (jede n‘te Wiederholung)
+- `WEEKLY` ohne `BYDAY` behält den Wochentag des Serienbeginns; `INTERVAL=2` bedeutet alle zwei Wochen. Mit einer Wochentagsliste wie `BYDAY=MO,TH` werden nur die zum Intervall gehörenden Serienwochen berücksichtigt. Wochenbeginn ist Montag; `WKST` wird nicht zusätzlich unterstützt.
+- `MONTHLY` mit einem einzelnen Positions-Wochentag wie `2MO`, `-1MO` oder `3TU` verwendet die entsprechende Monatsposition. Ein nicht vorhandener fünfter Wochentag wird in diesem Zweig übersprungen, nicht auf einen anderen Tag gekürzt. Die inklusive UNTIL-Grenze wird auch nach Berechnung des Monatstags berücksichtigt.
+- Die vorhandene COUNT-Verarbeitung zählt gültige Kandidaten; die Korrektur ist keine vollständige RFC-Prüfung der Kombination von Serienbeginn, BYDAY und COUNT.
+- DAILY und WEEKLY im vom bisherigen Parser lokal interpretierten TZID-Zweig führen das Kalenderdatum fort und setzen die ursprüngliche lokale Uhrzeit wieder ein. UTC- und Floating-Zweige behalten den bisherigen festen Sekundenfortschritt.
+
+Die Auswertung von `DTSTART`, `DTEND` und `UNTIL` bleibt wie im Upstream-Skript. Ein benannter TZID-Wert wird nicht durch eine neue Zeitzonendatenbank umgerechnet; die verwendete lokale Zeit muss zur CCU passen. Ohne TZID bleibt die bisherige Umrechnung mit dem aktuellen Zeitversatz erhalten. Insbesondere UTC- und Floating-Serien können dadurch bei unterschiedlichen Sommer-/Winterzeitphasen verschoben sein. Diese Einschränkung wurde nicht durch einen neuen Datumsparser beseitigt.
+
+Verwenden Sie positive Wiederholungsintervalle und nur die beschriebenen einfachen Regelkombinationen. Es gibt keine neue umfassende Eingabevalidierung, keine zusätzliche Kandidatengrenze und kein neues Vorspulen alter Serien. Ungültige Intervalle und weitere unbekannte oder kombinierte RRULE-Angaben können weiterhin falsch verarbeitet werden. Reine Datumswerte, DURATION, fremde Zeitzonen, BYDAY-Listen bei MONTHLY und weitere Parameter sind nicht zuverlässig vollständig unterstützt; sie werden nicht durch eine neue einheitliche Prüfschicht abgefangen.
+
+Bei MONTHLY ohne Positions-BYDAY sowie YEARLY bleiben die bestehenden Einschränkungen bei nicht vorhandenen Monatstagen und Schaltjahren erhalten. Es wird nicht zugesagt, dass eine Serie vom 31. eines Monats oder vom 29. Februar vollständig RFC-gemäß fortgesetzt wird. Auch Ausnahmen (`EXDATE`), zusätzliche Vorkommen (`RDATE`), verschobene Einzeltermine (`RECURRENCE-ID`) und gefaltete Zeilen sind nicht vollständig abgedeckt. Die Dauer bleibt eine feste Sekundenzahl; pro Event und Lauf wird nur das erste passende Vorkommen ausgegeben.
+
+**Prüfstand:** Der kleinere Korrekturumfang wird anhand gezielter lokaler Quell- und Referenzprüfungen unter `Tests/Skript1_iCal-Wiederholungen/` geprüft. Die früheren zehn isolierten CCU-Fälle gehörten zur inzwischen zurückgenommenen größeren Engine und sind kein Laufzeitnachweis dieser kleineren Fassung. Eine vollständige CCU-, Kalender- oder RFC-Abnahme wird nicht behauptet. Mehrdeutige beziehungsweise nicht existierende lokale Uhrzeiten während der Zeitumstellung bleiben ungeprüft.
 
 ## Schaltskript
 

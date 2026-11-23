@@ -19,6 +19,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 - Skript 3: Ungültige oder leere Steuerkonfiguration verhindert im normalen H/HS-Einschaltpfad Befehle und Status EIN.
 - ChurchDesk-iCal: Zertifikatsprüfung nicht mehr deaktiviert; Abruffehler warnen bei aktiviertem Logging vor fehlenden Ressourcenterminen.
+- iCal: Monatspositionen, Wochenintervalle mit BYDAY und lokale TZID-Uhrzeiten korrigiert; Monatskandidaten nach UNTIL werden nicht übernommen.
 
 ## [2026-11-20]
 

@@ -437,8 +437,8 @@ Speichert den laufenden Zustand der Heizkurvenkontrolle für alle überwachten R
 | Raumvariable | String | Name der `HKG-Raum-*`-Systemvariable |
 | Status | Integer (Bitmap) | Zustand des Raums in der aktuellen Heizphase |
 | IstTemp | Float | Zuletzt gemessene Ist-Temperatur des Temperatursensors |
-! AUS_Termin | Zeitstempel | maximaler AUS_Termin über alle überlappenden Einträge |
-! LetzterTempLog | Zeitstempel | Letzter Log der Raumtemperatur im Protokoll (stündlich) |
+| AUS_Termin | Zeitstempel | maximaler AUS_Termin über alle überlappenden Einträge |
+| LetzterTempLog | Zeitstempel | Letzter Log der Raumtemperatur im Protokoll (stündlich) |
 
 **Status-Bitmap:**
 
@@ -448,7 +448,7 @@ Speichert den laufenden Zustand der Heizkurvenkontrolle für alle überwachten R
 | 1 | 2 | Zieltemperatur erreicht |
 | 2 | 4 | Heizung ausgeschaltet bereits geloggt |
 | 3 | 8 | Hinweis „kein Temperatursensor" bereits geloggt (wird nur einmal pro Heizphase eingetragen) |
-! 4 | 16 | Terminende bereits geloggt |
+| 4 | 16 | Terminende bereits geloggt |
 | 5 | 32 | Terminbeginn bereits geloggt |
   
 

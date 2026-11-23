@@ -1,6 +1,6 @@
 !// Skript 3 für das Schalten der Heizgruppen
 !//================================================================================================
-!// Stand:    22.11.2026
+!// Stand:    23.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -14,6 +14,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-11-23 Zusätzliche Normal-EIN-Vorprüfung zurückgenommen; Einzelaktor-Ansteuerung und bisheriges Statusverhalten wiederhergestellt.
 !// TT:  2026-11-22 Upstream-Stand und lokale Normal-EIN-Prüfung zusammengeführt.
 !// TT:  2026-11-21 Normal-EIN in H/HS: Steuerobjekte und Datenpunkte vor Befehlen lokal pruefen; bei Fehlern kein Status EIN.
 !// TT:  2026-11-18 Temperatur-Sondervorgaben als real einlesen, damit Nachkommastellen beim Schalten erhalten bleiben.
@@ -93,8 +94,6 @@ string AGFParam;
 string Param;
 integer iPos;
 integer iEntry;
-boolean einKonfigurationGueltig;
-boolean einSteuerungVorhanden;
 
 !// Logging vorbereiten
 var logObj=dom.GetObject(vrp # "HK3-Log");
@@ -450,38 +449,6 @@ foreach(SLEintrag,SListe.Split("#")){
       }
       !// Wir schalten aber nur, wenn er noch nicht geschaltet ist
       if(aktuellerSchaltZustand==0){
-        !// Nur lokale Konfiguration pruefen, keine Funk- oder Hardwarebestaetigung.
-        !// HS-Temperaturquelle ist bereits aus AktorenListe entfernt. Gruppen bleiben ein Steuerobjekt.
-        !// Alle Steuereintraege vor dem ersten Befehl pruefen, auch bei handgepflegten Mehrfachaktoren.
-        einKonfigurationGueltig = true;
-        einSteuerungVorhanden = false;
-        if ((HSFlag=="H") || (HSFlag=="HS")){
-          foreach(AktAktor,AktorenListe.Split(";")){
-            einSteuerungVorhanden = true;
-            objAktor = dom.GetObject(AktAktor);
-            if (AktAktor && objAktor){
-              objDP = objAktor.DPByHssDP(Param);
-              if (!objDP){
-                einKonfigurationGueltig = false;
-                if(log){logObj.State(RaumLogName # ": EIN nicht ausgefuehrt: " # AktAktor # " Datenpunkt " # Param # " nicht vorhanden!");}
-                if(DEBUG){WriteLine(RaumLogName # ": EIN nicht ausgefuehrt: " # AktAktor # " Datenpunkt " # Param # " nicht vorhanden!");}
-              }
-            }else{
-              einKonfigurationGueltig = false;
-              if(log){logObj.State(RaumLogName # ": EIN nicht ausgefuehrt: " # AktAktor # " Steuerobjekt fehlt oder ist leer!");}
-              if(DEBUG){WriteLine(RaumLogName # ": EIN nicht ausgefuehrt: " # AktAktor # " Steuerobjekt fehlt oder ist leer!");}
-            }
-          }
-          if ((!einSteuerungVorhanden) || (AktorenListe=="")){
-            einKonfigurationGueltig = false;
-            if(log){logObj.State(RaumLogName # ": EIN nicht ausgefuehrt: Steuerliste ist leer!");}
-            if(DEBUG){WriteLine(RaumLogName # ": EIN nicht ausgefuehrt: Steuerliste ist leer!");}
-          }
-          if (!einKonfigurationGueltig){
-            !// Status bleibt unveraendert; naechster regulaerer Lauf kann erneut lokal pruefen.
-            continue;
-          }
-        }
         foreach(AktAktor,AktorenListe.Split(";")){
           objAktor = dom.GetObject(AktAktor);
           if (objAktor){

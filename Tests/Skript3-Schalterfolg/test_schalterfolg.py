@@ -146,20 +146,25 @@ def run(mode, actors, missing=(), missing_dp=(), manual=False, value=12,
 
 class SchalterfolgTests(unittest.TestCase):
     def test_failure_logging(self):
-        for kwargs, expected in (({"missing": ["A"]}, "Steuerobjekt fehlt"),
-                                 ({"missing_dp": ["A"]}, "Datenpunkt SET_POINT_TEMPERATURE")):
-            writes, env, _ = run("H", ["A"], logging=True, **kwargs)
-            self.assertEqual(writes, [])
-            self.assertIn("Test: EIN nicht ausgefuehrt: A", env["logObj"].value)
-            self.assertIn(expected, env["logObj"].value)
+        for mode, prefix, param in (("H", [], "SET_POINT_TEMPERATURE"),
+                                    ("HS", ["Sensor"], "STATE")):
+            for kwargs, expected in (
+                    ({"missing": ["A"]}, "Test: A Objekt existiert nicht!"),
+                    ({"missing_dp": ["A"]}, f"Datenpunkt {param} nicht vorhanden!")):
+                with self.subTest(mode=mode, kwargs=kwargs):
+                    writes, env, _ = run(mode, prefix + ["A"], logging=True, **kwargs)
+                    self.assertEqual(len(writes), 1)  # Nur Softwarestatus, kein Steuerbefehl.
+                    self.assertTrue(writes[0][1].startswith("1;"))
+                    self.assertEqual(env["logObj"].value, expected)
 
     def test_missing_objects_and_dp(self):
         for mode, actors in (("H", ["Regler"]), ("HS", ["Sensor", "Schalter"])):
             for error in ("missing", "missing_dp"):
                 with self.subTest(mode=mode, error=error):
                     writes, env, _ = run(mode, actors, **{error: [actors[-1]]})
-                    self.assertEqual(writes, [])
-                    self.assertFalse(env["einKonfigurationGueltig"])
+                    self.assertEqual(len(writes), 1)
+                    self.assertEqual(writes[0][0], "HKG-Raum-Test")
+                    self.assertTrue(writes[0][1].startswith("1;"))
                     self.assertEqual(env["RVNListeAn"], "HKG-Raum-Test;")
 
     def test_all_present(self):
@@ -172,12 +177,19 @@ class SchalterfolgTests(unittest.TestCase):
     def test_empty(self):
         for mode, actors in (("H", []), ("HS", ["Sensor"]),
                              ("H", ["Regler", ""]), ("HS", ["Sensor", ""])):
-            self.assertEqual(run(mode, actors)[0], [])
+            writes = run(mode, actors)[0]
+            self.assertEqual(writes[-1][0], "HKG-Raum-Test")
+            self.assertTrue(writes[-1][1].startswith("1;"))
+            self.assertEqual([name for name, _ in writes[:-1]],
+                             [name for name in actors if name and name != "Sensor"])
 
     def test_hs_sensor_not_required_or_written(self):
         writes, _, dom = run("HS", ["Sensor", "Schalter"], missing=["Sensor"])
         self.assertNotIn("Sensor", dom.lookups)
         self.assertEqual(writes[0], ("Schalter", 1))
+        writes, _, dom = run("HS", ["Sensor", "Schalter"])
+        self.assertNotIn("Sensor", dom.lookups)
+        self.assertNotIn("Sensor", [name for name, _ in writes])
 
     def test_group_and_parameter_variants(self):
         for param in ("SET_POINT_TEMPERATURE", "SET_TEMPERATURE", "SETPOINT"):
@@ -185,16 +197,21 @@ class SchalterfolgTests(unittest.TestCase):
             self.assertEqual(writes[0], ("Heizgruppe:1", 20))
 
     def test_manual_priority(self):
-        writes, env, _ = run("H", ["Regler"], manual=True, value=17)
-        self.assertTrue(env["einKonfigurationGueltig"])
+        writes, _, _ = run("H", ["Regler"], manual=True, value=17)
         self.assertEqual(len(writes), 1)  # Nur Status, bewusst kein Reglerbefehl.
         self.assertTrue(writes[0][1].startswith("1;"))
         self.assertEqual(run("H", ["Regler"], manual=True)[0][0], ("Regler", 20))
 
-    def test_multiple_preflight_before_any_write(self):
+    def test_multiple_actors_independent_in_both_orders(self):
         for mode, prefix in (("H", []), ("HS", ["Sensor"])):
             for error in ("missing", "missing_dp"):
-                self.assertEqual(run(mode, prefix + ["A", "B"], **{error: ["B"]})[0], [])
+                for actors in (["A", "B"], ["B", "A"]):
+                    with self.subTest(mode=mode, error=error, actors=actors):
+                        writes, _, _ = run(mode, prefix + actors, **{error: ["B"]})
+                        self.assertEqual([name for name, _ in writes],
+                                         ["A", "HKG-Raum-Test"])
+                        self.assertEqual(writes[0][1], 20 if mode == "H" else 1)
+                        self.assertTrue(writes[-1][1].startswith("1;"))
             writes, _, _ = run(mode, prefix + ["A", "B"])
             self.assertEqual([name for name, _ in writes], ["A", "B", "HKG-Raum-Test"])
 

@@ -158,6 +158,8 @@ Optional: `HK1-Vorlaufzeit`
 
 Skript für den Zugriff auf die internen Kalender in ChurchDesk über die ChurchDesk iCal Kalender der Ressourcen.
 
+Der HTTPS-Abruf deaktiviert die Zertifikatsprüfung von `wget` nicht. Die CCU benötigt einen passenden Zertifikatsbestand und eine kompatible TLS-Version. Bei einem Zertifikatsfehler gibt es keinen Rückfall auf eine ungeprüfte Verbindung. Nach fünf erfolglosen Abrufversuchen wird die Ressource übersprungen; bei aktiviertem Logging warnt `HK1-Log` vor möglicherweise fehlenden Terminen in der neu aufgebauten Schaltliste. Die Zertifikatsprüfung behebt kein Problem mit einer vom Server nicht mehr unterstützten TLS-Version.
+
 Benötigte Variablen: `HK1-CD-OrganisationsId`, `HK1-CD-Token`
 Sowie die Variablen: `HK1-R-Liste`, `HK2-HKG-Liste`, `HK1-Schaltliste`, `HK1-Log`, `HK1-Logging`
 Optional: `HK1-Vorlaufzeit`

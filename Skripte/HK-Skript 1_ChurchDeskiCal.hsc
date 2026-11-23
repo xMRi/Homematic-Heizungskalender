@@ -1,6 +1,6 @@
 !// Skript 1 um die Termine aus ChurchDesk auszulesen (iCal)
 !//================================================================================================
-!// Stand:    07.11.2026
+!// Stand:    21.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -21,6 +21,7 @@
 !// Skript sollte alle 30min laufen
 !//
 
+!// TT:  2026-11-21 Zertifikatsprüfung nicht mehr deaktivieren; Abruffehler mit Hinweis auf fehlende Ressourcentermine protokollieren.
 !// MRi: 2026-11-07 Schaltliste bis 30 Minuten nach dem spätesten raumbezogenen Ausschaltzeitpunkt halten.
 !// TT:  2026-10-25 Bugfix: DTEND-Parsing ohne iPos-Pruefung. Bei fehlendem DTEND war
 !//                 iPos=-1 und Substr las Datenmüll als Enddatum. Jetzt continue; bei iPos<0.
@@ -197,8 +198,8 @@ foreach(RIdEintrag,RIdListe.Split(";")){
   string stderr;
   while (iRetry>0) {
     !// wget unterstützt leider nicht --secure-protocol=TLSv1_1
-    string cmd = "wget --no-check-certificate --timeout=5 -O - 'https://api2.churchdesk.com/ical/resource/" # RId # "/public?organizationId="# organizationId #"'";
-    !string cmd = "curl --insecure --tlsv1.1 --max-time 5 -L 'https://api2.churchdesk.com/ical/resource/" # RId # "/public?organizationId="# organizationId #"'";
+    string cmd = "wget --timeout=5 -O - 'https://api2.churchdesk.com/ical/resource/" # RId # "/public?organizationId="# organizationId #"'";
+    !string cmd = "curl --tlsv1.1 --max-time 5 -L 'https://api2.churchdesk.com/ical/resource/" # RId # "/public?organizationId="# organizationId #"'";
     if(DEBUG){
       WriteLine("Cmd:" # cmd);
     }
@@ -225,9 +226,9 @@ foreach(RIdEintrag,RIdListe.Split(";")){
   stdout = stdout.Replace("\t"," ").Replace("\r\n","\n");
 
   if (!stdout.StartsWith("BEGIN:VCALENDAR")){
-    if (log){ logObj.State("Fehler beim Lesen der Event-Daten von ChurchDesk! " # RId); }
+    if (log){ logObj.State("FEHLER ChurchDesk-iCal: Ressource " # RId # " konnte nach 5 Versuchen nicht gelesen werden. Die Schaltliste wird ohne diese Ressource neu aufgebaut; bestehende Termine koennen fehlen."); }
     if(DEBUG){
-      WriteLine("Fehler beim Lesen der Event-Daten von ChurchDesk! " # RId);
+      WriteLine("FEHLER ChurchDesk-iCal: Ressource " # RId # " konnte nach 5 Versuchen nicht gelesen werden. Die Schaltliste wird ohne diese Ressource neu aufgebaut; bestehende Termine koennen fehlen.");
       WriteLine("Out:\n" # stdout # "Err:\n" # stderr);
     }
     continue;

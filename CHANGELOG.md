@@ -18,6 +18,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 -Skript: Heizkurvenkontrolle Wenn ein Termin in der AUS Phase ist, darf er für einen Heizbeginn nicht berücksichtigt werden. Er gehört vermutlich zu einem späteren SLListen Eintrag.
 
 - Skript 3: Ungültige oder leere Steuerkonfiguration verhindert im normalen H/HS-Einschaltpfad Befehle und Status EIN.
+- ChurchDesk-iCal: Zertifikatsprüfung nicht mehr deaktiviert; Abruffehler warnen bei aktiviertem Logging vor fehlenden Ressourcenterminen.
 
 ## [2026-11-20]
 

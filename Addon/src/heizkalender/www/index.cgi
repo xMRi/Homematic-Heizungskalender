@@ -510,32 +510,30 @@ if {![string equal $aussentemp_raw ""]} {
 # Ergebnis: Text (HTML-sicher, feste Entities) und Warnkennzeichen.
 set abruf_text ""
 set abruf_warn 0
-set abruf_ts_max 2147483647
-set abruf_digits $abruf_raw
-if {![regexp {^[0-9]+$} $abruf_digits]} {
-    set abruf_digits ""
+# ReGa und Tcl verwenden dieselbe lokale CCU-Zeitzone.
+# Die doppelte lokale Stunde bei Zeitumstellung ist nicht epocheneindeutig.
+set abruf_ts [parse_ts $abruf_raw]
+set abruf_roundtrip ""
+set abruf_display ""
+if {$abruf_ts > 0} {
+    catch {set abruf_roundtrip [clock format $abruf_ts -format "%Y-%m-%d %H:%M:%S"]}
+    catch {set abruf_display [format_ts $abruf_ts]}
 }
-set abruf_digits [string trimleft $abruf_digits 0]
-if {[string equal $abruf_raw ""] || [string equal $abruf_digits ""]} {
-    # fehlend, leer oder 0
-    if {[string equal $abruf_raw ""] || [regexp {^0+$} $abruf_raw]} {
-        set abruf_text "Abrufzeit unbekannt"
-    } else {
-        set abruf_text "Abrufzeit ung&uuml;ltig"
-    }
+if {[string equal $abruf_raw ""]} {
+    set abruf_text "Abrufzeit unbekannt"
     set abruf_warn 1
-} elseif {[string length $abruf_digits] > 10 || ([string length $abruf_digits] == 10 && [string compare $abruf_digits $abruf_ts_max] > 0)} {
+} elseif {$abruf_ts <= 0 || ![string equal $abruf_roundtrip $abruf_raw] || [string equal $abruf_display ""]} {
     set abruf_text "Abrufzeit ung&uuml;ltig"
     set abruf_warn 1
 } else {
     set abruf_now 0
     catch {set abruf_now [clock seconds]}
-    set abruf_age [expr {$abruf_now - $abruf_digits}]
+    set abruf_age [expr {$abruf_now - $abruf_ts}]
     if {$abruf_age < 0} {
         set abruf_text "Abrufzeit ung&uuml;ltig"
         set abruf_warn 1
     } else {
-        set abruf_text "Letzter Wetterabruf: <strong>[format_ts $abruf_digits]</strong>"
+        set abruf_text "Letzter Wetterabruf: <strong>$abruf_display</strong>"
         if {$abruf_age > 10800} {
             append abruf_text ": <strong class=\"hk-warn\">Wetterabruf veraltet</strong>"
             set abruf_warn 1

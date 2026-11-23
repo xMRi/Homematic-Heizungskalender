@@ -23,8 +23,8 @@ def block_after(marker):
 
 class SourceContract(unittest.TestCase):
     def test_header(self):
-        self.assertIn("!// Stand:    21.11.2026", SOURCE)
-        self.assertEqual(SOURCE.count("!// TT: 2026-11-21"), 1)
+        self.assertIn("!// Stand:    23.11.2026", SOURCE)
+        self.assertEqual(SOURCE.count("!// TT: 2026-11-23"), 1)
 
     def test_success_write_order_and_optional_guard(self):
         success = block_after("if (n!=0)")
@@ -37,7 +37,8 @@ class SourceContract(unittest.TestCase):
         self.assertIn('dom.GetObject(vrp # "HK2-Aussentemperatur")', success)
         self.assertIn('dom.GetObject(vrp # "HK2-Aussentemperatur-Abrufzeit")', success)
         optional = block_after("if (svAbrufzeit)")
-        self.assertIn("svAbrufzeit.State(system.Date().ToTime().ToInteger().ToString());", optional)
+        self.assertIn("svAbrufzeit.State(system.Date().ToTime().ToString());", optional)
+        self.assertNotIn("ToInteger()", optional)
         self.assertEqual(SOURCE.count("svAbrufzeit.State("), 1)
         self.assertNotIn("Value()", success)
         self.assertNotIn("CreateObject", SOURCE)

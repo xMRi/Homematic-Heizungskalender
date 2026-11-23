@@ -1,8 +1,9 @@
 # Entwicklertest R06: fuehrt index.cgi lokal mit Stubs fuer load/rega_script aus.
-# Aufruf: tclsh run_index_case.tcl <index.cgi> <jetzt-unixsekunden> <at-feld|-> <abruf-feld|-absent>
+# Aufruf: tclsh run_index_case.tcl <index.cgi> <jetzt-lokales-datum> <at-feld|-> <abruf-feld|-absent>
+# Kontrollierte Testzeitzone TZ=UTC, Abrufdatum ohne Offset wie auf der CCU.
 # Kein CCU-Zugriff. Lokales Tcl (8.5+) ist KEIN Nachweis fuer Tcl 8.2.3.
 set cgi [lindex $argv 0]
-set now [lindex $argv 1]
+set now [clock scan [lindex $argv 1]]
 set at  [lindex $argv 2]
 set az  [lindex $argv 3]
 if {[string equal $at "-"]} { set at "" }

@@ -98,7 +98,7 @@ Dieses Skript legt alle Systemvariablen an, die für das Berechnungs- und das Sc
 | HK2-A.Temp.Grenze | Außentemperatur ab der kein Heizen mehr erfolgt |
 | HK2-Aussentemperatur | Gleitende Durchschnitts-Außentemperatur über das konfigurierte Zeitfenster. Wird durch Skript _HK-Außentemperatur-Open-Meteo.hsc_ gesetzt oder alternativ durch einen Außentemperatursensor. |
 | HK2-Aussentemperatur-Aktuell | Optional. Momentaner Außentemperaturwert der letzten vollen Stunde (kein Durchschnitt). Wird vom AT-Skript geschrieben, nur wenn die Variable vorhanden ist. Dient zur Anzeige und als Diagnosewert. |
-| HK2-Aussentemperatur-Abrufzeit | Optional. Zeitpunkt des letzten erfolgreichen Open-Meteo-Abrufs als Unixsekunden in einer Zeichenkette. Wird auch bei unveränderter Temperatur aktualisiert; dient der Aktualitätsanzeige im Addon. Manuell anlegen, siehe Abschnitt zum Außentemperatur-Skript. |
+| HK2-Aussentemperatur-Abrufzeit | Optional. Zeitpunkt des letzten erfolgreichen Open-Meteo-Abrufs als lesbarer lokaler Datum-/Zeittext `JJJJ-MM-TT HH:MM:SS` in einer Zeichenkette. Wird auch bei unveränderter Temperatur aktualisiert; dient der Aktualitätsanzeige im Addon. Manuell anlegen, siehe Abschnitt zum Außentemperatur-Skript. |
 | HK2-Hand-Temp | Wenn `true` Vorrang einer manuell am Thermostat eingestellten Temperatur beim Ausschalten |
 | HK2-Hand-Grundtemp | Wenn `true` aktiviert die Nachtschaltung. `HK-Skript 3` prüft täglich zwischen 00:57 und 01:03 Uhr alle Räume und setzt sie auf Grundtemperatur, sofern kein aktiver Termin (Schaltzustand=1) vorliegt. Bei Heizräumen (HSFlag=H) wird die Solltemperatur am Thermostat gesetzt, bei Schaltaktoren (HSFlag=S/HS) wird der Aktor ausgeschaltet. Die Prüfung erfolgt direkt am Aktor, nicht nur in der Systemvariablen. |
 | HK2-VorzeitAus | Globale Grundoffsetzeit in Minuten, um die vor Terminende ausgeschaltet wird. Wird nur bei Heizvorgängen angewendet, nicht bei reinem Schalten. Gegenstück zu HK2-Kurvenversatz (Einschalt-Offset). Default: 0 |
@@ -279,7 +279,7 @@ Das Skript schreibt folgende Variablen:
 | :--- | :--- |
 | `HK2-Aussentemperatur` | Gleitender Durchschnitt über das Zeitfenster, bei erfolgreicher Berechnung in die vorhandene Zielvariable geschrieben |
 | `HK2-Aussentemperatur-Aktuell` | Momentanwert der letzten vollen Stunde (nur wenn die Variable vorhanden ist) |
-| `HK2-Aussentemperatur-Abrufzeit` | Letzter erfolgreicher Abruf mit geschriebenem Durchschnitt, Unixsekunden als Zeichenkette (nur wenn die Variable vorhanden ist) |
+| `HK2-Aussentemperatur-Abrufzeit` | Letzter erfolgreicher Abruf mit geschriebenem Durchschnitt, lokaler Datum-/Zeittext als Zeichenkette (nur wenn die Variable vorhanden ist) |
 
 `HK2-Aussentemperatur-Aktuell` ist eine optionale Variable: Das Skript schreibt sie nur, wenn sie auf der CCU bereits angelegt ist. Sie kann mit `HK-Init-Skript 2+3.hsc` angelegt werden.
 
@@ -289,7 +289,9 @@ Die optionale Variable hat den Typ **Zeichenkette** und einen leeren Startwert; 
 
 Alternativ kann die Variable in der CCU-WebUI unter **Einstellungen > Systemvariable** mit dem Namen `HK2-Aussentemperatur-Abrufzeit`, dem Typ **Zeichenkette** und zunächst leerem Inhalt angelegt werden. Bei einem konfigurierten Skriptpräfix dieses dem Namen voranstellen.
 
-Nach erfolgreicher Berechnung und Schreiben von `HK2-Aussentemperatur` setzt das Open-Meteo-Skript die Abrufzeit auf die aktuellen Unixsekunden, auch wenn sich die Temperatur nicht geändert hat. Fehlerhafte Abrufe verändern die Abrufzeit nicht. Sie bezeichnet den erfolgreichen Abruf, nicht den Erstellungszeitpunkt der Wetterprognose. Die Variable nicht mit einem formatierten Datum befüllen; die lesbare Darstellung erfolgt im Addon. Bei einer alternativen Temperaturquelle ist der Zeitstempel keine Aktualitätsaussage für deren Messwerte.
+Nach erfolgreicher Berechnung und Schreiben von `HK2-Aussentemperatur` setzt das Open-Meteo-Skript die Abrufzeit mit `system.Date().ToTime().ToString()` auf den aktuellen lokalen Datum-/Zeittext `JJJJ-MM-TT HH:MM:SS`, auch wenn sich die Temperatur nicht geändert hat. Fehlerhafte Abrufe verändern die Abrufzeit nicht. Sie bezeichnet den erfolgreichen Abruf, nicht den Erstellungszeitpunkt der Wetterprognose. Bei einer alternativen Temperaturquelle ist der Zeitstempel keine Aktualitätsaussage für deren Messwerte.
+
+Das Addon erwartet ausschließlich diesen Datum-/Zeittext. Numerische Unixsekunden werden nicht unterstützt. Skript und CGI müssen dieselbe CCU-Zeitzone verwenden; der Text enthält keinen Zeitzonenversatz. Die bei der Sommerzeitumstellung doppelt auftretende lokale Stunde lässt sich daraus nicht eindeutig unterscheiden.
 
 Die Addon-Raumübersicht zeigt den letzten erfolgreichen Abruf und einen Warnhinweis, wenn dieser mehr als drei Stunden zurückliegt. Fehlt ein gültiger Zeitstempel, ist die Aktualität unbekannt. Diese Überwachung verändert weder die Vorheizberechnung noch das Ersatzverhalten bei Wetterausfall.
 

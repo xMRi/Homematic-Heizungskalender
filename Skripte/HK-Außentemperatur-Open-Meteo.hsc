@@ -1,6 +1,6 @@
 !// Bestimmen der Außentemperatur für den Heizkalender
 !//================================================================================================
-!// Stand:    21.11.2026
+!// Stand:    23.11.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -22,6 +22,7 @@
 !//
 !// Das Skript sollte jede volle Stunde laufen
 
+!// TT: 2026-11-23 Abrufzeit als lesbares lokales CCU-Datum mit Uhrzeit speichern.
 !// TT: 2026-11-21 Optionale Abrufzeit nach Schreiben der Durchschnittstemperatur speichern;
 !//                fehlende Temperatur-Zielvariable mit Hinweis abfangen.
 !// TT: 2026-11-15 models=dwd_icon_d2_native (icon_d2 wird 2026-11-30 abgeschaltet);
@@ -233,11 +234,11 @@ if (lat=="" || lon=="" || lat.ToFloat()==0.0 || lon.ToFloat()==0.0){
       WriteLine(atLogText);
       if (log) { logObj.State(atLogText); }
       svAT.State(temp);
-      !// Optional, manuell anlegen: Zeichenkette, Startwert leer, Unixsekunden dezimal.
+      !// Optional, manuell anlegen: Zeichenkette, Startwert leer, lokales Datum YYYY-MM-DD HH:MM:SS.
       !// Auch bei identischer Temperatur aktualisieren; keine automatische Anlage.
       var svAbrufzeit = dom.GetObject(vrp # "HK2-Aussentemperatur-Abrufzeit");
       if (svAbrufzeit) {
-        svAbrufzeit.State(system.Date().ToTime().ToInteger().ToString());
+        svAbrufzeit.State(system.Date().ToTime().ToString());
       } else {
         if (log) { logObj.State(atLogText # " / Open-Meteo: Optionale HK2-Aussentemperatur-Abrufzeit fehlt, kein Abrufzeitstempel gespeichert."); }
         if (DEBUG) { WriteLine("Open-Meteo: Optionale HK2-Aussentemperatur-Abrufzeit fehlt, kein Abrufzeitstempel gespeichert."); }

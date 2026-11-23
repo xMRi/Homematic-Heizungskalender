@@ -1,6 +1,6 @@
 !// Script zum Erzeugen der Systemvariablen des Heizkalenders für Skript 2+3
 !//================================================================================================
-!// Stand:    21.11.2026
+!// Stand:    23.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -18,6 +18,7 @@
 !// Ich (MRi) habe diesen Code dann erweitert, korrigiert und verbessert um sie an die Nutzung in
 !// meiner Gemeinde anzupassen.
 !//
+!// TT:  2026-11-23 Beschreibung der Abrufzeit an lesbaren lokalen Datum-/Zeittext angepasst.
 !// TT:  2026-11-21 Optionale HK2-Aussentemperatur-Abrufzeit als Zeichenkette mit leerem Startwert ergaenzt.
 !// TT:  2026-11-13 HK2-Aussentemperatur-Aktuell ergaenzt
 !// TT:  2026-11-10 HK2-Kurvenanpassung: optionaler Kurvenanpassungsfaktor fuer das Zwei-Geraden-Modell (0.3..1.0, Vorgabe 0.8)
@@ -65,7 +66,7 @@ string be=  "Liste der HK-Raum-Variablen;" #
             "Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!;" #
             "Berechnete Schaltzeiten pro Raum von Skript 2 für das Addon. Hier bitte nichts verändern!;" #
             "Aktuelle Außentemperatur (letzte volle Stunde, von Open-Meteo). Wird vom AT-Skript geschrieben.;" #
-            "Letzter erfolgreicher Open-Meteo-Abruf als Unixsekunden. Wird vom AT-Skript geschrieben, nicht manuell aendern.";
+            "Letzter erfolgreicher Open-Meteo-Abruf als lokaler Datum-/Zeittext JJJJ-MM-TT HH:MM:SS. Wird vom AT-Skript geschrieben, nicht manuell ändern.";
 
 !// Typen
 string tp=  "string;" #

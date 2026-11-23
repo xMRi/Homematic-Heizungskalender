@@ -161,7 +161,7 @@ Verwendete Systemvariablen:
 - `HK1-R-Liste`: Ressourcen-Namenszuordnung (`ID=Name;...`), positionsbasiert
 - `HK2-HKG-Liste`: Zuordnung Ressource zu HKG-Raum-Variablen, positionsbasiert
 - `HK2-Aussentemperatur`: Gleitender Außentemperatur-Durchschnitt für Vorheizzeitberechnung
-- `HK2-Aussentemperatur-Abrufzeit`: Optionale Zeichenkette mit Unixsekunden des letzten erfolgreichen Open-Meteo-Abrufs; manuelle Einrichtung, keine Schreibzugriffe des CGI
+- `HK2-Aussentemperatur-Abrufzeit`: Optionale Zeichenkette mit lokalem Datum-/Zeittext `JJJJ-MM-TT HH:MM:SS` des letzten erfolgreichen Open-Meteo-Abrufs; manuelle Einrichtung, keine Schreibzugriffe des CGI
 - `HK2-Schaltzeiten`: Berechnete Vorlauf- und Schaltzeiten je Raum (optional; steuert ob Spalten „Vorlauf" und „Heizen ab" angezeigt werden)
 - `HKG-Raum-*`: Raumvariablen (Status, Modus, Wohlfühltemperatur, opt. Sensorkanal)
 
@@ -175,7 +175,9 @@ Ablauf:
 
 Schaltlisten-Zeitstempel (`JJJJ-MM-TT HH:MM:SS`) werden mit einer eigenen `parse_ts`-Prozedur in Unix-Timestamps umgewandelt, da `clock scan` in Tcl 8.2 kein ISO-Datumsformat versteht (nur US-Format `MM/DD/JJJJ HH:MM:SS`).
 
-Die Wetterabrufzeit ist bereits eine dezimale Unixsekunden-Zeichenkette und wird nicht mit `clock scan` ausgewertet. Nur gültige positive Zeitstempel bis zum aktuellen Zeitpunkt erlauben eine Altersbewertung. Bei einem Alter von mehr als 10800 Sekunden erscheint eine Warnung; genau drei Stunden gelten noch nicht als veraltet. Fehlende, leere, ungültige oder zukünftige Werte werden nicht als frisch behandelt. Die Auswertung bleibt Tcl-8.2-kompatibel und die Seite ausschließlich lesend.
+Die Wetterabrufzeit wird als lokaler Datum-/Zeittext gespeichert. Das CGI verwendet die vorhandene `parse_ts`-Auswertung: Felder aus `JJJJ-MM-TT HH:MM:SS` extrahieren und für Tcl 8.2 mit `clock scan` im Format `MM/TT/JJJJ HH:MM:SS` lesen. Nur gültige positive Zeitstempel bis zum aktuellen Zeitpunkt erlauben eine Altersbewertung. Bei einem Alter von mehr als 10800 Sekunden erscheint eine Warnung; genau drei Stunden gelten noch nicht als veraltet. Fehlende, leere, ungültige oder zukünftige Werte werden nicht als frisch behandelt. Numerische Unixsekunden werden nicht als Altformat unterstützt. Die Seite bleibt ausschließlich lesend.
+
+Skript und CGI müssen dieselbe CCU-Zeitzone verwenden. Der Text enthält keinen UTC-Versatz; während der bei der Sommerzeitumstellung doppelt auftretenden lokalen Stunde ist der ursprüngliche Unixzeitpunkt nicht eindeutig rekonstruierbar. Lokale Tests belegen nicht die Kalender- und Zeitgrenzen der älteren Tcl-Laufzeit auf der CCU.
 
 ### hkkurve.cgi: Heizkurvenkontrolle
 

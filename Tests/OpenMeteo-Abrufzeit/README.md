@@ -12,10 +12,15 @@ für ReGa-Laufzeitverhalten oder einen erfolgreichen produktiven Abruf.
 ## Vertrag
 
 `vrp # "HK2-Aussentemperatur-Abrufzeit"` ist eine optionale, manuell angelegte
-Systemvariable vom Typ Zeichenkette mit leerem Startwert. Ihr Inhalt sind reine
-dezimal dargestellte Unixsekunden der CCU-Uhr nach dem Schreiben der berechneten
+Systemvariable vom Typ Zeichenkette mit leerem Startwert. Ihr Inhalt ist das lokale
+CCU-Datum mit Uhrzeit im Format `YYYY-MM-DD HH:MM:SS` nach dem Schreiben der berechneten
 Durchschnittstemperatur, nicht der Messzeitpunkt des Wetteranbieters.
 Ein identischer Temperaturwert verhindert die Aktualisierung nicht.
+Das Addon erwartet dieselbe lokale CCU-Zeitzone für ReGa und Tcl. Unixsekunden
+und andere Altformate werden nicht unterstützt. Die doppelte lokale Stunde beim
+Sommerzeitwechsel ist nicht eindeutig einem Unixzeitpunkt zuzuordnen.
+Lokale Tests verwenden kontrolliert `TZ=UTC`; sie sichern keine Datumswerte
+außerhalb des auf der CCU unterstützten Zeitbereichs zu.
 Fehlt die optionale Variable, bleibt die Temperaturberechnung aktiv; vorhandenes
 Logging beziehungsweise DEBUG meldet den fehlenden Zeitstempel.
 
@@ -39,8 +44,9 @@ Eine Erfolgsvorgabe enthält mindestens 72 numerische Einträge mit Wert 10
 im Array `"temperature_2m":[...]`, damit jedes Stundenfenster abgedeckt ist.
 
 1. Abrufzeit leer: Erfolgsvorgabe ausführen. Durchschnitt ist 10,0 Grad;
-   Abrufzeit enthält nur Ziffern und liegt zwischen den unmittelbar vor und
-   nach Ausführung auf der Test-CCU gelesenen Unixsekunden.
+   Abrufzeit entspricht `YYYY-MM-DD HH:MM:SS` und liegt zwischen den unmittelbar
+   vor und nach Ausführung auf der Test-CCU gelesenen lokalen Datum-/Zeitwerten
+   (außerhalb einer Zeitumstellung prüfen).
 2. Nach mindestens einer Sekunde dieselbe Vorgabe erneut ausführen:
    Temperatur bleibt gleich, Zeitstempel steigt.
 3. Abrufzeitvariable entfernen: Temperatur wird weiterhin geschrieben;

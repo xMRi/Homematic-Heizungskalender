@@ -56,8 +56,6 @@ flowchart TD
     OpenMeteo -->|"Außentemperatur"| ATSkript
     ATSkript -->|"schreibt HK2-Aussentemperatur\n+ optional: -Aktuell"| SysVar
     SysVar -->|"liest HK1-Schaltliste"| Skript2
-    Skript1 --> Skript2
-    Skript2 --> Skript3
     Skript2 -->|"schreibt HK2-Schaltliste"| SysVar
     SysVar -->|"liest HK2-Schaltliste"| Skript3
     Skript3 -->|"konfiguriert / schaltet"| Aktoren
@@ -72,7 +70,7 @@ Der Laufzeit-Ablauf:
 1. Eine **Skript-1-Variante** liest Termine aus einer externen Quelle
    (ChurchTools, ChurchDesk, iCal oder Google) und schreibt sie in die
    Systemvariable `HK1-Schaltliste`.
-2. **HK-Skript 2** läuft alle 5 Minuten, liest `HK1-Schaltliste` berechnet die Schaltzeiten und speichert diese in der Systemvariable `HK1-Schaltliste`.
+2. **HK-Skript 2** läuft alle 5 Minuten, liest `HK1-Schaltliste`, berechnet die Schaltzeiten und speichert diese in `HK2-Schaltliste`.
 3. **HK-Skript 3** läuft alle 5 Minuten, liest `HK2-Schaltliste` und schaltet die
    Thermostate entsprechend.
 4. Das **Addon** liest dieselben Systemvariablen lesend aus und stellt sie im
@@ -117,7 +115,7 @@ Ordnet jeder Ressource aus `HK1-R-Liste` eine oder mehrere Raum-Systemvariablen 
 Die Reihenfolge der Einträge entspricht der Reihenfolge in `HK1-R-Liste`.
 
 Über das `+`-Zeichen lassen sich Räume zu einer Gruppe zusammenschalten: wird die
-Ressource gebucht, heizt HK-Skript 2 automatisch alle Räume der Gruppe. So kann
+Ressource gebucht, berechnet Skript 2 die Schaltzeiten für alle Räume der Gruppe; Skript 3 steuert die zugeordneten Aktoren. So kann
 z.B. bei einer Buchung des Großen Saals gleichzeitig das Foyer und das Gäste-WC
 mitgeheizt werden, ohne dass dafür separate Kalendereinträge nötig sind.
 
@@ -168,16 +166,16 @@ graph LR
 ### HKG-Raum-*
 
 Jeder Raum hat eine eigene Systemvariable `HKG-Raum-<Name>`. Der Wert ist
-eine semikolongetrennte Liste mit sechs Pflichtfeldern und einem optionalen
-siebten Feld:
+eine semikolongetrennte Liste mit sechs Pflichtfeldern und optionalen weiteren
+Geräte- beziehungsweise Variablenangaben:
 
 ```txt
-Status;Modus;Heiztyp;Wohlfühltemp[/Grundtemp];Vorheizzeit[*Faktor[*MindestMin]];VorzeitAus[;Thermostat[;Schaltaktor1[;Schaltaktor2...]]]
+Status;Modus;Heiztyp;Wohlfühltemp[/Grundtemp];Vorheizzeit[*Faktor[*MindestMin]];VorzeitAus[;AktorOderSensor[;WeitereAktoren...]]
 ```
 
 | Feld | Index | Typ | Werte |
 | :--- | :---: | :--- | :--- |
-| Status | 0 | Integer | `0` = keine Heizphase, `1` = Heizphase aktiv |
+| Status | 0 | Integer | `0` = Aus, `1` = aktive Heizphase, `2` = Dauer-Aus, `3` = Dauer-Ein |
 | Modus | 1 | String | `H` = Heizen, `S` = Schalten, `HS` = Heizen + Schalten, `V` = Variable setzen |
 | Heiztyp | 2 | String | `IP`, `RT`, `TC`, `IT` (Thermostate), `SW` (Schalt-Aktor) |
 | Wohlfühltemp | 3 | Float | Zieltemperatur in °C |
@@ -186,16 +184,18 @@ Status;Modus;Heiztyp;Wohlfühltemp[/Grundtemp];Vorheizzeit[*Faktor[*MindestMin]]
 | Faktor | 4 | Float | Optional, Suffix `*Faktor`: Skalierungsfaktor für den kurvenbasierten Anteil der Vorheizzeit (0,20–5,0). Gesamtvorheizzeit = Offset + Faktor × HK2-Kurve(Außentemperatur); z.B. `60*1.5` |
 | MindestMin | 4 | Integer | Optional, zweiter Suffix `*Faktor*MindestMin`: Mindest-Vorlaufzeit in Minuten (1–480, Default 15); verhindert, dass faktor2HeizBedarf die Zeit bei IST nahe ZIEL wegrechnet |
 | VorzeitAus | 5 | Integer | Minuten vor Terminende, nach denen abgeschaltet wird |
-| Thermostat | 6 | String | Bei Modus `H` Steuerungs- und Temperaturkanal, bei `HS` nur Temperaturquelle |
-| Schaltaktor(en) | 7+ | String | Nur bei Modus `HS`: CCU-Kanaladdresse(n) der Schaltaktoren; mehrere Aktoren werden durch weitere `;`-Felder angehängt |
+| Aktor-/Sensorkanal | 6 | String | In `H` Steuerungs- und Temperaturkanal, in `HS` nur Temperaturquelle; in `S` erster Schaltaktor, in `V` Variable |
+| Weitere Aktoren | 7+ | String | Zusätzliche Steuerobjekte; in `HS` beginnt hier die Schaltaktorenliste. Der Installer bietet einen Steuerungskanal beziehungsweise in `HS` eine Temperaturquelle und einen Schaltkanal. |
+
+Die Indizes zählen ab 0: Index 6 ist das siebte Semikolonfeld. Normales Heizen setzt Status 1 beziehungsweise 0; `#AUS#` setzt 2, `#EIN#` setzt 3 und `#RESET#`/`#NORMAL#` hebt einen Dauerzustand auf. Die negativen Steuerungscodes in `HK1-Schaltliste` sind davon getrennt zu betrachten.
 
 Trennzeichen innerhalb eines Wertes:
 
 | Zeichen | Bedeutung |
 | :--- | :--- |
 | `;` | Trennt die Felder voneinander; bei Modus `HS` auch die Schaltaktoren (Felder 7+) |
-| `/` | Trennt Wohlfühltemperatur, Grundtemperatur und minimale Vorheizzeit (im Feld Wohlfühltemp) |
-| `*` | Trennt Vorheizzeit und Faktor (im Feld Vorheizzeit) |
+| `/` | Trennt Wohlfühltemperatur und optionale Grundtemperatur |
+| `*` | Trennt Vorheizzeit, Faktor und optionale Mindestvorlaufzeit |
 
 Beispiele:
 
@@ -254,8 +254,8 @@ Temperatursteuerung.
 
 | Eigenschaft | Verhalten |
 | :--- | :--- |
-| Aktor-Typ | Schaltaktor (Feld 7); Ansteuerung über `DPByHssDP("STATE")` |
-| Sensor (Feld 6) | Nicht verwendet (leer lassen) |
+| Aktor-Typ | Erster Schaltaktor an Index 6; Ansteuerung über `DPByHssDP("STATE")` |
+| Sensor | Keine getrennte Temperaturquelle für die Vorheizberechnung; Index 6 enthält den Schaltaktor |
 | Vorheizzeit | Nur der feste Offset (Feld 4) wird verwendet; kein faktor1HK2Kurve, kein faktor2HeizBedarf, keine HK2-Kurve |
 | AT-Schwelle | **Keine** — Schaltvorgang wird immer ausgeführt, unabhängig von der Außentemperatur |
 | Einschalten | `State(1)` auf dem Schaltaktor |
@@ -270,16 +270,16 @@ Systemvariablen reagieren (z.B. Lüftung, Beschattung, Benachrichtigungen).
 
 | Eigenschaft | Verhalten |
 | :--- | :--- |
-| Aktor-Typ | CCU-Systemvariable (Feld 7); **kein** `DPByHssDP` — das Variablen-Objekt wird direkt über `State()` gesetzt |
-| Sensor (Feld 6) | Nicht verwendet; darf einen Variablennamen enthalten, wird aber von der Sensorik **nicht** über `DPByHssDP` gelesen |
+| Aktor-Typ | CCU-Systemvariable an Index 6; kein `DPByHssDP`, das Variablenobjekt wird direkt über `State()` gesetzt |
+| Sensor | Keine getrennte Temperaturquelle; Index 6 enthält den Variablennamen |
 | Vorheizzeit | Nur der feste Offset (Feld 4); kein faktor1HK2Kurve, kein faktor2HeizBedarf, keine HK2-Kurve |
 | AT-Schwelle | **Keine** — Variable wird immer gesetzt, unabhängig von der Außentemperatur |
 | Einschalten | `State(1)` auf der Systemvariable |
 | Ausschalten | `State(0)` auf der Systemvariable |
 | Heizkurvenkontrolle | Übersprungen |
 
-> **Achtung:** Im Modus `V` darf `DPByHssDP` auf den Objekten in Feld 6/7
-> nicht aufgerufen werden — Systemvariablen haben keine HSS-Datenpunkte.
+> **Achtung:** Im Modus `V` darf `DPByHssDP` auf den konfigurierten Variablenobjekten
+> nicht aufgerufen werden. Systemvariablen haben keine HSS-Datenpunkte.
 > Code, der auf Felder der Raumvariable zugreift, muss den Modus prüfen.
 
 ### HK1-Schaltliste
@@ -287,11 +287,10 @@ Systemvariablen reagieren (z.B. Lüftung, Beschattung, Benachrichtigungen).
 Übergabepuffer von `HK-Skript 1` an `HK-Skript 2`. Wird automatisch befüllt und
 ausgelesen; niemals manuell verändern.
 
-Mehrere Einträge stehen direkt hintereinander ohne zusätzliches Trennzeichen;
-jeder Eintrag besteht aus fünf semikolongetrennten Feldern:
+Jeder Eintrag besteht aus fünf Feldern und endet nach dem Modus mit einem Semikolon. Mehrere vollständige Einträge werden direkt aneinandergehängt; es gibt keinen zusätzlichen Eintragstrenner:
 
 ```txt
-RessourcenID;Startzeit;Endezeit;Steuerung;ModusRessourcenID;Startzeit;...
+RessourcenID;Startzeit;Endezeit;Steuerung;Modus;RessourcenID;Startzeit;...
 ```
 
 | Feld | Typ | Inhalt |
@@ -299,20 +298,22 @@ RessourcenID;Startzeit;Endezeit;Steuerung;ModusRessourcenID;Startzeit;...
 | RessourcenID | Integer | Ressourcen-ID (gemäß `HK1-R-Liste`) |
 | Startzeit | Datum | Terminbeginn im Format yyyy-mm-dd hh:mm:ss |
 | Endezeit | Datum | Terminende im Terminbeginn im Format yyyy-mm-dd hh:mm:ss |
-| Spezielle Steuerbefehle | Integer | Steuerungswert aus dem Termintext: `0` = normal, `-1` = `#EIN#`, `-2` = `#AUS#`, `-3` = `#RESET#`, positive Zahl = Temperatur aus `#<Zahl>#` |
+| Spezielle Steuerbefehle | Numerisch / Fließkomma | `0` = normal, `-1` = `#AUS#`, `-2` = `#EIN#`, `-3` = `#RESET#`/`#NORMAL#`; positive Zahl = Temperaturvorgabe, auch mit Nachkommastellen |
 | Modus | String | `H` = Heizen, `S` = Schalten, `HS` = Heizen+Schalten, `V` = Variable setzen |
 
 Trennzeichen:
 
 | Zeichen | Bedeutung |
 | :--- | :--- |
-| `;` | Trennt die Felder innerhalb eines Eintrags |
-| (keines) | Einträge folgen direkt aufeinander; der Modus-Wert des vorherigen Eintrags grenzt unmittelbar an die RessourcenID des nächsten |
+| `;` | Trennt die Felder und steht auch nach dem letzten Feld jedes Eintrags |
+| Kein zusätzlicher Eintragstrenner | Nach dem abschließenden Semikolon beginnt die Ressourcen-ID des nächsten Eintrags |
 
 Beispiele:
 
-- Ein Eintrag: `4;2026-10-14 18:30:00;2026-10-14 20:30:00;0;H` (Ressource 4, 14.10.2026 18:30 Uhr bis 20:30 Uhr, Heizmodus)
+- Ein Eintrag: `4;2026-10-14 18:30:00;2026-10-14 20:30:00;0;H;` (Ressource 4, 14.10.2026 18:30 Uhr bis 20:30 Uhr, Heizmodus)
 - Zwei Einträge hintereinander: `4;2026-10-14 18:30:00;2026-10-14 20:30:00;0;H;2;2026-10-14 18:30:00;2026-10-14 20:30:00;0;S;` (Ressource 4 Heizen, Ressource 2 Schalten, gleicher Startzeitpunkt)
+
+Der ChurchTools-Adapter prüft Temperaturvorgaben vor der Formatierung strikt auf $0 < T < 30$. Genau 0 und 30 sowie Werte außerhalb dieser Grenzen werden als normale Steuerung 0 behandelt, nicht als Temperaturvorgabe. Gerätegrenzen und Rundung sind davon getrennt; die gerundete Ausgabe kann an eine Grenze reichen. In den hier ausgeführten Prüfläufen wurde die Dezimalkomma-Verarbeitung nicht adapterübergreifend getestet, daher wird für Beispiele der Dezimalpunkt verwendet.
 
 ### HK1-Vorlaufzeit
 

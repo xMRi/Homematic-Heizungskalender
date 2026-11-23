@@ -32,6 +32,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Google: Abrufgrenzen an lokale Tagesgrenzen und Vor-/Nachlauf angepasst, Zeitzonenversätze je Grenze berücksichtigt und unvollständige Ergebnisseiten gemeldet.
 - Skript 2: Bei Temperaturwert 0 alte Planung erhalten; ohne Planung ab einer Stunde Kernellaufzeit mit dem Maximum aus Grund- und Außentemperatur rechnen. Bei unlesbarer Laufzeit weiter warten.
 - Addon-Installation: Erforderliche Dateioperationen und Web-Symlink prüfen; Fehler protokollieren und mit Status 1 abbrechen. Erfolg bleibt Status 0, ohne automatisches Rollback.
+- Heizkalender-Dokumentation: Berechnung und Aktorsteuerung getrennt beschrieben; Vorheizformeln, Beispiele, Raum- und Listenformate sowie Sonderbefehle berichtigt und Grenzen der Raumkennung dokumentiert.
 
 ## [2026-11-20]
 

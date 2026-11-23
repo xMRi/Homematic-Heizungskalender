@@ -22,7 +22,7 @@ Anleitungen und ein Blog finden sich auf der Projekt-Homepage: [heizkalender.de]
 
 | Komponente | Beschreibung |
 | :--- | :--- |
-| **Skripte** | Kern-Skripte die auf der CCU laufen: Termineinlesen (Skript 1), Schalten (Skript 2) und Hilfsskripte |
+| **Skripte** | Kern-Skripte auf der CCU: Termineinlesen (Skript 1), Schaltzeiten berechnen (Skript 2), Aktoren steuern (Skript 3) und Hilfsskripte |
 | **Heizkalender-Installation** | Windows-Programm zur Ersteinrichtung und zum Update der Skripte und Systemvariablen auf der CCU |
 | **Addon** | CCU-Weboberfläche zur Anzeige von Räumen, Protokollen und Heizkurvenkontrolle |
 | **Tools** | Optionale Zusatzskripte für Diagnose, Logging und Wartung |
@@ -44,19 +44,22 @@ flowchart TD
     ATVar --> Skript2
     Raumtemp["Raumtemperatur<br/>(Thermostat-Sensor)"] --> Skript2
     SysVar --> Skript2
-    Skript2 -->|"berechnet Vorlaufzeit,<br/>heizt bzw. schaltet"| Thermostate["Thermostate / Aktoren"]
+    Skript2 -->|"schreibt berechnete Schaltzeiten"| Schaltliste2[("HK2-Schaltliste")]
+    Schaltliste2 --> Skript3["HK-Skript 3<br/>(alle 5 Minuten)"]
+    Skript3 -->|"setzt Solltemperaturen / schaltet"| Thermostate["Thermostate / Aktoren"]
 
     Installationsprogramm["HeizkalenderInstallation.exe<br/>(bei Installation, Konfiguration<br/>und Updates)"]
-    Installationsprogramm -->|"richtet ein und aktualisiert"| Programme[("Programme<br/>HK-Skript 1, HK-Skript 2, HK*")]
-    Installationsprogramm -->|"richtet ein und aktualisiert"| SysVar[("Systemvariablen<br/>HK1-*, HK2-*, HKG-Raum-*")]
+    Installationsprogramm -->|"richtet ein und aktualisiert"| Programme[("Programme<br/>HK-Skript 1, HK-Skript 2, HK-Skript 3, HK*")]
+    Installationsprogramm -->|"richtet ein und aktualisiert"| SysVar[("Systemvariablen<br/>HK1-*, HK2-*, HK3-*, HKG-Raum-*")]
 ```
 
 Ablauf im Detail:
 
-1. **Bei Installation/Konfiguration/Updates:** Die `HeizkalenderInstallation.exe` richtet die Programme (HK-Skript 1, HK-Skript 2 und weitere HK-Skripte) sowie die Systemvariablen auf der CCU ein und hält sie aktuell.
+1. **Bei Installation/Konfiguration/Updates:** Die `HeizkalenderInstallation.exe` richtet die Programme (HK-Skript 1, HK-Skript 2, HK-Skript 3 und weitere HK-Skripte) sowie die Systemvariablen auf der CCU ein und hält sie aktuell.
 2. **Stündlich:** `HK-Außentemperatur-Open-Meteo` aktualisiert die Außentemperatur in `HK2-Aussentemperatur`.
 3. **Alle 30 Minuten:** `HK-Skript 1_ChurchTools` liest die ChurchTools-Termine und schreibt sie in `HK1-Schaltliste`.
-4. **Alle 5 Minuten:** `HK-Skript 2` berechnet aus der Schaltliste, der Außentemperatur, den Systemvariablen und der aktuellen Raumtemperatur die Vorlaufzeiten und heizt bzw. schaltet die Räume entsprechend.
+4. **Alle 5 Minuten:** `HK-Skript 2` berechnet aus den Terminen, der Außentemperatur und den Raumparametern die Schaltzeiten und schreibt `HK2-Schaltliste`.
+5. **Alle 5 Minuten:** `HK-Skript 3` liest `HK2-Schaltliste` und steuert die Thermostate beziehungsweise Schaltaktoren.
 
 ## Einstieg
 

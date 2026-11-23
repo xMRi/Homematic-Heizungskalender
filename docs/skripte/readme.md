@@ -127,7 +127,7 @@ Die Protokollierung erfolgt über die nachfolgenden Kategorien:
 | HK1-Log | Variable um ein einfaches Log im System Protokoll zu erzeugen |
 | HK2-Logging | Flag das Logging vom Typ `HK2-Log` steuert |
 | HK2-Log | Variable um ein einfaches Log im System Protokoll zu erzeugen |
-| HK3-Logging | Flag das Logging vom Typ `HK2-Log` steuert |
+| HK3-Logging | Flag das Logging vom Typ `HK3-Log` steuert |
 | HK3-Log | Variable um ein einfaches Log im System Protokoll zu erzeugen |
 | HK-LoggingHeizkurvenkontrolle | Flag das Logging vom Typ `HK-LogHeizkurvenkontrolle` steuert |
 | HK-LogHeizkurvenkontrolle | Variable um ein einfaches Log im System Protokoll zu erzeugen |
@@ -189,6 +189,8 @@ Optional: `HK1-Vorlaufzeit`
 
 Skript für den Zugriff auf einen iCal-Kalender über eine URL. Bei diesem Verfahren muss der Raumname mit einem vorangestellten #-Zeichen im Titel des Termines stehen.
 
+Bei Google und generischem iCal erfolgt die Raumzuordnung weiterhin durch eine Teilstringsuche ohne Prüfung des Kennzeichnungsendes. Beispielsweise trifft `#Raum11` auch auf die konfigurierte Kennzeichnung `Raum1` zu. Verwenden Sie deshalb Kennzeichnungen, die keine Präfixe anderer Kennzeichnungen sind. Die Erkennung wird aus Kompatibilitätsgründen unverändert beibehalten.
+
 Benötigte Variablen: `HK1-ICS-Url`
 Sowie die Variablen: `HK1-R-Liste`, `HK2-HKG-Liste`, `HK1-Schaltliste`, `HK1-Log`, `HK1-Logging`
 Optional: `HK1-Vorlaufzeit`
@@ -215,11 +217,11 @@ Bei MONTHLY ohne Positions-BYDAY sowie YEARLY bleiben die bestehenden Einschrän
 >
 > _Die Dokumentation dient nur zur Erklärung der Skript-Grundlagen und wenn es notwendig sein sollte, dass eine manuelle Installation erfolgen muss._
 
-Das Schaltskript ist das Herzstück der Heizkalender Software. Es muss zwingend alle 5 Minuten laufen. Das Skript schaltet die Heizthermostate ein und auch wieder aus.
+Berechnung und Aktoransteuerung sind getrennt: Skript 2 berechnet aus `HK1-Schaltliste` die Schaltzeiten und schreibt `HK2-Schaltliste`. Skript 3 liest diese Liste und steuert die Thermostate beziehungsweise Schaltaktoren. Beide Skripte laufen alle 5 Minuten.
 
 ## HK-Skript 2.hsc
 
-Das Skript 2 ist ein Hauptskript um eigentlichen Schaltzeiten zu berechnen.
+Skript 2 berechnet die Heiz- und Schaltzeiten; es steuert die Aktoren nicht selbst. Die Übergabe an Skript 3 erfolgt über `HK2-Schaltliste`.
 
 Benötigte Variablen: `HK1-R-Liste`, `HK1-Schaltliste`, `HK2-Aussentemperatur`, `HK2-Grundtemperatur`, `HK2-HKG-Liste`, `HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Log`, `HK2-Logging`, `HK2-VorzeitAus`. Optional (wird beschrieben falls vorhanden): `HK2-Kurvenanpassung`, `HK2-Schaltzeiten`
 Sowie weitere Raum-Variablen `HKG-Raum-*`

@@ -158,6 +158,8 @@ Konsequenz: Der Zähler der Formel wird 0, der Korrekturfaktor beträgt **1,00 (
 es wird immer die volle Kurvenzeit vorgeheizt. Dies ist der sicherste Fallback,
 führt aber bei niedrig konfigurierter Grundtemperatur zu sehr langen Vorlaufzeiten.
 
+Ein vorhandener Temperaturdatenpunkt mit Wert 0 wird getrennt behandelt: Ein alter Schaltlisteneintrag bleibt erhalten. Ohne alten Eintrag wartet das Skript während der ersten Kernelstunde; ab 3600 Sekunden rechnet es mit dem Maximum aus effektiver Raumgrundtemperatur und Außentemperatur und protokolliert eine Störung. Eine echte Nullmessung wird bewusst gleich behandelt. Bei nicht lesbarer Kernellaufzeit wird weiter gewartet. Diese Startphasenregel erkennt keinen alleinigen ReGa-Neustart.
+
 ### Übertemperatur im Raum
 
 Im Modus **HS** (erster Aktor = Thermostat als Temperatursensor, weitere Aktoren = Schaltrelais)

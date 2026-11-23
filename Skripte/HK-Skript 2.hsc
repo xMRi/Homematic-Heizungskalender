@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    20.11.2026
+!// Stand:    22.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -14,6 +14,8 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-11-22 Integration: Neustartlogik und automatische Erhöhung der HK1-Vorlaufzeit erhalten
+!// TT:  2026-11-21 Bei 0°C alte Planung erhalten; ohne Planung nach einer Stunde Kernellaufzeit mit GT.Max(AT) rechnen, bei unlesbarer Laufzeit weiter warten
 !// MRi: 2026-11-19 HK1-Vorlaufzeit automatisch erhöhen
 !// TT:  2026-11-18 SDFlag als real deklariert (war integer): Temperatur-Sondervorgaben mit Nachkommastellen gehen nicht verloren
 !// TT:  2026-11-15 Tote Variable zeitNachlauf entfernt;
@@ -85,6 +87,10 @@ string HK2VLZListe="";
 string SchaltListeAlt=dom.GetObject(vrp # "HK2-Schaltliste").State();
 string SchaltListeNeu="";
 integer maxVorlauf = 0;
+
+!// Kernellaufzeit nur bei 0°C ohne alte Planung einmal je Skriptlauf lesen.
+!// Ein alleiniger ReGa-Neustart setzt diese Laufzeit nicht zurueck.
+boolean kernelLaufzeitGelesen=false;
 
 !// Logging vorbereiten
 var logObj=dom.GetObject(vrp # "HK2-Log");
@@ -482,8 +488,8 @@ foreach(TLEintrag,TerminListe){
           if(DEBUG) {WriteLine(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " existiert nicht!");}
         }
 
-        !// Wenn wir keine IstTemperatur gemeldet bekommen (also 0°C), dann übernehmen wir einfach den alten Schaltlisten
-        !// Eintrag. Eine Berechnung mit 0°C würde eine utopische Vorheizzeit auslösen.
+        !// Auch reale 0°C gelten hier als fehlender Messwert. Alte Planung hat Vorrang.
+        !// Ohne alte Planung erst nach einer Stunde Kernellaufzeit mit dem Schaetzwert rechnen.
         if (ISTTemperatur==0){
           !// Log schreiben, das wir keine Temperaturdaten haben
           if(log){logObj.State(RaumLogName # ": Thermostat-Aktor/Kanal " # AktAktor # " liefert aktuell keine Daten!");}
@@ -496,13 +502,55 @@ foreach(TLEintrag,TerminListe){
             SchaltListeNeu = SchaltListeNeu # strAlterListenEintrag # "#";
             if(log){logObj.State(RaumLogName # ": Alter Schaltlisteneintrag wird übernommen, es erfolgt vorerst keine Neuberechnung!");}
             if(DEBUG) {WriteLine(RaumLogName # ": Alter Schaltlisteneintrag wird übernommen, es erfolgt vorerst keine Neuberechnung!");}
-          }else{
-            !// Wir haben scheinbar noch nie Berechnung durchgeführt. In diesem Fall hoffen wir, dass der nächste Zyklus
-            !// Erfolg hat. SOnst wird die Heizungnie eingeschaltet!!!
-            if(log){logObj.State(RaumLogName # ": Neuberechnung verschoben auf den nächsten Berechnungszyklus!");}
-            if(DEBUG) {WriteLine(RaumLogName # ": Neuberechnung verschoben auf den nächsten Berechnungszyklus!");}
+            continue;
           }
-          continue;
+
+          if (!kernelLaufzeitGelesen){
+            boolean kernelLaufzeitGueltig=false;
+            boolean kernelLaufzeitDezimalpunkt=false;
+            string kernelLaufzeitAusgabe="";
+            string kernelLaufzeitFehler="";
+            string kernelLaufzeitText="";
+            string kernelLaufzeitZeichen="";
+            string kernelLaufzeitZiffern="0123456789";
+            integer kernelLaufzeitIndex=0;
+            real kernelLaufzeitSekunden=0.0;
+            kernelLaufzeitGelesen=true;
+            system.Exec("cat /proc/uptime", &kernelLaufzeitAusgabe, &kernelLaufzeitFehler);
+            kernelLaufzeitText=kernelLaufzeitAusgabe.StrValueByIndex(" ",0);
+            kernelLaufzeitGueltig=((kernelLaufzeitFehler=="") && (kernelLaufzeitText.Length()>0));
+            !// Vor ToFloat nur Ziffern und hoechstens einen inneren Dezimalpunkt zulassen.
+            kernelLaufzeitIndex=0;
+            while ((kernelLaufzeitIndex<kernelLaufzeitText.Length()) && kernelLaufzeitGueltig){
+              kernelLaufzeitZeichen=kernelLaufzeitText.Substr(kernelLaufzeitIndex,1);
+              if (kernelLaufzeitZeichen=="."){
+                if ((kernelLaufzeitDezimalpunkt || (kernelLaufzeitIndex==0)) || (kernelLaufzeitIndex==(kernelLaufzeitText.Length()-1))){
+                  kernelLaufzeitGueltig=false;
+                }
+                kernelLaufzeitDezimalpunkt=true;
+              }elseif (kernelLaufzeitZiffern.Find(kernelLaufzeitZeichen)<0){
+                kernelLaufzeitGueltig=false;
+              }
+              kernelLaufzeitIndex=kernelLaufzeitIndex+1;
+            }
+            if (kernelLaufzeitGueltig){
+              kernelLaufzeitSekunden=kernelLaufzeitText.ToFloat();
+              if (kernelLaufzeitSekunden<=0.0){ kernelLaufzeitGueltig=false; }
+            }
+          }
+          if (!kernelLaufzeitGueltig){
+            if(log){logObj.State(RaumLogName # ": Kernellaufzeit nicht lesbar oder ungueltig; bei 0°C ohne alte Planung bleibt die Neuberechnung verschoben!");}
+            if(DEBUG) {WriteLine(RaumLogName # ": Kernellaufzeit nicht lesbar oder ungueltig; bei 0°C ohne alte Planung bleibt die Neuberechnung verschoben!");}
+            continue;
+          }
+          if (kernelLaufzeitSekunden<3600.0){
+            if(log){logObj.State(RaumLogName # ": 0°C ohne alte Planung innerhalb der ersten Stunde seit Systemstart; Neuberechnung verschoben!");}
+            if(DEBUG) {WriteLine(RaumLogName # ": 0°C ohne alte Planung innerhalb der ersten Stunde seit Systemstart; Neuberechnung verschoben!");}
+            continue;
+          }
+          ISTTemperatur=GT.Max(AT);
+          if(log){logObj.State(RaumLogName # ": Temperaturstoerung (0°C) nach mindestens einer Stunde Kernellaufzeit; Neuberechnung mit Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)!");}
+          if(DEBUG) {WriteLine(RaumLogName # ": Temperaturstoerung (0°C) nach mindestens einer Stunde Kernellaufzeit; Neuberechnung mit Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)!");}
         }
 
         !// Luftfeuchte optional auslesen (nur wenn Datenpunkt vorhanden und Wert > 0).

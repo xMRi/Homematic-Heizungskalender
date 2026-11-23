@@ -868,7 +868,8 @@ Die vollständige Beschreibung der Funktionen und Seiten findet sich im
 
 ## Allgemeinde Informationen zum Betrieb
 
-Nach einem Neustart der CCU melden Thermostate, die noch nicht wieder Funkkontakt mit der Basis-CCU hatten eine Isttemperatur von 0°C. Dies kann direkt nach dem Neustart zu eigentümlichen errechneten Vorlaufzeiten führen oder auch zu falschen Informationen im Addon in der Raumübersicht.  
-Durch diese *falschen* Temperatur Informationen kann es dazu kommen, dass Heizvorgänge vorzeitig eingeschaltet werden. Der Heizkalender wird diese Vorgänge jedoch sofort abbrechen, wenn die realen Temperaturen übermittelt werden und der nächste Durchlauf für `HK-Skript 2` startet
+Nach einem CCU-Neustart wurden Raumtemperaturen von 0 °C beobachtet, bevor wieder nutzbare Sensordaten vorlagen. Skript 2 behandelt den Wert 0 °C als nicht verfügbaren Messwert; eine echte Nullmessung wird nicht davon unterschieden.
 
-Erst nach bis zu 1h Laufzeit wird sich die CCU nach einem Neustart wieder eingependelt haben.art wieder eingependelt haben.
+Ist bereits ein Schaltlisteneintrag vorhanden, bleibt er unverändert erhalten. Ohne vorhandenen Eintrag wartet Skript 2 bei 0 °C während der ersten 60 Minuten Betriebssystemlaufzeit mit der Neuberechnung. Ab 3600 Sekunden wird stattdessen mit dem Maximum aus Grund- und Außentemperatur gerechnet und eine Temperaturstörung protokolliert. Ist die Laufzeit nicht lesbar oder ungültig, wird die Neuberechnung weiterhin verschoben. Die Laufzeit wird bei Bedarf einmal pro Skriptlauf aus `/proc/uptime` gelesen; ein alleiniger ReGa-Neustart wird damit nicht erkannt.
+
+Eine Temperatur ungleich 0 °C wird auch in der ersten Stunde normal verarbeitet. Sobald nutzbare Messwerte vorliegen, verwendet die normale Neuberechnung wieder diese Werte. Bereits begonnene Heizphasen werden jedoch wie bisher gesondert übernommen; ein sofortiges Abbrechen nach einer neuen Messung wird nicht zugesagt. Die einstündige Startphase ist eine festgelegte Wartefrist, keine Garantie für die Wiederanmeldung aller Geräte.

@@ -13,10 +13,10 @@ cases = [
     ("3600", 0, "", 12, 5, "3600 0", ""),
     ("alt-frueh", 0, "ALTER-EINTRAG", 12, 5, "3599 0", ""),
     ("alt-spaet", 0, "ALTER-EINTRAG", 12, 5, "3600 0", ""),
-    ("messwert", 16, "", 12, 5, "ungueltig", ""),
+    ("messwert", 16, "", 12, 5, "", ""),
     ("leer", 0, "", 12, 5, "", ""),
     ("negativ", 0, "", 12, 5, "-3600 0", ""),
-    ("ungueltig", 0, "", 12, 5, "abc 0", ""),
+    ("null", 0, "", 12, 5, "0.00 0", ""),
     ("stderr", 0, "", 12, 5, "3600 0", "Fehler"),
     ("AT-ueber-GT", 0, "", 12, 15, "3600.25 0", ""),
     ("schaetzung-null", 0, "", 0, 0, "3600 0", ""),
@@ -53,3 +53,4 @@ destination = ROOT / "build/neustart-isoliert.hsc"
 destination.parent.mkdir(parents=True, exist_ok=True)
 destination.write_text(text)
 print(destination.relative_to(ROOT))
+print(f"{len(cases)} Fälle mit je zwei Wiederholungen erzeugt, nicht ausgeführt.")

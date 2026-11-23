@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    22.11.2026
+!// Stand:    23.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -14,6 +14,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// TT:  2026-11-23 Kernellaufzeit direkt aus dem vorhandenen ersten Feld konvertieren; Zeichenprüfung zur Vereinfachung entfernt
 !// TT:  2026-11-22 Integration: Neustartlogik und automatische Erhöhung der HK1-Vorlaufzeit erhalten
 !// TT:  2026-11-21 Bei 0°C alte Planung erhalten; ohne Planung nach einer Stunde Kernellaufzeit mit GT.Max(AT) rechnen, bei unlesbarer Laufzeit weiter warten
 !// MRi: 2026-11-19 HK1-Vorlaufzeit automatisch erhöhen
@@ -507,35 +508,16 @@ foreach(TLEintrag,TerminListe){
 
           if (!kernelLaufzeitGelesen){
             boolean kernelLaufzeitGueltig=false;
-            boolean kernelLaufzeitDezimalpunkt=false;
             string kernelLaufzeitAusgabe="";
             string kernelLaufzeitFehler="";
             string kernelLaufzeitText="";
-            string kernelLaufzeitZeichen="";
-            string kernelLaufzeitZiffern="0123456789";
-            integer kernelLaufzeitIndex=0;
             real kernelLaufzeitSekunden=0.0;
             kernelLaufzeitGelesen=true;
             system.Exec("cat /proc/uptime", &kernelLaufzeitAusgabe, &kernelLaufzeitFehler);
             kernelLaufzeitText=kernelLaufzeitAusgabe.StrValueByIndex(" ",0);
-            kernelLaufzeitGueltig=((kernelLaufzeitFehler=="") && (kernelLaufzeitText.Length()>0));
-            !// Vor ToFloat nur Ziffern und hoechstens einen inneren Dezimalpunkt zulassen.
-            kernelLaufzeitIndex=0;
-            while ((kernelLaufzeitIndex<kernelLaufzeitText.Length()) && kernelLaufzeitGueltig){
-              kernelLaufzeitZeichen=kernelLaufzeitText.Substr(kernelLaufzeitIndex,1);
-              if (kernelLaufzeitZeichen=="."){
-                if ((kernelLaufzeitDezimalpunkt || (kernelLaufzeitIndex==0)) || (kernelLaufzeitIndex==(kernelLaufzeitText.Length()-1))){
-                  kernelLaufzeitGueltig=false;
-                }
-                kernelLaufzeitDezimalpunkt=true;
-              }elseif (kernelLaufzeitZiffern.Find(kernelLaufzeitZeichen)<0){
-                kernelLaufzeitGueltig=false;
-              }
-              kernelLaufzeitIndex=kernelLaufzeitIndex+1;
-            }
-            if (kernelLaufzeitGueltig){
+            if ((kernelLaufzeitFehler=="") && (kernelLaufzeitText!="")){
               kernelLaufzeitSekunden=kernelLaufzeitText.ToFloat();
-              if (kernelLaufzeitSekunden<=0.0){ kernelLaufzeitGueltig=false; }
+              kernelLaufzeitGueltig=(kernelLaufzeitSekunden>0.0);
             }
           }
           if (!kernelLaufzeitGueltig){

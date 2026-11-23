@@ -22,6 +22,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 - Addon-Version auf 0.10.5 erhöht.
 - Historisches Addon-PRD nach `docs/archiv/` verschoben und als unverbindlichen Entwurf gekennzeichnet.
+- Skript 2: Kernellaufzeit direkt aus dem ersten `/proc/uptime`-Ausgabefeld mit `ToFloat()` lesen; zusätzliche zeichenweise Zahlenprüfung entfernt. Wartefrist und Ersatzberechnung bleiben bestehen.
 
 ### Behoben
 

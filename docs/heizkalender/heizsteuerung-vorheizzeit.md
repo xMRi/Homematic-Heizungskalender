@@ -157,7 +157,7 @@ $$
 
 Bei Außentemperatur unterhalb der Grundtemperatur entspricht der Schätzwert der Grundtemperatur und der Heizbedarf-Faktor ist unter den normalen Formelbedingungen 1. Liegt die Außentemperatur darüber, kann der Faktor kleiner sein. Der Schätzwert ersetzt keine Messung und ist kein allgemein garantierter sicherster Zustand.
 
-Ein vorhandener Temperaturdatenpunkt mit Wert 0 wird getrennt behandelt: Ein alter Schaltlisteneintrag bleibt erhalten. Ohne alten Eintrag wartet das Skript während der ersten Kernelstunde; ab 3600 Sekunden rechnet es mit dem Maximum aus effektiver Raumgrundtemperatur und Außentemperatur und protokolliert eine Störung. Eine echte Nullmessung wird bewusst gleich behandelt. Bei nicht lesbarer Kernellaufzeit wird weiter gewartet. Diese Startphasenregel erkennt keinen alleinigen ReGa-Neustart.
+Ein vorhandener Temperaturdatenpunkt mit Wert 0 wird getrennt behandelt: Ein alter Schaltlisteneintrag bleibt erhalten. Ohne alten Eintrag wartet das Skript während der ersten Kernelstunde; ab 3600 Sekunden rechnet es mit dem Maximum aus effektiver Raumgrundtemperatur und Außentemperatur und protokolliert eine Störung. Eine echte Nullmessung wird bewusst gleich behandelt. Das erste Ausgabefeld aus `/proc/uptime` wird direkt mit `ToFloat()` umgewandelt. Bei Abruffehler, leerem Feld oder nicht positivem Konvertierungsergebnis wird weiter gewartet; eine zusätzliche zeichenweise Zahlenprüfung erfolgt nicht. Diese Startphasenregel erkennt keinen alleinigen ReGa-Neustart.
 
 ### Übertemperatur im Raum
 

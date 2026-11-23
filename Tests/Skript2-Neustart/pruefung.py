@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Statische Pruefung und explizites Referenzmodell, kein HSC-Interpreter."""
-import math
 from pathlib import Path
 import re
 import unittest
@@ -19,7 +18,7 @@ def source_parts():
 
 
 class Model:
-    """Nur Entscheidungsmodell, unabhaengig von der HomeMatic-Laufzeit."""
+    """Entscheidungsmodell für numerische Kerneltexte, kein ToFloat-Nachbau."""
 
     def __init__(self, stdout="3600.00 123.45\n", stderr=""):
         self.stdout, self.stderr = stdout, stderr
@@ -35,9 +34,9 @@ class Model:
             if not self.reads:
                 self.reads += 1
                 token = self.stdout.split(" ")[0]
-                if not self.stderr and re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", token):
+                if not self.stderr and token:
                     value = float(token)
-                    if math.isfinite(value) and value > 0:
+                    if value > 0:
                         self.seconds = value
             if self.seconds is None or self.seconds < 3600:
                 return "warten", None
@@ -62,27 +61,26 @@ class Decisions(unittest.TestCase):
 
     def test_messwert_sofort_auch_negativ(self):
         for measured in (0.1, 17, -2):
-            model = Model("ungueltig")
+            model = Model("")
             self.assertEqual(model.decide(measured=measured), ("berechnen", measured))
             self.assertEqual(model.reads, 0)
 
-    def test_ungueltige_laufzeit(self):
-        for stdout, stderr in [("", ""), (" 3600", ""), ("abc 0", ""),
-                               ("-3600 0", ""), ("+3600 0", ""), ("0 0", ""),
-                               (".3600 0", ""), ("3600. 0", ""), ("36.00.0 0", ""),
-                               ("3e4 0", ""), ("NaN 0", ""), ("3600 0", "Fehler")]:
+    def test_fehlende_oder_nichtpositive_laufzeit(self):
+        for stdout, stderr in [("", ""), (" 3600", ""),
+                               ("-3600.00 0", ""), ("0.00 0", ""),
+                               ("3600 0", "Fehler")]:
             with self.subTest(stdout=stdout, stderr=stderr):
                 self.assertEqual(Model(stdout, stderr).decide(), ("warten", None))
 
     def test_einmal_je_lauf_auch_bei_fehler(self):
-        for stdout in ("3600.5 0\n", "ungueltig"):
+        for stdout in ("3600.5 0\n", ""):
             model = Model(stdout)
             for _ in range(4):
                 model.decide()
             self.assertEqual(model.reads, 1)
         model = Model("3600.5 0\n")
         self.assertEqual(model.decide(gt=12, at=5), ("berechnen", 12))
-        model.stdout = "ungueltig"
+        model.stdout = ""
         self.assertEqual(model.decide(gt=10, at=15), ("berechnen", 15))
         self.assertEqual(model.reads, 1)
 
@@ -103,28 +101,33 @@ class Decisions(unittest.TestCase):
 class StaticSource(unittest.TestCase):
     def test_header_und_deklarationen(self):
         source, declarations, branch = source_parts()
-        self.assertIn("!// Stand:    22.11.2026", source)
-        self.assertNotIn("!// TT:  2026-11-23", source)
+        self.assertIn("!// Stand:    23.11.2026", source)
+        self.assertEqual(source.count("!// TT:  2026-11-23"), 1)
+        self.assertLess(source.index("!// TT:  2026-11-23"), source.index("!// TT:  2026-11-22"))
         self.assertEqual(source.count("!// TT:  2026-11-22"), 1)
         self.assertEqual(source.count("!// TT:  2026-11-21"), 1)
         self.assertIn("!// MRi: 2026-11-19 HK1-Vorlaufzeit automatisch erhöhen", source)
         self.assertLess(source.index("!// TT:  2026-11-22"), source.index("!// TT:  2026-11-21"))
         self.assertLess(source.index("!// TT:  2026-11-21"), source.index("!// MRi: 2026-11-19"))
         names = re.findall(r"(?:boolean|string|integer|real) (kernelLaufzeit\w+)", declarations + branch)
-        self.assertEqual(len(names), 10)
+        self.assertEqual(len(names), 6)
         self.assertEqual(len(names), len(set(names)))
         for name in names:
             self.assertEqual(len(re.findall(r"(?:boolean|string|integer|real) " + name + r"\b", source)), 1)
         before_read, read = branch.split("if (!kernelLaufzeitGelesen){", 1)
         read_prefix = read.split("kernelLaufzeitGelesen=true;", 1)[0]
         helper_names = re.findall(r"(?:boolean|string|integer|real) (kernelLaufzeit\w+)", read_prefix)
-        self.assertEqual(len(helper_names), 9)
+        self.assertEqual(len(helper_names), 5)
         for name in helper_names:
             self.assertNotIn(name, before_read)
             self.assertNotIn(name, source.split("if (ISTTemperatur==0){", 1)[0])
             self.assertNotIn(name, source.split("!// Luftfeuchte optional", 1)[1])
-        self.assertIn("boolean kernelLaufzeitDezimalpunkt=false;", read_prefix)
-        self.assertEqual(source.count("kernelLaufzeitDezimalpunkt=false;"), 1)
+        self.assertIn("boolean kernelLaufzeitGueltig=false;", read_prefix)
+        for name in ("Ausgabe", "Fehler", "Text"):
+            self.assertIn('string kernelLaufzeit' + name + '="";', read_prefix)
+        self.assertIn("real kernelLaufzeitSekunden=0.0;", read_prefix)
+        for removed in ("Dezimalpunkt", "Zeichen", "Ziffern", "Index"):
+            self.assertNotIn("kernelLaufzeit" + removed, source)
         self.assertLess(source.index(declarations.rstrip()), source.index("foreach(TLEintrag,TerminListe)"))
 
     def test_zweig_reihenfolge_und_fortsetzung(self):
@@ -136,9 +139,12 @@ class StaticSource(unittest.TestCase):
         self.assertIn("kernelLaufzeitGelesen=true;", rest)
         self.assertIn('kernelLaufzeitAusgabe.StrValueByIndex(" ",0)', rest)
         self.assertIn('(kernelLaufzeitFehler=="")', rest)
-        self.assertIn('kernelLaufzeitZiffern.Find(kernelLaufzeitZeichen)<0', rest)
-        self.assertIn("if (kernelLaufzeitGueltig){\n              kernelLaufzeitSekunden=kernelLaufzeitText.ToFloat();", rest)
-        self.assertIn("kernelLaufzeitSekunden<=0.0", rest)
+        self.assertNotIn("while (", rest)
+        self.assertIn('if ((kernelLaufzeitFehler=="") && (kernelLaufzeitText!="")){\n'
+                      '              kernelLaufzeitSekunden=kernelLaufzeitText.ToFloat();\n'
+                      '              kernelLaufzeitGueltig=(kernelLaufzeitSekunden>0.0);\n'
+                      '            }', rest)
+        self.assertEqual(rest.count(".ToFloat()"), 1)
         self.assertIn("if (kernelLaufzeitSekunden<3600.0)", rest)
         estimate = rest.split("ISTTemperatur=GT.Max(AT);", 1)[1]
         self.assertNotIn("continue;", estimate)

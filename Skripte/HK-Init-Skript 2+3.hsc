@@ -1,6 +1,6 @@
 !// Script zum Erzeugen der Systemvariablen des Heizkalenders für Skript 2+3
 !//================================================================================================
-!// Stand:    13.11.2026
+!// Stand:    21.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -18,6 +18,7 @@
 !// Ich (MRi) habe diesen Code dann erweitert, korrigiert und verbessert um sie an die Nutzung in
 !// meiner Gemeinde anzupassen.
 !//
+!// TT:  2026-11-21 Optionale HK2-Aussentemperatur-Abrufzeit als Zeichenkette mit leerem Startwert ergaenzt.
 !// TT:   2026-11-13 HK2-Aussentemperatur-Aktuell ergaenzt
 !// TT:   2026-11-10 HK2-Kurvenanpassung: optionaler Kurvenanpassungsfaktor fuer das Zwei-Geraden-Modell (0.3..1.0, Vorgabe 0.8)
 !// MRi:  2026-11-03 Neue Variable für Skript3, HK2-Schaltliste
@@ -47,7 +48,8 @@ string nm=  "HK2-HKG-Liste;" #
             "HK2-Kurvenanpassung;" #
             "HK2-Schaltliste;" #
             "HK2-Schaltzeiten;" #
-            "HK2-Aussentemperatur-Aktuell";
+            "HK2-Aussentemperatur-Aktuell;" #
+            "HK2-Aussentemperatur-Abrufzeit";
 
 !// Beschreibungstexte
 string be=  "Liste der HK-Raum-Variablen;" #
@@ -62,7 +64,8 @@ string be=  "Liste der HK-Raum-Variablen;" #
             "Kurvenanpassungsfaktor fuer das Zwei-Geraden-Modell der Vorheizzeit-Berechnung (0.3 bis 1.0). Vorgabe 0.8;" #
             "Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!;" #
             "Berechnete Schaltzeiten pro Raum von Skript 2 für das Addon. Hier bitte nichts verändern!;" #
-            "Aktuelle Außentemperatur (letzte volle Stunde, von Open-Meteo). Wird vom AT-Skript geschrieben.";
+            "Aktuelle Außentemperatur (letzte volle Stunde, von Open-Meteo). Wird vom AT-Skript geschrieben.;" #
+            "Letzter erfolgreicher Open-Meteo-Abruf als Unixsekunden. Wird vom AT-Skript geschrieben, nicht manuell aendern.";
 
 !// Typen
 string tp=  "string;" #
@@ -77,7 +80,8 @@ string tp=  "string;" #
             "integer;" #
             "string;" #
             "string;" #
-            "integer";
+            "integer;" #
+            "string";
 
 !// Vorgabe Werte
 !// Komma wird ersetzt durch Semikolon
@@ -93,7 +97,8 @@ string vl=  ";" #
             "0.8;" #
             ";" #
             ";" #
-            "0.0";
+            "0.0;" #
+            "";
 
 !// Einheit (z.B. °C)
 string vu=  ";" #
@@ -108,7 +113,8 @@ string vu=  ";" #
             ";" #
             ";" #
             ";" #
-            "°C";
+            "°C;" #
+            "";
 
 !// Zusätzliche Info Texte für
 !//   - Boolean   - Werte für eine Variable durch + getrennt
@@ -125,7 +131,8 @@ string wr=  ";" #
             "0.3+1.0;" #
             ";" #
             ";" #
-            "-50+50";
+            "-50+50;" #
+            "";
 
 !// Protokollierungs Flags
 string pr=  "1;" #
@@ -140,7 +147,8 @@ string pr=  "1;" #
             "1;" #
             "1;" #
             "0;" #
-            "1";
+            "1;" #
+            "0";
 
 !//------------------------------------------------------------------------------------------------
 !// Ab hier Standard Code zum erzeugen von Variablen

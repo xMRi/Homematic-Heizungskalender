@@ -60,6 +60,10 @@ Die Spalten **Vorlauf** und **Heizen ab** werden nur angezeigt, wenn die Systemv
 
 Ganz oben wird, falls vorhanden, die aktuelle Außentemperatur (gleitender Mittelwert) angezeigt, die für die Vorheizzeitberechnung verwendet wird.
 
+Zusätzlich zeigt die Seite den Zeitpunkt des letzten erfolgreichen Wetterabrufs aus der optionalen Zeichenketten-Systemvariable `HK2-Aussentemperatur-Abrufzeit`. Liegt dieser mehr als drei Stunden zurück, erscheint eine Warnung. Fehlende, leere oder ungültige Abrufzeiten lassen keine Aussage zur Aktualität zu; ein Zeitpunkt in der Zukunft ist ebenfalls ungültig. Die Anzeige ist rein informativ und schaltet die Heizung nicht ab. Der Zeitpunkt bezeichnet den Abruf, nicht das Alter der zugrunde liegenden Wetterprognose.
+
+Die Variable wird über das manuell ausgeführte `HK-Init-Skript 2+3.hsc` oder direkt in der CCU-WebUI angelegt, nicht durch den Windows-Installer. Name: `HK2-Aussentemperatur-Abrufzeit`, Typ: **Zeichenkette**, Inhalt zunächst leer. Das aktualisierte Open-Meteo-Skript schreibt anschließend Unixsekunden hinein; die Seite stellt sie als Datum und Uhrzeit dar. Ohne diese Variable bleiben die bisherigen Temperatur- und Raumdaten verfügbar. Bei einer anderen Temperaturquelle gilt die Wetterabrufzeit nicht automatisch als deren Messzeitpunkt. Einrichtung und Bedeutung sind im [eigenen Variablenabschnitt](../skripte/readme.md#hk2-aussentemperatur-abrufzeit) beschrieben.
+
 **Mehrere Termine pro Raum und Tag:** Hat ein Raum an einem Tag mehr als einen Termin in der Schaltliste, wird in der Terminspalte zunächst nur der erste Eintrag angezeigt. Durch Klick auf diesen Eintrag klappt die Zelle auf und zeigt alle weiteren Termine des Raums.
 
 **Raum-Gruppen:** Ein Raum kann über `HK2-HKG-Liste` als Teil einer Gruppe konfiguriert sein, d.h. er wird bei der Buchung anderer Ressourcen mitgeheizt. In diesem Fall sammelt das Addon alle Ressourcen-IDs, für die der Raum zuständig ist (eigene Ressource und alle Gruppen, in denen er Mitglied ist), und zeigt sämtliche zugehörigen Termine in einer einzigen Zeile an. Der Raum erscheint also immer nur einmal in der Tabelle, egal wie viele Ressourcen ihn einschließen.

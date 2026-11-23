@@ -13,6 +13,14 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+
+- Wetterabrufzeit: Letzten erfolgreichen Open-Meteo-Abruf speichern und im Addon mit Aktualitätswarnung anzeigen, ohne das Heizverhalten zu ändern.
+
+### Geändert
+
+- Addon-Version auf 0.10.5 erhöht.
+
 ### Behoben
 
 -Skript: Heizkurvenkontrolle Wenn ein Termin in der AUS Phase ist, darf er für einen Heizbeginn nicht berücksichtigt werden. Er gehört vermutlich zu einem späteren SLListen Eintrag.

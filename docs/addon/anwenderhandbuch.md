@@ -91,12 +91,15 @@ Die Heizkurvenkontrolle wertet die aufgezeichneten Heizereignisse aus dem USB-St
 | Zeitraum | Heute (Standard), Gestern, letzte 7 Tage, letzte 30 Tage oder letzte 90 Tage |
 | Raum | Alle Räume oder ein bestimmter Raum (inkl. Gruppenräume) |
 | Ereignis | Alle Ereignisse (Standard) oder ein bestimmter Typ |
+| Raumtemperatur anzeigen | Checkbox direkt nach dem Ereignisfilter, standardmäßig ausgeschaltet. Blendet vorhandene zusätzliche Raumtemperatur-Zeilen ein. |
 
 Nach Auswahl der Filter auf **Anzeigen** klicken. Die Seite lädt erst dann Daten.
 
+Die Checkbox wirkt zusätzlich zu Zeitraum, Raum und Ereignis. Ohne Häkchen bleiben Zeilen mit dem Ereignisnamen `Raumtemperatur` auch bei „Alle Ereignisse“ ausgeblendet. Mit Häkchen werden sie einbezogen, sofern die anderen Filter passen. Die Option verändert nur die Anzeige und erzeugt keine Messwerte oder Protokolleinträge.
+
 **Ereignistypen:**
 
-Die Tabelle zeigt die Ereignisse Heizbeginn, Terminbeginn, Zieltemperatur, Terminende, Heizende und Fehler. Die Zeilen haben einen alternierenden Hintergrund (grau/weiß).
+Die Tabelle zeigt die Ereignisse Heizbeginn, Terminbeginn, Zieltemperatur, Terminende, Heizende und Fehler. Falls die Logdateien zusätzliche Ereignisse vom Typ `Raumtemperatur` enthalten, können diese über die Checkbox eingeblendet werden. Die Zeilen haben einen alternierenden Hintergrund (grau/weiß).
 
 Die Spalte **Δ min** gibt an, wie viele Minuten vor (negativ) oder nach (positiv) dem Terminbeginn das Ereignis eingetreten ist.
 

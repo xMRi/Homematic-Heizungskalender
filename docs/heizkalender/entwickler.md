@@ -434,7 +434,8 @@ Speichert den laufenden Zustand der Heizkurvenkontrolle für alle überwachten R
 | Raumvariable | String | Name der `HKG-Raum-*`-Systemvariable |
 | Status | Integer (Bitmap) | Zustand des Raums in der aktuellen Heizphase |
 | IstTemp | Float | Zuletzt gemessene Ist-Temperatur des Temperatursensors |
-! AUS_Termin | integer | maximaler AUS_Termin über alle überlappenden Einträge (integer, optional) |
+! AUS_Termin | Zeitstempel | maximaler AUS_Termin über alle überlappenden Einträge |
+! LetzterTempLog | Zeitstempel | Letzter Log der Raumtemperatur im Protokoll (stündlich) |
 
 **Status-Bitmap:**
 
@@ -448,7 +449,7 @@ Speichert den laufenden Zustand der Heizkurvenkontrolle für alle überwachten R
 | 5 | 32 | Terminbeginn bereits geloggt |
   
 
-Beispiel: `#HKG-Raum-EG-Saal;1;18.1;1794942000#HKG-Raum-UG-Buero;3;20.3;1794942000#`
+Beispiel: `#HKG-Raum-KlSaal;1;18.8;2026-11-23 18:00:00;2026-11-23 12:55:30#HKG-Raum-Foyer;3;21.1;2026-11-23 18:00:00;2026-11-23 12:55:30`
 
 ## Skript-Syntax (HomeMatic HSC)
 

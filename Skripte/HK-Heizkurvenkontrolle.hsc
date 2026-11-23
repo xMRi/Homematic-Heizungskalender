@@ -13,6 +13,7 @@
 !// Skript sollte alle 5min laufen ca. 30 Sekunden nach dem Schaltskript
 !//
 
+!// MRi: 2026-11-23 Raumtemperatur Log alle 1h
 !// MRi: 2026-11-22 Einfachere Ermittlung, des aktuellen Termines. 
 !// MRi: 2026-11-21 Wenn ein Termin in der AUS Pahse ist, darf er für einen Heizbeginn nicht 
 !//                 berücksichtigt werden. Er gehört vermutlich zu einem späteren SLListen Eintrag.
@@ -258,7 +259,8 @@ while(SListe!=""){
   !// Diesen Eintrag nun bearbeiten, wenn wir was gefunden haben
   !// Ab dieser Stelle wird ein Raum immer nur einmal bearbeitet, weil wir uns nur einen
   !// relevanten Termin aussuchen zu dem wir die Heizsituation angeben. Der Termin wird Nur
-  !// für die relativen Zeitangaben benötigt.
+  !// für die relativen Zeitangaben benötigt. Alles andere regelt das Flag intern am status
+  !// des Raumes.
   if(DEBUG){WriteLine("SLEintrag=" # SLEintrag);}
   if (SLEintrag==""){
     continue;
@@ -327,6 +329,7 @@ while(SListe!=""){
   !//   1. Messzustand (status bitmap)
   !//   2. Bisherige maximale Temperatur
   !//   3. ausTerminMax — maximaler AUS_Termin über alle überlappenden Einträge (integer, optional)
+  !//   4. letzte Zeit eines Temperaturloga
   if (DEBUG) { WriteLine("RaumListe=" # RaumListe); }
   string strTemp;
   string RaumParameter="";
@@ -358,11 +361,10 @@ while(SListe!=""){
   !// Maximaler AUS_Termin über alle überlappenden Einträge dieses Raums (Feld 3).
   !// Rückwärtskompatibel: bei alten Daten ohne Feld 3 ergibt ToInteger() 0.
   integer ausTerminMax = RaumParameter.StrValueByIndex(";",3).ToTime().ToInteger();
+  integer letzterTemperaturLog = RaumParameter.StrValueByIndex(";",4).ToTime().ToInteger();
 
   !// AUS_Termin des aktuellen Eintrags berücksichtigen (für überlappende Termine)
-  if (AUS_Termin > ausTerminMax) {
-    ausTerminMax = AUS_Termin;
-  }
+  ausTerminMax = ausTerminMax.Max(AUS_Termin);
 
   !// Vorgegebene Temperatur oder Raumtemperatur bestimmen
   if(SDFlag<=0){
@@ -409,7 +411,7 @@ while(SListe!=""){
     !// Räume merken, die wir bearbeitet haben.
     bearbeiteteRaeume = bearbeiteteRaeume # RVN # ";";
     !// Merker (Bit 3) erhalten, damit der Hinweis nicht bei jedem Lauf erneut kommt.
-    RaumListe = RaumListe # "#" # RVN # ";" # status # ";" # maxTemperatur.ToString(1) # ";" # ausTerminMax.ToTime();
+    RaumListe = RaumListe # "#" # RVN # ";" # status # ";" # maxTemperatur.ToString(1) # ";" # ausTerminMax.ToTime() # ";" # letzterTemperaturLog.ToTime();
     continue;
   }
 
@@ -437,6 +439,8 @@ while(SListe!=""){
     if (DEBUG) { WriteLine(RaumLogName # "Heizbeginn: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", AT: " # ATLog); }
     !// setzt Bit 0 (Heizvorgang), löscht alle anderen Zustände außer Bit 5 (Terminbeginn bereits geloggt)
     status = 1 | (status & 32);
+    !// Letzten Temperaturlog auf NOW setzen
+    letzterTemperaturLog = NOW;
   }
 
   !// Prüfen ob Heizende erkannt wird. Nur wenn bit 0 = ein und bit 2 = aus.
@@ -493,10 +497,22 @@ while(SListe!=""){
     status = status | 16;
   }
 
+  !// Auf einen Temperaturlog prüfen. Nur wenn Heizung als an oder auch als aus geloggt wurde. (Karenz 1 Minuten)
+  if (((letzterTemperaturLog+3540)<NOW) && ((status & 5)!=0)){
+    !// Temperaturlog ausgeben
+    strTemp = ((NOW-EIN_Termin)/60).ToString();
+    if (!strTemp.StartsWith("-")){
+      strTemp = "+" # strTemp;
+    }
+    logObj.State          (RaumLogName # "Raumtemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # ATLog);
+    if (DEBUG) { WriteLine(RaumLogName # "Raumtemperatur: " # strTemp # "min, Ist: " # istTemperatur.ToString(1) # ", Ziel: " # RTemp.ToString(1) # ", Max.: " # maxTemperatur.ToString(1) # ", AT: " # ATLog); }
+    letzterTemperaturLog = NOW;  
+  }
+
   !// Wir speichern einen Raum nur, mit dem neuen Status. Wenn er sich nicht in einem unbeheizten Zustand (status==0)
   !// wird das in der nächsten Schleife korrigiert.
   !// Neuen RaumParameter zusammensetzen (Feld 3: ausTerminMax für überlappende Termine)
-  RaumParameter = "#" # RVN # ";" # status # ";" # maxTemperatur.ToString(1) # ";" # ausTerminMax.ToTime();
+  RaumParameter = "#" # RVN # ";" # status # ";" # maxTemperatur.ToString(1) # ";" # ausTerminMax.ToTime() # ";" # letzterTemperaturLog.ToTime();
   if (DEBUG) { WriteLine("RaumParameter=" # RaumParameter); }
   RaumListe = RaumListe # RaumParameter;
   if (DEBUG) { WriteLine("RaumListe=" # RaumListe); }

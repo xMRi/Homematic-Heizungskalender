@@ -109,6 +109,7 @@ set doc_skripte_gk  "${doc_skripte}#hk-init-skript-1_googlehsc"
 set doc_skripte_ics "${doc_skripte}#hk-init-skript-1_icalhsc"
 set doc_skripte_s2  "${doc_skripte}#hk-init-skript-2hsc"
 set doc_skripte_at  "${doc_skripte}#hk-außentemperatur-open-meteohsc"
+set doc_skripte_at_abruf "${doc_skripte}#hk2-aussentemperatur-abrufzeit"
 set doc_awh         "${doc_base}/heizkalender/anwenderhandbuch/"
 set doc_awh_global  "${doc_awh}#globale-einstellungen-systemvariablen-f%C3%BCr-skript-2"
 set doc_awh_kurve   "${doc_awh}#die-heizkurve-hk2-kurve"
@@ -149,6 +150,7 @@ set doc_links [list \
     HK2-A.Temp.Grenze             $doc_skripte_s2 \
     HK2-Aussentemperatur          $doc_skripte_at \
     HK2-Aussentemperatur-Aktuell  $doc_skripte_at \
+    HK2-Aussentemperatur-Abrufzeit $doc_skripte_at_abruf \
     HK2-Grundtemperatur           $doc_skripte_s2 \
     HK2-Hand-Grundtemp            $doc_skripte_s2 \
     HK2-Hand-Temp                 $doc_skripte_s2 \

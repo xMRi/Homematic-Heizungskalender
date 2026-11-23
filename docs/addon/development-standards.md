@@ -141,7 +141,7 @@ Diese Entscheidungen sind getroffen und sollen nicht ohne neuen Grund wieder auf
 | ----- | ------------ | ---------- |
 | Zeichenkodierung | ISO-8859-1 durchgehend, keine UTF-8-Konvertierung | Tcl 8.2 hat kein funktionierendes UTF-8-Encoding; CCU liefert ohnehin ISO-8859-1 |
 | Sonderzeichen im Quellcode | HTML-Entities (`&deg;`, `&uuml;` usw.) | CGI-Dateien sind als UTF-8 gespeichert; Tcl 8.2 verarbeitet UTF-8-Mehrbyte-Sequenzen nicht korrekt |
-| JavaScript | Kein JavaScript auf den Seiten | Alle Seiten müssen ohne JS funktionieren; Filterlogik läuft serverseitig |
+| JavaScript | Lesende Übersichts- und Logseiten ohne JavaScript, Ausnahme Vorheizzeit-Rechner | Der Rechner benötigt JavaScript für Berechnung und Diagramme; die übrige Filterlogik läuft serverseitig |
 | Schreiben auf die CCU | Keine Schreiboperationen | Das Addon ist ein reines Beobachtungswerkzeug |
 | Gemeinsames Stylesheet | Alle Seiten teilen `heizkalender.css` | Einheitliches Erscheinungsbild, keine CSS-Duplikation |
 | Kein `source`/`package` | Jede CGI-Datei ist standalone | CCU hat keine Tcl-Package-Infrastruktur; Deployment-Einfachheit |

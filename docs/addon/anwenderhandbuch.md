@@ -60,6 +60,10 @@ Die Spalten **Vorlauf** und **Heizen ab** werden nur angezeigt, wenn die Systemv
 
 Ganz oben wird, falls vorhanden, die aktuelle Außentemperatur (gleitender Mittelwert) angezeigt, die für die Vorheizzeitberechnung verwendet wird.
 
+Zusätzlich zeigt die Seite den Zeitpunkt des letzten erfolgreichen Wetterabrufs aus der optionalen Zeichenketten-Systemvariable `HK2-Aussentemperatur-Abrufzeit`. Liegt dieser mehr als drei Stunden zurück, erscheint eine Warnung. Fehlende, leere oder ungültige Abrufzeiten lassen keine Aussage zur Aktualität zu; ein Zeitpunkt in der Zukunft ist ebenfalls ungültig. Die Anzeige ist rein informativ und schaltet die Heizung nicht ab. Der Zeitpunkt bezeichnet den Abruf, nicht das Alter der zugrunde liegenden Wetterprognose.
+
+Die Variable wird über das manuell ausgeführte `HK-Init-Skript 2+3.hsc` oder direkt in der CCU-WebUI angelegt, nicht durch den Windows-Installer. Name: `HK2-Aussentemperatur-Abrufzeit`, Typ: **Zeichenkette**, Inhalt zunächst leer. Das aktualisierte Open-Meteo-Skript schreibt anschließend einen lesbaren lokalen Datum-/Zeittext im Format `JJJJ-MM-TT HH:MM:SS` hinein; die Seite stellt ihn als Datum und Uhrzeit dar und berechnet daraus das Alter. Numerische Unixsekunden werden nicht unterstützt. Ohne diese Variable bleiben die bisherigen Temperatur- und Raumdaten verfügbar. Bei einer anderen Temperaturquelle gilt die Wetterabrufzeit nicht automatisch als deren Messzeitpunkt. Einrichtung, Zeitzone und Bedeutung sind im [eigenen Variablenabschnitt](../skripte/readme.md#hk2-aussentemperatur-abrufzeit) beschrieben.
+
 **Mehrere Termine pro Raum und Tag:** Hat ein Raum an einem Tag mehr als einen Termin in der Schaltliste, wird in der Terminspalte zunächst nur der erste Eintrag angezeigt. Durch Klick auf diesen Eintrag klappt die Zelle auf und zeigt alle weiteren Termine des Raums.
 
 **Raum-Gruppen:** Ein Raum kann über `HK2-HKG-Liste` als Teil einer Gruppe konfiguriert sein, d.h. er wird bei der Buchung anderer Ressourcen mitgeheizt. In diesem Fall sammelt das Addon alle Ressourcen-IDs, für die der Raum zuständig ist (eigene Ressource und alle Gruppen, in denen er Mitglied ist), und zeigt sämtliche zugehörigen Termine in einer einzigen Zeile an. Der Raum erscheint also immer nur einmal in der Tabelle, egal wie viele Ressourcen ihn einschließen.
@@ -160,20 +164,27 @@ Erreicht oder überschreitet die Außentemperatur die eingetragene Außentempera
 
 **Berechnungsformeln:**
 
-VLZ = (V + V_global + f₁ · HK2(T_at)) · f₂(T_ist)
+$$
+\text{VLZ}_{\text{roh}} = (V + V_{\text{global}} + f_1 \cdot \text{HK2}(T_{\text{at}})) \cdot f_2(T_{\text{ist}})
+$$
 
-VLZ_eff = max(VLZ, T_Mindest)
+$$
+\text{VLZ}_{\text{eff}} = \max(\text{VLZ}_{\text{roh}}, T_{\text{Mindest}})
+$$
 
-HK2(T_at) = kᵢ + (kᵢ₊₁ − kᵢ) / (aᵢ₊₁ − aᵢ) · (T_at − aᵢ)
+$$
+\text{HK2}(T_{\text{at}}) = k_i + \frac{k_{i+1}-k_i}{a_{i+1}-a_i}\cdot(T_{\text{at}}-a_i)
+$$
 
-Dabei sind aᵢ die AT-Grenzen −10, −5, 0, 8, 10, 12, 15, 17,5 °C und kᵢ die zugehörigen Stützwerte aus `HK2-Kurve`.
+Dabei sind $a_i$ die Außentemperatur-Stützpunkte und $k_i$ die zugehörigen Werte aus `HK2-Kurve`.
 
-Vier Diagramme veranschaulichen die Berechnung:
+Vier Grunddiagramme und ein optionaler Raumvergleich veranschaulichen die Berechnung:
 
 - **Heizbedarf-Kurve:** Zeigt das Zwei-Geraden-Modell des Heizbedarf-Faktors *f*₂ in Abhängigkeit von der Ist-Temperatur zwischen Grundtemperatur und Wohlfühltemperatur. Ein roter Marker zeigt den aktuellen IST-Wert mit dem berechneten *f*₂.
-- **Zeitanteile:** Horizontales Balkendiagramm. Der obere Balken zeigt die Rohwert-Segmente: blau ist der vorzeitige Heizbeginn (*V* + *V*_global zusammen addiert), orange die AT-abhängige Zeit aus der Heizkurve skaliert mit *f*₁. Der grau gestrichelte Bereich zeigt die Reduktion durch *f*₂. Die rote gestrichelte Linie markiert die Mindest-Vorlaufzeit. Der untere Balken zeigt die effektive Gesamtvorheizzeit (grün wenn ausreichend, rot wenn durch die Mindest-Vorlaufzeit angehoben).
+- **Zeitanteile:** Drei Balkenzeilen: oben Rohwerte vor der Raumtemperatur-Anpassung, in der Mitte die damit skalierten Anteile und unten die effektive Gesamtvorheizzeit einschließlich Mindestvorlauf. Die Rohwerte sind blau und orange, die skalierten Anteile heller, die effektive Gesamtzeit grün. Es gibt hier keinen gestrichelten Reduktionsbereich und keine rote Mindestlinie.
 - **Temperaturverlauf:** Zeigt den modellierten Temperaturanstieg vom Start bis zur Wohlfühltemperatur über die berechnete Vorheizzeit. Eingezeichnet sind Grundtemperatur (blaugrau), Wohlfühltemperatur (grau gestrichelt) und die aktuelle Ist-Temperatur als roter Punkt auf der Kurve.
 - **Heizkurven-Verlauf:** Zeigt die interpolierte HK2-Kurve über den gesamten Außentemperaturbereich sowie die mit *f*₁ und *f*₂ skalierten Zeitanteile. Die Y-Achse berücksichtigt alle drei Kurven einschließlich ihrer extrapolierten Werte an den Rändern des dargestellten Bereichs. Eine grüne gestrichelte Linie markiert die aktuell eingegebene Außentemperatur. Ist eine Außentemperaturgrenze (`HK2-A.Temp.Grenze`) definiert, erscheint sie als rote gestrichelte Linie.
+- **Raumvergleich:** Erscheint bei gültiger Berechnung und mehr als einem verfügbaren Rechnerraum. Die gemeinsame Ist-Temperatur aus dem Eingabefeld wird mit den individuellen Raumparametern kombiniert; das Diagramm zeigt die simulierten Zeitanteile und die Wirkung der Mindestvorlaufzeit. Es liest nicht für jeden Vergleichsraum eine neue Temperaturmessung ein.
 
 **Hinweis zum Vorzeitigen Heizbeginn:** Der globale Wert (`HK2-Kurvenversatz`) wird zur raumspezifischen Vorheizzeit *addiert*. Ein Raum mit 30 min eigener Vorheizzeit und einem globalen Versatz von 10 min startet also 40 min vor Terminbeginn. Der globale Versatz greift nur bei Heizvorgängen (Heiztyp H/HS), nicht bei reinen Schaltvorgängen.
 
@@ -207,11 +218,11 @@ Das HK-Log zeigt die auf dem USB-Stick archivierten Protokolleinträge des Heizk
 
 | Filter | Bedeutung |
 | ------ | --------- |
-| Quelle | Alle Einträge oder nur eine Quelle (HK1, HK2, Heizkurvenkontrolle, HK-Log, Nachtabschaltung) |
+| Quelle | Alle Einträge oder HK1 (Kalender), HK2 (Berechnung), HK3 (Aktoransteuerung), Außentemperatur, Heizkurvenkontrolle, HK-Log oder Nachtabschaltung |
 | Log-Datei | Auswahl der Tagesdatei |
 | Letzte Zeilen | Anzahl der angezeigten Zeilen (Standard: 50, max. 5000) |
 
-Die Anzeige entspricht einem `tail`: die letzten N Zeilen der Datei, älteste oben, neueste unten.
+Ohne Quellenfilter werden die letzten N Zeilen der Datei angezeigt. Mit Quellenfilter wird zuerst die Quelle ausgewählt und danach auf die letzten N Treffer begrenzt. Die Ausgabe ist chronologisch, älteste oben und neueste unten. Die derzeitige Implementierung liest die gesamte Datei in den Speicher; die Anzeigegrenze ist keine Speichergrenze.
 
 Über das **Log-Datei:**-Label (als Link) kann die gewählte Logdatei heruntergeladen werden.
 

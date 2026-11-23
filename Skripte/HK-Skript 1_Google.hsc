@@ -1,6 +1,6 @@
 !// Skript 1 um die Termine aus Google auszulesen
 !//================================================================================================
-!// Stand:    15.11.2026
+!// Stand:    22.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -22,8 +22,12 @@
 !// Skript sollte alle 30min laufen
 !//
 
-!// MRi: 2026-10-19 Neuen Modus "V" für das setzen einer Variable eingebaut
+!// TT:  2026-11-22 Nachlaufberechnung hinter das Laden der Raumliste verschieben;
+!//               lokales Vorlesefenster mit Tagesgrenzen, Vor-/Nachlauf und Zeitzonen erhalten.
+!// TT:  2026-11-21 Abfrage auf zwei lokale Kalendertage begrenzen, Vor-/Nachlauf und Zeitzonen berücksichtigen;
+!//               Raumliste vor Nachlaufberechnung laden; maxResults=2500 und Fehlermeldung bei unvollständiger Antwort.
 !// TT:  2026-11-15 minRaumNachlauf-Berechnung ergaenzt (konsistent mit anderen Skript-1-Varianten);
+!// MRi: 2026-10-19 Neuen Modus "V" für das setzen einer Variable eingebaut
 !// TT:  2026-10-18 HK1-Vorlaufzeit: zeitVorlauf aus optionaler Systemvariable lesen (Default 12h)
 !// TT:  2026-10-01 Vorlauf von 8h auf 12h vereinheitlicht (alle Skript-1-Varianten jetzt
 !//                 12h). DIVERGENZ-Hinweis entfernt.
@@ -115,11 +119,23 @@ foreach(RaumVar, HKGListe.Replace("+",";").Split(";")){
 integer zeitNachlauf=30-minRaumNachlauf;
 if(DEBUG){WriteLine("Schaltliste-Nachlauf: " # zeitNachlauf # " Minuten");}
 
-!// Start und Enddatum setzen, End Datum = 1+Tage
+!// Heute bis übermorgen, bei längeren Vor-/Nachläufen entsprechend erweitern.
 integer versatzGMT=(system.Date("%z").Substr(1,2)).ToInteger()*3600;
 integer JETZT=system.Date().ToTime().ToInteger();
-string startDatum = JETZT.ToTime().ToString("%FT00:00:00Z");
-string endDatum = (JETZT+(86400*10)).ToTime().ToString("%FT23:59:59Z");
+integer abfrageStart = (JETZT.ToTime().Format("%F") # " 00:00:00").ToTime().ToInteger();
+integer abfrageMittag = (JETZT.ToTime().Format("%F") # " 12:00:00").ToTime().ToInteger();
+integer abfrageEnde = (((abfrageMittag + (86400 * 2)).ToTime().Format("%F")) # " 00:00:00").ToTime().ToInteger();
+!// Google verwendet exklusive Grenzen, die lokale Auswahl inklusive Grenzen.
+integer auswahlStart = (JETZT - (zeitNachlauf * 60)) - 1;
+integer auswahlEnde = (JETZT + (zeitVorlauf * 60)) + 1;
+if (auswahlStart < abfrageStart) { abfrageStart = auswahlStart; }
+if (auswahlEnde > abfrageEnde) { abfrageEnde = auswahlEnde; }
+string startZone = abfrageStart.ToTime().Format("%z");
+string endeZone = abfrageEnde.ToTime().Format("%z");
+string startDatum = abfrageStart.ToTime().Format("%FT%T") # startZone.Substr(0,3) # ":" # startZone.Substr(3,2);
+string endDatum = abfrageEnde.ToTime().Format("%FT%T") # endeZone.Substr(0,3) # ":" # endeZone.Substr(3,2);
+startDatum = startDatum.Replace("+","%2B");
+endDatum = endDatum.Replace("+","%2B");
 
 
 !// Neue Schaltliste
@@ -132,7 +148,7 @@ string strApiKey = dom.GetObject(vrp+"HK1-GK-API-Key").State();
 strKalId = strKalId.Replace("@group.calendar.google.com","");
 string cmd = "wget --timeout=5 -O - 'https://www.googleapis.com/calendar/v3/calendars/" # strKalId #
                 "@group.calendar.google.com/events?" #
-                "orderBy=startTime&singleEvents=true&prettyPrint=false&timeZone=Europe/Berlin" #
+                "orderBy=startTime&singleEvents=true&prettyPrint=false&timeZone=Europe/Berlin&maxResults=2500" #
                 "&timeMin=" # startDatum #
                 "&timeMax=" # endDatum #
                 "&key=" # strApiKey # "'";
@@ -158,6 +174,11 @@ if (!stdout.StartsWith("{\"kind\":\"calendar#events\"")){
     WriteLine("Fehler beim Lesen der Event-Daten von Google! Ursachen: API-Key falsch, Kalender-ID falsch, Kalender nicht öffentlich.");
   }
   quit;
+}
+
+if (stdout.Contains("\"nextPageToken\":")) {
+  WriteLine("FEHLER Google-Kalender: Antwort unvollständig, nur die gelieferte Ergebnisseite wird verarbeitet. Termine können fehlen.");
+  if (log) { logObj.State("FEHLER Google-Kalender: Antwort unvollständig, nur die gelieferte Ergebnisseite wird verarbeitet. Termine können fehlen."); }
 }
 
 integer iPos;
@@ -193,7 +214,7 @@ if (iPos<=0) {
     !// MRi: Nach meinem Dafürhalten ist diese Information in der Schaltliste redundant.
     raumIndex = raumIndex+1;
     string RaumVarListe=HKGListe.StrValueByIndex(";",raumIndex);
-    string RaumVar = RaumVarListe;
+    RaumVar = RaumVarListe;
     if (!RaumVarListe){
       if (DEBUG) { WriteLine("Keine Raumzuordnung!"); }
       continue;

@@ -185,6 +185,10 @@ fieldset > .hk-table-scroll:last-child {
   font-size: 0.95em;
 }
 
+.hk-warn {
+  color: #a04000;
+}
+
 .hk-log-info {
   color: #555;
   font-size: 0.9em;

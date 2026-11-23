@@ -1,6 +1,6 @@
 !// Bestimmen der Außentemperatur für den Heizkalender
 !//================================================================================================
-!// Stand:    15.11.2026
+!// Stand:    23.11.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -22,6 +22,9 @@
 !//
 !// Das Skript sollte jede volle Stunde laufen
 
+!// TT: 2026-11-23 Abrufzeit als lesbares lokales CCU-Datum mit Uhrzeit speichern.
+!// TT: 2026-11-21 Optionale Abrufzeit nach Schreiben der Durchschnittstemperatur speichern;
+!//                fehlende Temperatur-Zielvariable mit Hinweis abfangen.
 !// TT: 2026-11-15 models=dwd_icon_d2_native (icon_d2 wird 2026-11-30 abgeschaltet);
 !//                Division durch Null bei n==0 behoben; aktuellerWert initialisiert;
 !// TT: 2026-11-14 DWD ICON-D2 statt icon_seamless (dwd-icon-Endpunkt, models=icon_d2);
@@ -221,10 +224,25 @@ if (lat=="" || lon=="" || lat.ToFloat()==0.0 || lon.ToFloat()==0.0){
     !// Ergebnis schreiben
     if (n!=0){
       temp = (summe/n).ToString(1);
+      var svAT = dom.GetObject(vrp # "HK2-Aussentemperatur");
+      if (!svAT) {
+        if (log) { logObj.State("Open-Meteo: HK2-Aussentemperatur fehlt, Ergebnis nicht gespeichert."); }
+        if (DEBUG) { WriteLine("Open-Meteo: HK2-Aussentemperatur fehlt, Ergebnis nicht gespeichert."); }
+        break;
+      }
       string atLogText = "Akt. AT= " # aktuellerWert.ToString(1) # "°C / Durchschn. AT= " # temp # "°C (Fenster: -" # stundenZurueck.ToInteger() # "h/+" # stundenVoraus.ToInteger() # "h)";
       WriteLine(atLogText);
       if (log) { logObj.State(atLogText); }
-      dom.GetObject(vrp+"HK2-Aussentemperatur").State(temp);
+      svAT.State(temp);
+      !// Optional, manuell anlegen: Zeichenkette, Startwert leer, lokales Datum YYYY-MM-DD HH:MM:SS.
+      !// Auch bei identischer Temperatur aktualisieren; keine automatische Anlage.
+      var svAbrufzeit = dom.GetObject(vrp # "HK2-Aussentemperatur-Abrufzeit");
+      if (svAbrufzeit) {
+        svAbrufzeit.State(system.Date().ToTime().ToString());
+      } else {
+        if (log) { logObj.State(atLogText # " / Open-Meteo: Optionale HK2-Aussentemperatur-Abrufzeit fehlt, kein Abrufzeitstempel gespeichert."); }
+        if (DEBUG) { WriteLine("Open-Meteo: Optionale HK2-Aussentemperatur-Abrufzeit fehlt, kein Abrufzeitstempel gespeichert."); }
+      }
       !// Optionale Variable: aktuelle Temperatur (wird nur geschrieben wenn sie existiert)
       var svAkt = dom.GetObject(vrp+"HK2-Aussentemperatur-Aktuell");
       if (svAkt) { svAkt.State(aktuellerWert.ToString(1)); }

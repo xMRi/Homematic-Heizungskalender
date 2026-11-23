@@ -131,19 +131,22 @@ flowchart TD
     ATVar --> Skript2
     Raumtemp["Raumtemperatur<br/>(Thermostat-Sensor)"] --> Skript2
     SysVar --> Skript2
-    Skript2 -->|"berechnet Vorlaufzeit,<br/>heizt bzw. schaltet"| Thermostate["Thermostate / Aktoren"]
+    Skript2 -->|"schreibt berechnete Schaltzeiten"| Schaltliste2[("HK2-Schaltliste")]
+    Schaltliste2 --> Skript3["HK-Skript 3<br/>(alle 5 Minuten)"]
+    Skript3 -->|"setzt Solltemperaturen / schaltet"| Thermostate["Thermostate / Aktoren"]
 
     Installationsprogramm["HeizkalenderInstallation.exe<br/>(bei Installation, Konfiguration<br/>und Updates)"]
-    Installationsprogramm -->|"richtet ein und aktualisiert"| Programme[("Programme<br/>HK-Skript 1, HK-Skript 2, HK*")]
-    Installationsprogramm -->|"richtet ein und aktualisiert"| SysVar[("Systemvariablen<br/>HK1-*, HK2-*, HKG-Raum-*")]
+    Installationsprogramm -->|"richtet ein und aktualisiert"| Programme[("Programme<br/>HK-Skript 1, HK-Skript 2, HK-Skript 3, HK*")]
+    Installationsprogramm -->|"richtet ein und aktualisiert"| SysVar[("Systemvariablen<br/>HK1-*, HK2-*, HK3-*, HKG-Raum-*")]
 ```
 
 Ablauf im Detail:
 
-1. **Bei Installation/Konfiguration/Updates:** Die `HeizkalenderInstallation.exe` richtet die Programme (`HK-Skript 1`, `HK-Skript 2` und weitere HK-Skripte) sowie die Systemvariablen auf der CCU ein und hält sie aktuell.
+1. **Bei Installation/Konfiguration/Updates:** Die `HeizkalenderInstallation.exe` richtet die Programme (`HK-Skript 1`, `HK-Skript 2`, `HK-Skript 3` und weitere HK-Skripte) sowie die Systemvariablen auf der CCU ein und hält sie aktuell.
 2. **Stündlich:** `HK-Außentemperatur-Open-Meteo` aktualisiert die Außentemperatur in `HK2-Aussentemperatur`.
 3. **Alle 30 Minuten:** `HK-Skript 1_ChurchTools` liest die ChurchTools-Termine und schreibt sie in `HK1-Schaltliste`.
-4. **Alle 5 Minuten:** `HK-Skript 2` berechnet aus der Schaltliste, der Außentemperatur, den Systemvariablen und der aktuellen Raumtemperatur die Vorlaufzeiten und heizt bzw. schaltet die Räume entsprechend.
+4. **Alle 5 Minuten:** `HK-Skript 2` berechnet aus den Terminen, der Außentemperatur und den Raumparametern die Schaltzeiten und schreibt `HK2-Schaltliste`.
+5. **Alle 5 Minuten:** `HK-Skript 3` liest `HK2-Schaltliste` und steuert die Thermostate beziehungsweise Schaltaktoren.
 
 ## Voraussetzungen
 
@@ -273,7 +276,7 @@ Dieser Beispielwert beschreibt folgende Konfiguration:
 | `0` | Kein aktives Heizen |
 | `H` | Betriebsmodus „Heizen“ |
 | `IP` | Homematic-IP-Thermostat |
-| `21` | Wohlfühltemperatur: 18 °C |
+| `21` | Wohlfühltemperatur: 21 °C |
 | `16` | Abweichene Grundtemperatur: 16 °C |
 | `60` | 60min zusätzliche Vorheizzeit (wird gekürzt)|
 | `1.5` | Die Vorheizzeit die aus der Heizkurve `HK2-Kurve` berechnet wird, wird um den Faktor 1.5 vergrößert |
@@ -323,9 +326,9 @@ Im günstigsten Fall sollten alle Termine eingetragen und fix sein, bevor, die H
 
 Es ist jedoch möglich, dass der Terminkalender sich kurzfristig ändert. Haben sich Termine geändert liest `HK-Skript 1`, die neuen Termine ein (normalerweise alle 30min).
 
-Wird ein neuer Termin gefunden, dessen Heizphase schon begonnen haben sollte, wird sofort die Heizung im nächsten Schaltzyklus von `HK-Skript 2` eingeschaltet. Aufgrund der Verzögerung ist es dann natürlich möglich, dass die Vorheizzeit nicht erreicht wird.
+Wird ein neuer Termin gefunden, dessen Heizphase bereits begonnen haben sollte, berechnet Skript 2 die Schaltzeiten und übergibt sie an Skript 3. Dieses schaltet beim nächsten passenden Lauf ein. Wegen des verspäteten Einlesens kann die erforderliche Vorheizzeit fehlen.
 
-Wird im umgekehrten Fall ein Termin gelöscht dessen Heizphase bereits begonnen hat, wird die Heizung im im nächsten Schaltzyklus von `HK-Skript 2` ausgeschaltet.
+Wird ein laufender Termin gelöscht, aktualisiert Skript 2 die berechnete Schaltliste. Skript 3 prüft anschließend den fehlenden Eintrag und beendet die normale Heizphase im nächsten Lauf. Dauerzustände durch Sonderbefehle sind davon getrennt zu betrachten.
 
 ## Vorheizzeit
 
@@ -334,7 +337,7 @@ Die Vorheizzeit bestimmt, wie lange vor Terminbeginn ein Raum von der Grundtempe
 1. der **individuell** in der Raum-Systemvariablen definierten Vorheizzeit und
 2. der **automatisch anhand der Außentemperatur** errechneten Vorheizzeit (über die Heizkurve `HK2-Kurve`).
 
-Ist ein Raum zu Beginn bereits wärmer als die Grundtemperatur (z. B. durch einen vorhergehenden Termin, Nachbarräume oder Sonneneinstrahlung), verkürzt `HK-Skript 2` die Vorheizzeit automatisch. Hat der Raum die Zieltemperatur bereits erreicht, entfällt die Vorheizzeit vollständig.
+Ist ein Raum zu Beginn bereits wärmer als die Grundtemperatur (z. B. durch einen vorhergehenden Termin, Nachbarräume oder Sonneneinstrahlung), verkürzt `HK-Skript 2` die Vorheizzeit automatisch. Hat der Raum die Zieltemperatur bereits erreicht und sind Grund- und Zieltemperatur unterschiedlich, wird der Heizbedarf-Faktor 0. Die konfigurierte Mindestvorlaufzeit bleibt jedoch erhalten, standardmäßig 15 Minuten. Bereits begonnene Heizphasen werden gesondert übernommen.
 
 **Bis zum Beginn des Heizvorgangs wird die Vorheizzeit alle 5 Minuten anhand aller relevanten Parameter (Außentemperatur, Isttemperatur und Zieltemperatur) neu berechnet.**
 
@@ -344,19 +347,17 @@ Grundsätzlich sollte die in der `HK2-Kurve` angegebene Vorheizzeit so bemessen 
 
 ### Wann heizt ein Raum? (Entscheidungsablauf)
 
-`HK-Skript 2` prüft alle 5 Minuten für jeden Raum drei Bedingungen. Nur wenn alle
-drei erfüllt sind, wird geheizt. Das erklärt die häufige Frage „Warum heizt mein
-Raum (nicht)?".
+Bei neu berechneten normalen Heizterminen prüft Skript 2 die Außentemperaturgrenze und erstellt `HK2-Schaltliste`. Skript 3 prüft anschließend die berechneten Ein- und Ausschaltzeiten und den Raumstatus. Der folgende Ablauf ist vereinfacht für H und HS; Sonderbefehle und bereits begonnene, übernommene Heizphasen werden gesondert behandelt.
 
 ```mermaid
 flowchart TD
-    Start["HK-Skript 2 (alle 5 Minuten)"] --> P1{"Berechneter Einschaltzeitpunkt<br/>bereits erreicht?"}
-    P1 -->|"Nein"| Aus["Heizung bleibt aus<br/>(noch zu frueh)"]
-    P1 -->|"Ja"| P2{"Termin noch aktiv?<br/>(Terminende minus VorzeitAus<br/>noch nicht erreicht)"}
-    P2 -->|"Nein"| Aus2["Heizung aus<br/>(Termin vorbei bzw. VorzeitAus)"]
-    P2 -->|"Ja"| P3{"Aussentemperatur<br/>unter Grenze?"}
-    P3 -->|"Nein (zu warm draussen)"| Aus3["Heizung bleibt aus<br/>(Aussentemp.-Grenze)"]
-    P3 -->|"Ja"| Ein["Heizung EIN"]
+    Start["HK-Skript 2: neue Berechnung"] --> AT{"Aussentemperatur<br/>unter Grenze?"}
+    AT -->|"Nein"| KeinEintrag["Kein neuer Heizlisteneintrag"]
+    AT -->|"Ja"| Liste["Schaltzeiten berechnen<br/>HK2-Schaltliste schreiben"]
+    Liste --> S3["HK-Skript 3 (alle 5 Minuten)"]
+    S3 --> Zeit{"Einschaltzeit erreicht und<br/>Ausschaltzeit noch nicht erreicht?"}
+    Zeit -->|"Nein"| Warten["Nicht neu einschalten<br/>bzw. normale Heizphase beenden"]
+    Zeit -->|"Ja"| Ein["Bei Raumstatus Aus und gueltiger<br/>Steuerkonfiguration einschalten"]
 ```
 
 Der Einschaltzeitpunkt selbst ergibt sich aus der Vorheizzeit (siehe oben): je
@@ -390,14 +391,14 @@ Außentemperatur steiler vor, z.B. für träge Fußbodenheizungen.
 
 ### Rückstellung am Terminende (manuelle Eingriffe)
 
-Zum Ende der Heizphase stellt `HK-Skript 2` den Thermostat wieder auf die
+Zum Ende der Heizphase stellt `HK-Skript 3` im Modus H den Thermostat wieder auf die
 Grundtemperatur (`HK2-Grundtemperatur`) zurück. Zwei Systemvariablen steuern, ob eine
 zwischendurch von Hand am Thermostat eingestellte Temperatur dabei Vorrang hat:
 
 | Variable | Wirkung bei `true` |
 | :--- | :--- |
 | `HK2-Hand-Temp` | Wurde während der Heizphase die Temperatur manuell am Thermostat verändert, bleibt dieser Handwert beim Ausschalten erhalten, statt überschrieben zu werden. |
-| `HK2-Hand-Grundtemp` | Ist `HK2-Hand-Grundtemp` auf `true` gesetzt, führt `HK-Skript 2` um  01:00 Uhr eine Nachtschaltung aus. SOllten also Thermostate oder Geräte noch eingeschaltet sein weil diese manuell bedient wurden, erfolgt eine Rückschaltung. |
+| `HK2-Hand-Grundtemp` | Aktiviert die Nachtschaltung in Skript 3 um 01:00 Uhr. Sie prüft die konfigurierten Zustände und setzt Thermostate beziehungsweise Schaltaktoren entsprechend zurück; Dauer-Ein bleibt berücksichtigt. |
 
 Mit diesen Optionen lässt sich verhindern, dass der Heizkalender einen bewussten
 Eingriff vor Ort baldmöglichst wieder zurücksetzt. Stehen beide auf `false` (Default),
@@ -769,15 +770,16 @@ verändert werden**. Das Format ist dokumentiert, damit Fehlermeldungen im Log
 besser verstanden werden können. Die vollständige Feldbeschreibung findet sich in der
 [Entwickler-Dokumentation](entwickler.md#hk1-schaltliste).
 
-`HK-Skript 1` liest die entsprechende Kalenderressource aus. Anstehende Termine werden ab 12h vor Terminbeginn in die `HK1-Schaltliste` eingetragen. Termine die mehr als 1 Stunde abgelaufen sind, werden aus der Liste entfernt.
-`HK-Skript 2` liest die Schaltliste zyklisch aus und Schaltet bei Bedarf Heizung und Aktoren.
+`HK-Skript 1` liest die Kalenderressource und übernimmt Termine innerhalb des konfigurierten Vorlaufs, standardmäßig 12 Stunden. Abgelaufene Termine bleiben grundsätzlich 30 Minuten erhalten. Ein negatives raumbezogenes `VorzeitAus` verlängert diese Aufbewahrung um den größten konfigurierten Nachlauf, damit ein späteres Ausschalten noch verarbeitet werden kann. Das ist keine zusätzliche Heizzeit durch die Aufbewahrung selbst.
+`HK-Skript 2` berechnet aus `HK1-Schaltliste` die Heiz- und Schaltzeiten und schreibt `HK2-Schaltliste`. `HK-Skript 3` liest diese zweite Liste und steuert die Aktoren.
 
 Beispiele:
 
-- `4;2026-10-14 18:30:00;2026-10-14 20:30:00;-1;S`: Ressource 4, 14.10.2026 18:30 Uhr bis 20:30 Uhr, dauerhaft
-  einschalten (`-1` = `#EIN#`), Schalt-Modus.
-- `18;2026-10-14 18:30:00;2026-10-14 20:30:00;0;S`: Ressource 18, gleicher Zeitraum, normal einschalten, Schalt-Modus.
-- `16;2026-10-14 18:30:00;2026-10-14 20:30:00;0;H`: Ressource 16, gleicher Zeitraum, heizen (`HK-Skript 2` berechnet Vorlaufzeit und Zieltemperatur aus der Raum-Systemvariablen).
+- `4;2026-10-14 18:30:00;2026-10-14 20:30:00;-2;S;`: Ressource 4, 14.10.2026 18:30 Uhr bis 20:30 Uhr, dauerhaft einschalten (`-2` = `#EIN#`), Schalt-Modus. `-1` bedeutet `#AUS#`, `-3` bedeutet RESET.
+- `18;2026-10-14 18:30:00;2026-10-14 20:30:00;0;S;`: Ressource 18, gleicher Zeitraum, normal einschalten, Schalt-Modus.
+- `16;2026-10-14 18:30:00;2026-10-14 20:30:00;0;H;`: Ressource 16, gleicher Zeitraum, heizen. Skript 2 berechnet Vorlaufzeit und Zieltemperatur aus der Raum-Systemvariablen; Skript 3 setzt die Steuerung um.
+
+Das abschließende Semikolon nach dem Modus gehört zu jedem Eintrag und trennt ihn vom nächsten Ressourcenfeld.
 
 ## Sonderbefehle in Terminen
 
@@ -795,9 +797,11 @@ Diese Sonderbefehle können eine Heizung dauerhaft ein oder dauerhaft ausschalte
 | `#RESET#` / `#NORMAL#` | Hebt ein vorheriges `#EIN#`/`#AUS#` wieder auf ud aktiviert das normale Schaltungsverhalten |
 | `#GT#` | Wohlfühltemperatur ignorieren, stattdessen die Grundtemperatur schalten |
 | `#NS#` / `#NH#` | Nicht schalten / nicht heizen: der Termin wird nicht in die Schaltliste aufgenommen |
-| `#<Zahl>...#` | Setzt die gewünschte Temperatur (0 bis 30 °C, begrenzt durch den Aktor) |
+| `#<Zahl>...#` | Temperaturvorgabe, auch mit Nachkommastellen. Der ChurchTools-Adapter akzeptiert vor Formatierung strikt $0 < T < 30$ Grad; genau 0 und 30 werden nicht als Temperaturvorgabe übernommen. Gerätegrenzen und Rundung gelten zusätzlich. |
 
-**Bei den Sonderbefehlen `#EIN#`, `#AUS#` und `#RESET#`/`#NORMAL#` spielt die Dauer eines Termins keine Rolle. Relevant ist alleine der Terminstart. Der entsprechende Befehl wird genau und nur zu diesem Zeitpunkt ausgeführt.**
+**Bei `#EIN#`, `#AUS#` und `#RESET#`/`#NORMAL#` spielt das Terminende keine Rolle. Skript 3 verarbeitet den Befehl im offenen Zeitfenster von 160 Sekunden vor bis 160 Sekunden nach dem Terminstart.** Die tatsächliche Ausführung hängt vom Skriptlauf ab und kann vor oder nach dem Start liegen. Ein ausgefallener oder verspäteter Lauf kann den Befehl vollständig verpassen; eine Nachholung ist nicht implementiert.
+
+Für Temperaturbeispiele wird der Dezimalpunkt verwendet, etwa `#20.5#`. In den hier ausgeführten Prüfläufen wurde die Verarbeitung des Dezimalkommas nicht adapterübergreifend getestet. Die oben genannten Grenzen beziehen sich auf die Eingabe vor Rundung, nicht allein auf die Fähigkeiten des Aktors.
 
 **Anwendungsbeispiel `#NS#`/`#NH#`:** Reinigt eine Firma die Räume, soll die
 Ressource als belegt gelten, aber nicht geheizt werden. Mit `#NS#` oder `#NH#`
@@ -819,12 +823,12 @@ entscheidet `HK-Skript 1`, dass dieser Termin nicht in die Schaltliste kommt.
 
 ## Laufende Schaltlistenprüfung
 
-Unabhängig von der Nachtschaltung prüft `HK-Skript 2` bei jedem Lauf (alle 5 Minuten) alle Räume aus der Raumliste `HK2-HKG-Liste`. Für jeden Raum der sich im Schaltzustand **Ein** befindet wird geprüft, ob in diesem Schalt-Lauf ein gültiger Schaltlisteneintrag vorhanden war. Fehlt ein solcher Eintrag, wurde der Termin offenbar gelöscht oder der Ausschaltpunkt wurde verpasst. Der Raum wird dann sofort in den Zustand **Aus** zurückgesetzt und der Aktor direkt ausgeschaltet bzw. auf die Grundtemperatur zurückgesetzt.
+Unabhängig von der Nachtschaltung prüft `HK-Skript 3` bei jedem Lauf die Räume aus `HK2-HKG-Liste`. Für Räume im normalen Schaltzustand Ein (Status 1) wird geprüft, ob ein passender aktiver Listeneintrag vorhanden war. Fehlt er, etwa nach Terminlöschung oder verpasstem Ausschaltzeitpunkt, setzt die Auffanglogik den Raum auf Aus und steuert die Aktoren entsprechend an.
 
 Die Schaltlistenprüfung ist das Gegenstück zur Nachtschaltung: sie greift sofort im laufenden Betrieb, während die 
 Nachtschaltung als nächtliche Generalabsicherung dient.
 
-Die Schaltlistenprüfung berücksichtigt dabei dauerhafte Sonderbefehle **#EIN#, #AUS#** etc.
+Dauer-Aus und Dauer-Ein (Status 2 beziehungsweise 3) werden durch diese normale Auffangbedingung nicht wie Status 1 behandelt. Ein verpasstes RESET wird dadurch nicht automatisch nachgeholt.
 
 ## Nachtschaltung
 
@@ -832,19 +836,17 @@ Eine optionale Nachtschaltung soll verhindern, dass Heizungen manuell eingeschal
 
 Würde eine Heizung manuell eingeschaltet werden und der Nutzer vergisst das Ausschalten, dann hätte dies zur Folge, das die Heizung bis zum nächsten programmierten Schalttermin angeschaltet bleibt.
 
-Ist die Systemvariable `HK2-Hand-Grundtemp` auf `true` gesetzt, führt `HK-Skript 2`
-täglich um 01:00 Uhr eine Nachtschaltung durch. Dabei werden alle
-Räume aus `HK2-HKG-Liste` geprüft und bei Bedarf zurückgesetzt:
+Ist `HK2-Hand-Grundtemp` auf `true` gesetzt, führt Skript 3 im Zeitfenster um 01:00 Uhr die Nachtschaltung aus:
 
-- Räume mit einem aktiven Termin (Schaltzustand **#EIN#** werden übersprungen.
-- Alle übrigen Räume werden auf Grundtemperatur gesetzt: bei Heizräumen
-  (HSFlag=H) wird die Grundtemperatur am Thermostat gesetzt, bei Schaltaktoren
-  (HSFlag=S/HS) wird der Aktor ausgeschaltet.
+- Eine normale aktive Heizphase (Status 1) wird dabei übersprungen.
+- Bei Status 0 oder Dauer-Aus (Status 2) wird die konfigurierte Grundtemperatur beziehungsweise Aus angesteuert.
+- Dauer-Ein (Status 3) bleibt als dauerhafter Zustand berücksichtigt: Zieltemperatur beziehungsweise Ein wird angesteuert.
+- Im Modus HS wird nur der Schaltaktor angesteuert, nicht die Temperaturquelle.
 
 Die Prüfung und das Schalten erfolgen direkt am Aktor auf der CCU, nicht nur in
 der Systemvariablen. 
 
-Die Nachtschaltung ist eine Absicherung: Wurde die Heizung im Raum vergessen oder wenn ein Termin nicht korrekt ausgeschaltet wurde (z.B. durch einen CCU-Neustart während eines Termins), stellt sie sicher, dass keine Aktoren dauerhaft eingeschaltet bleiben.
+Die Nachtschaltung gleicht die Aktoren mit diesen Zuständen ab. Sie ist keine Garantie gegen jedes dauerhafte Heizen, etwa nach einem verpassten RESET oder einem nicht erreichbaren Aktor.
 
 | Systemvariable | Bedeutung |
 | :--- | :--- |
@@ -868,7 +870,10 @@ Die vollständige Beschreibung der Funktionen und Seiten findet sich im
 
 ## Allgemeinde Informationen zum Betrieb
 
-Nach einem Neustart der CCU melden Thermostate, die noch nicht wieder Funkkontakt mit der Basis-CCU hatten eine Isttemperatur von 0°C. Dies kann direkt nach dem Neustart zu eigentümlichen errechneten Vorlaufzeiten führen oder auch zu falschen Informationen im Addon in der Raumübersicht.  
-Durch diese *falschen* Temperatur Informationen kann es dazu kommen, dass Heizvorgänge vorzeitig eingeschaltet werden. Der Heizkalender wird diese Vorgänge jedoch sofort abbrechen, wenn die realen Temperaturen übermittelt werden und der nächste Durchlauf für `HK-Skript 2` startet
+Nach einem CCU-Neustart wurden Raumtemperaturen von 0 °C beobachtet, bevor wieder nutzbare Sensordaten vorlagen. Skript 2 behandelt den Wert 0 °C als nicht verfügbaren Messwert; eine echte Nullmessung wird nicht davon unterschieden.
 
-Erst nach bis zu 1h Laufzeit wird sich die CCU nach einem Neustart wieder eingependelt haben.art wieder eingependelt haben.
+Ist bereits ein Schaltlisteneintrag vorhanden, bleibt er unverändert erhalten. Ohne vorhandenen Eintrag wartet Skript 2 bei 0 °C während der ersten 60 Minuten Betriebssystemlaufzeit mit der Neuberechnung. Ab 3600 Sekunden wird stattdessen mit dem Maximum aus Grund- und Außentemperatur gerechnet und eine Temperaturstörung protokolliert. Bei Abruffehler, leerem ersten Ausgabefeld oder einem nicht positiven Konvertierungsergebnis wird die Neuberechnung weiterhin verschoben. Die Laufzeit wird bei Bedarf einmal pro Skriptlauf aus `/proc/uptime` gelesen; ein alleiniger ReGa-Neustart wird damit nicht erkannt.
+
+Das erste durch ein Leerzeichen getrennte Feld enthält die Kernellaufzeit in Sekunden. Es wird direkt mit `ToFloat()` umgewandelt; Nachkommastellen müssen für den Vergleich mit 3600 Sekunden nicht abgeschnitten werden. Das Skript erwartet das reguläre Zahlenformat der Kerneldatei und prüft den Text nicht zusätzlich Zeichen für Zeichen. Eine vollständige Prüfung beliebig beschädigter Zahlenstrings ist nicht vorgesehen.
+
+Eine Temperatur ungleich 0 °C wird auch in der ersten Stunde normal verarbeitet. Sobald nutzbare Messwerte vorliegen, verwendet die normale Neuberechnung wieder diese Werte. Bereits begonnene Heizphasen werden jedoch wie bisher gesondert übernommen; ein sofortiges Abbrechen nach einer neuen Messung wird nicht zugesagt. Die einstündige Startphase ist eine festgelegte Wartefrist, keine Garantie für die Wiederanmeldung aller Geräte.

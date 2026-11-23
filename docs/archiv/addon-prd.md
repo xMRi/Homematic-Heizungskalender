@@ -1,5 +1,7 @@
 # Heizkalender Addon: Product Requirements Document (PRD)
 
+> **Historischer Entwurf, archiviert am 21.11.2026.** Dieses Dokument beschreibt keine verbindlichen aktuellen Anforderungen. Maßgeblich sind das [Addon-Anwenderhandbuch](../addon/anwenderhandbuch.md), die [Entwicklerdokumentation](../addon/entwickler.md) und die [Entwicklungsstandards](../addon/development-standards.md).
+
 ## Inhalt
 
 - [Zweck und Ziel](#zweck-und-ziel)

@@ -1,6 +1,6 @@
 !// Skript 1 um die Termine aus iCal auszulesen
 !//================================================================================================
-!// Stand:    07.11.2026
+!// Stand:    22.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -22,6 +22,8 @@
 !// Skript sollte alle 30min laufen
 !//
 
+!// TT:  2026-11-22 Monatspositionen, Monatsfortschritt und inklusive UNTIL-Grenze korrigiert;
+!//               Wochenintervall mit BYDAY und lokale TZID-Uhrzeit bei Zeitumstellung erhalten.
 !// MRi: 2026-11-07 Schaltliste bis 30 Minuten nach dem spätesten raumbezogenen Ausschaltzeitpunkt halten.
 !// TT:  2026-10-25 Bugfix: Variable Shadowing bei strTemp. Die innere Deklaration
 !//                 "string strTemp" im DESCRIPTION-Block ueberdeckte die aeussere Variable,
@@ -176,6 +178,14 @@ if (!stdout.StartsWith("BEGIN:VCALENDAR")){
 }
 
 !// Schleife über alle Räume
+boolean bTzidLokal;
+integer tageSeitStart;
+integer startWochenTag;
+integer serienWoche;
+integer tagesSchritt;
+integer kalenderMittag;
+string monatsText;
+string tagesText;
 string RIdEintrag;
 integer raumIndex = -1;
 foreach(RIdEintrag,RIdListe.Split(";")) {
@@ -256,6 +266,7 @@ foreach(RIdEintrag,RIdListe.Split(";")) {
     }
 
     !// Start und Enddatum holen.
+    bTzidLokal = false;
     iPos = termin.Find("\nDTSTART:");
     if (iPos>=0){
       !// Kein Timzone Eintrag
@@ -265,6 +276,7 @@ foreach(RIdEintrag,RIdListe.Split(";")) {
     } else {
       !// Möglicher Zeitzonen Eintrag
       iPos = termin.Find("\nDTSTART;TZID=");
+      if (iPos >= 0) { bTzidLokal = true; }
       !// Sollte die aktuelle Timezone sein.
       strTemp = termin.Substr(iPos+14);
       iPos = strTemp.Find(":");
@@ -385,6 +397,8 @@ foreach(RIdEintrag,RIdListe.Split(";")) {
       }
 
       !// Schleife um die Daten zu erzeugen.
+      tageSeitStart = 0;
+      startWochenTag = (startDatum.ToTime().Format("%w").ToInteger() + 6) % 7;
       integer iCount = 0;
       integer testDatum = startDatum;
       while (true){
@@ -426,6 +440,10 @@ foreach(RIdEintrag,RIdListe.Split(";")) {
           if ((wday == 4) && (strBYDAY.Find("TH") >= 0))  { bDayOk = true; }
           if ((wday == 5) && (strBYDAY.Find("FR") >= 0))  { bDayOk = true; }
           if ((wday == 6) && (strBYDAY.Find("SA") >= 0))  { bDayOk = true; }
+          serienWoche = ((startWochenTag + tageSeitStart) / 7).ToInteger();
+          if ((bDayOk) && (iInterval > 1)) {
+            if ((serienWoche % iInterval) != 0) { bDayOk = false; }
+          }
         }
 
         !// MONTHLY + BYDAY mit Ordinal (z.B. 2MO)
@@ -433,19 +451,22 @@ foreach(RIdEintrag,RIdListe.Split(";")) {
         {
           integer wDayByDay;
 
-          strTemp = strBYDAY.Substr(strBYDAY.Find("MO"));
+          strTemp = strBYDAY.Substr(6);
           integer ord = 1;  !// default 1. Montag
           !// Prüfe auf 2MO, -1MO etc.
           if (strTemp.Length() >= 3)
           {
             ord = strTemp.Substr(0, strTemp.Length()-2).ToInteger();
           }
+          strTemp = strTemp.Substr(strTemp.Length() - 2,2);
 
           !// Berechne n-ten Wochentag im Monat
           integer y = testDatum.ToTime().Year();
           integer m = testDatum.ToTime().Month();
 
-          testDatum = (y # "-" # m # "-01 00:00:00").ToTime().ToInteger();
+          monatsText = "0" # m;
+          monatsText = monatsText.Substr(monatsText.Length() - 2,2);
+          testDatum = (y # "-" # monatsText # "-01 00:00:00").ToTime().ToInteger();
           wday = testDatum.ToTime().Format("%w").ToInteger();
 
           !// weekday der BYDAY
@@ -457,7 +478,7 @@ foreach(RIdEintrag,RIdListe.Split(";")) {
           if (strTemp.Find("SA") >= 0) { wDayByDay = 6; }
           if (strTemp.Find("SU") >= 0) { wDayByDay = 0; }
 
-          integer d = 1 + ((wDayByDay - wday + 7) % 7) + (ord-1)*7;
+          integer d;
           integer maxDay = 31;
           if ((m == 4) || (m == 6) || (m == 9) || (m == 11)){
             maxDay = 30;
@@ -468,17 +489,23 @@ foreach(RIdEintrag,RIdListe.Split(";")) {
             }
           }
 
-          if (d > maxDay){
-            d = maxDay;
+          if (ord > 0) {
+            d = (1 + (((wDayByDay - wday) + 7) % 7)) + ((ord - 1) * 7);
+          } else {
+            wday = (wday + (maxDay - 1)) % 7;
+            d = (maxDay - (((wday - wDayByDay) + 7) % 7)) + ((ord + 1) * 7);
           }
-
-          testDatum = (y # "-" # m # "-" # d # " " # startDatum.ToTime().Format("%T")).ToTime().ToInteger();
           bDayOk = true;
+          if ((d < 1) || (d > maxDay)) { bDayOk = false; d = 1; }
+          tagesText = "0" # d;
+          tagesText = tagesText.Substr(tagesText.Length() - 2,2);
+          testDatum = (y # "-" # monatsText # "-" # tagesText # " " # startDatum.ToTime().Format("%T")).ToTime().ToInteger();
         }
 
         !// Nur wenn der Tag OK ist
         if (bDayOk)
         {
+          if (testDatum > timeUntil) { break; }
           iCount = iCount + 1;
           if ((testDatum<=maxDatum) && ((testDatum+dauer)>=minDatum)){
             bMatch = true;
@@ -489,16 +516,22 @@ foreach(RIdEintrag,RIdListe.Split(";")) {
           }
         }
 
-        if (strFreq == "DAILY"){
-          testDatum = testDatum + (86400 * iInterval);
-        }elseif ((strFreq == "WEEKLY") && (strBYDAY!="")){
-          testDatum = testDatum + 86400;
-        }elseif ((strFreq == "WEEKLY") && (strBYDAY=="")){
-          testDatum = testDatum + 86400*7*iInterval;
+        if ((strFreq == "DAILY") || (strFreq == "WEEKLY")){
+          tagesSchritt = iInterval;
+          if (strFreq == "WEEKLY") {
+            tagesSchritt = 7 * iInterval;
+            if (strBYDAY != "") { tagesSchritt = 1; }
+          }
+          if (bTzidLokal) {
+            kalenderMittag = (testDatum.ToTime().Format("%F") # " 12:00:00").ToTime().ToInteger();
+            testDatum = ((kalenderMittag + (86400 * tagesSchritt)).ToTime().Format("%F") # " " # startDatum.ToTime().Format("%T")).ToTime().ToInteger();
+          } else { testDatum = testDatum + (86400 * tagesSchritt); }
+          tageSeitStart = tageSeitStart + tagesSchritt;
         }elseif ((strFreq == "MONTHLY") || (strFreq == "YEARLY")){
           integer y = testDatum.ToTime().Year();
           integer m = testDatum.ToTime().Month();
           integer d = testDatum.ToTime().Day();
+          if ((strFreq == "MONTHLY") && (strBYDAY != "")) { d = 1; }
 
           if (strFreq == "MONTHLY") { m = m + iInterval; }
           if (strFreq == "YEARLY")  { y = y + iInterval; }

@@ -1,4 +1,4 @@
-# Heizsteuerung — Vorheizzeit-Logik
+# Heizsteuerung: Vorheizzeit-Logik
 
 Dieses Dokument erklärt, wie das Hauptskript `HK-Skript 2` den Einschaltzeitpunkt der Heizung
 berechnet. Es geht dabei nicht um eine Vorlauftemperatur, sondern um eine **ereignisgesteuerte
@@ -8,28 +8,23 @@ werden muss, damit der Raum pünktlich die gewünschte Temperatur erreicht.
 ## Verarbeitungskette
 
 ```txt
-Kalender-Skript 1  -->  Schaltliste (HK1-Schaltliste)  -->  Hauptskript 2
-                                                                    |
-Außentemperatur-Skript  -->  HK2-Aussentemperatur  -------------->  |
-                                                                    v
-                                                           Einschaltzeitpunkt
-                                                           berechnen + schalten
+Kalender-Skript 1 --> HK1-Schaltliste --> Skript 2: Schaltzeiten berechnen
+                                             ^                 |
+Außentemperatur-Skript --> HK2-Aussentemperatur |                 v
+                                                       HK2-Schaltliste
+                                                               |
+                                                               v
+                                                   Skript 3: Aktoren steuern
 ```
 
-Das Skript 2 läuft alle **5 Minuten** und trifft die Heizentscheidung jedes Mal neu:
-
-- Liegt der berechnete Einschaltzeitpunkt in der Vergangenheit?
-- Liegt der Ausschaltzeitpunkt (Terminende) noch in der Zukunft?
-- Ist die aktuelle Außentemperatur unter der konfigurierten Grenze?
-
-Erst wenn alle drei Bedingungen erfüllt sind, wird die Heizung eingeschaltet.
+Skript 2 und Skript 3 laufen jeweils alle **5 Minuten**. Skript 2 berechnet die Zeiten neu, übernimmt jedoch bereits begonnene normale Heizphasen gesondert. Bei neuen Berechnungen für H und HS berücksichtigt es die Außentemperaturgrenze. Skript 3 prüft anschließend die berechneten Ein- und Ausschaltzeiten sowie den Raumstatus und steuert die Aktoren. Berechnung und tatsächliches Schalten sind getrennte Schritte.
 
 ## Systemvariablen (Konfiguration)
 
 | Variable | Bedeutung | Beispielwert |
 | :--- | :--- | :--- |
 | `HK2-Grundtemperatur` | Absenktemperatur wenn nicht geheizt wird | 10,0 °C |
-| `HK2-A.Temp.Grenze` | Heizen wird gestoppt wenn Außentemperatur ≥ Grenze | 19,0 °C |
+| `HK2-A.Temp.Grenze` | Unterdrückt neue Heizberechnungen bei Außentemperatur ab der Grenze; kein zugesagter sofortiger Abbruch bereits übernommener Heizphasen | 19,0 °C |
 | `HK2-Aussentemperatur` | Aktuelle Außentemperatur (von Außentemperatur-Skript) | 8,0 °C |
 | `HK2-Kurve` | Vorheizzeit-Kurve: 8 Werte für 8 Außentemperatur-Stützpunkte | siehe unten |
 | `HK2-VorzeitAus` | Globaler Grund-Offset zum vorzeitigen Ausschalten (Minuten); gilt nur für echte Heizvorgänge, nicht für reine Schaltrelais | 0 min |
@@ -61,14 +56,22 @@ raumspezifischen Basisoffset und dem temperaturabhängigen Kurvenwert. Beide wer
 mit einem Dämpfungsfaktor skaliert, der den verbleibenden Heizbedarf widerspiegelt:
 
 $$
-\text{VLZ} = f_2(T_{\text{ist}}) \;\times\; \bigl(\; V \;+\; f_1 \;\times\; \text{HK2}(T_{\text{at}}) \;\bigr)
+\text{VLZ}_{\text{roh}} = f_2(T_{\text{ist}}) \cdot \bigl(V + V_{\text{global}} + f_1 \cdot \text{HK2}(T_{\text{at}})\bigr)
 $$
+
+$$
+\text{VLZ}_{\text{eff}} = \max\bigl(\text{VLZ}_{\text{roh}}, T_{\text{Mindest}}\bigr)
+$$
+
+Diese Formeln beschreiben das Modell für normale Heizvorgänge in H und HS. Im Skript werden die beiden Zeitanteile getrennt in Ganzzahlen umgewandelt, bevor die Mindestvorlaufzeit angewendet wird; bei Nachkommastellen kann die genaue Ausgabe daher von einer erst am Ende gerundeten Modellrechnung abweichen.
 
 | Symbol | Variablenname | Beschreibung |
 | :--- | :--- | :--- |
 | VLZ | | Berechnete Vorheizzeit in Minuten |
-| $f_2$ | `faktor2HeizBedarf` | Temperaturabhängiger Dämpfungsfaktor (0,0 bis 1,0) |
+| $f_2$ | `faktor2HeizBedarf` | Temperaturabhängiger Heizbedarf-Faktor; bei IST unter Grundtemperatur auch größer als 1 |
 | $V$ | | Raumspezifische Basisheizzeit in Minuten (aus Raumvariable) |
+| $V_{\text{global}}$ | `HK2-Kurvenversatz` | Zusätzlicher globaler Einschaltversatz in Minuten |
+| $T_{\text{Mindest}}$ | Raumvariable, optionaler dritter `*`-Wert | Mindestvorlaufzeit, standardmäßig 15 Minuten, begrenzt auf 1 bis 480 Minuten |
 | $f_1$ | `faktor1HK2Kurve` | Raumspezifischer Multiplikator auf die HK2-Kurve |
 | $T_{\text{ist}}$ | | Aktuelle Raumtemperatur (°C) |
 | $T_{\text{at}}$ | | Außentemperatur (°C), aus `HK2-Aussentemperatur` (gleitender Mittelwert) |
@@ -76,14 +79,13 @@ $$
 
 ### faktor2HeizBedarf (Zwei-Geraden-Modell)
 
-`faktor2HeizBedarf` berechnet, wie viel Heizbedarf noch verbleibt: 1,0 wenn der Raum ganz kalt
-ist (IST = Grundtemperatur), 0,0 wenn er bereits die Zieltemperatur erreicht hat.
+Bei unterschiedlicher Grund- und Zieltemperatur berechnet `faktor2HeizBedarf` den verbleibenden Heizbedarf. Bei IST gleich Grundtemperatur ist er 1; bei erreichter Zieltemperatur ist er 0. Unterhalb der Grundtemperatur steigt der Faktor über 1 und verlängert die Vorheizzeit. Die Mindestvorlaufzeit wird danach separat angewendet.
 
 $$
-f_2(T_{\text{ist}}) = \begin{cases} 1{,}0 & \text{wenn } T_{\text{ist}} \leq T_G \\[8pt] 1 - K \;\cdot\; \dfrac{T_{\text{ist}} - T_G}{T_W - T_G} & \text{wenn } T_G < T_{\text{ist}} \leq M \\[12pt] (2 - K) \;\cdot\; \left(1 - \dfrac{T_{\text{ist}} - T_G}{T_W - T_G}\right) & \text{wenn } M < T_{\text{ist}} < T_W \\[8pt] 0{,}0 & \text{wenn } T_{\text{ist}} \geq T_W \end{cases}
+f_2(T_{\text{ist}}) = \begin{cases} 1 - K \cdot \dfrac{T_c - T_G}{T_W - T_G} & \text{wenn } T_{\text{ist}} < M \\[12pt] (2 - K) \cdot \left(1 - \dfrac{T_c - T_G}{T_W - T_G}\right) & \text{wenn } T_{\text{ist}} \geq M \end{cases}
 $$
 
-mit dem Mittelpunkt $M = T_G + \dfrac{T_W - T_G}{2}$
+Für den normalen Fall $T_W > T_G$ gelten $T_c = \min(T_{\text{ist}}, T_W)$ und der Mittelpunkt $M = T_G + \dfrac{T_W - T_G}{2}$. Bei gleicher Grund- und Zieltemperatur wird dieser Formelzweig nicht ausgeführt; der initialisierte Faktor bleibt 1.
 
 | Symbol | Bedeutung | Beispiel |
 | :--- | :--- | :--- |
@@ -133,30 +135,29 @@ und wird **nur bei echten Heizvorgängen** berücksichtigt, nicht bei reinem Sch
 
 ## Sonderfälle
 
-### Außentemperatur-Grenze (harter Schalter)
+### Außentemperatur-Grenze bei neuen Berechnungen
 
-Ist die aktuelle Außentemperatur **größer oder gleich** der konfigurierten Grenze (`HK2-A.Temp.Grenze`),
-wird die Heizung unabhängig von Termin und Raumtemperatur **nicht eingeschaltet** bzw. sofort
-**ausgeschaltet**. Diese Prüfung erfolgt bei jedem 5-Minuten-Lauf neu — ändert sich die
-Außentemperatur während eines Termins, reagiert das Skript entsprechend.
+Ist die Außentemperatur größer oder gleich `HK2-A.Temp.Grenze`, erzeugt Skript 2 bei einer neuen normalen Heizberechnung keinen entsprechenden Heizlisteneintrag. Die verwendete Außentemperatur ist der gleitende Durchschnitt, kein unmittelbarer Momentanwert.
+
+Bereits begonnene normale Heizphasen werden vorher aus der alten Schaltliste übernommen und durchlaufen diese spätere Grenzprüfung nicht erneut. Ein Temperaturanstieg während einer übernommenen Heizphase führt daher nicht automatisch zum sofortigen Ausschalten. Skript 3 beendet sie nach den weiter gültigen Schaltzeiten und seiner Auffanglogik.
 
 Systemprotokoll-Eintrag: _„Heizen abgebrochen Aussentemperatur 21,0 °C größer Grenzwert 19,0 °C“_
 
-### Raum wärmer als Wohlfühltemperatur (40-%-Deckelung)
+### Raum wärmer als Wohlfühltemperatur und Mindestvorlaufzeit
 
-Ist der Raum bereits wärmer als die gewünschte Wohlfühltemperatur, wird die Raumtemperatur
-in der Formel auf die Wohlfühltemperatur **begrenzt**. Der Korrekturfaktor sinkt damit auf
-sein Minimum von **0,40 (40 %)**. So wird bei einem bereits warmen Raum immer noch ein
-Mindest-Vorlauf sichergestellt — wichtig bei trägen Heizsystemen wie Fußbodenheizungen.
+Die Raumtemperatur wird in der Formel nach oben auf die Wohlfühltemperatur begrenzt. Bei erreichter Zieltemperatur und unterschiedlicher Grund-/Zieltemperatur ist der Faktor 0. Es gibt hier keine Faktor-Untergrenze von 0,40 oder 0,20. Der Mindestvorlauf entsteht durch die anschließende Zeitbegrenzung: standardmäßig 15 Minuten oder der individuell konfigurierte Wert.
 
-### Kein Thermostat im Raum (Fallback auf Grundtemperatur)
+### Fehlender Temperatursensor und Ersatzberechnung
 
-Ist für einen Raum kein Thermostat konfiguriert, kennt das Skript die aktuelle Raumtemperatur
-nicht. In diesem Fall wird die **Grundtemperatur** als Raumtemperatur angenommen.
+Fehlt eine nutzbare Temperaturquelle, verwendet Skript 2 als Schätzwert das Maximum aus effektiver Raumgrundtemperatur und Außentemperatur:
 
-Konsequenz: Der Zähler der Formel wird 0, der Korrekturfaktor beträgt **1,00 (100 %)**,
-es wird immer die volle Kurvenzeit vorgeheizt. Dies ist der sicherste Fallback,
-führt aber bei niedrig konfigurierter Grundtemperatur zu sehr langen Vorlaufzeiten.
+$$
+T_{\text{Ersatz}} = \max(T_G, T_{\text{at}})
+$$
+
+Bei Außentemperatur unterhalb der Grundtemperatur entspricht der Schätzwert der Grundtemperatur und der Heizbedarf-Faktor ist unter den normalen Formelbedingungen 1. Liegt die Außentemperatur darüber, kann der Faktor kleiner sein. Der Schätzwert ersetzt keine Messung und ist kein allgemein garantierter sicherster Zustand.
+
+Ein vorhandener Temperaturdatenpunkt mit Wert 0 wird getrennt behandelt: Ein alter Schaltlisteneintrag bleibt erhalten. Ohne alten Eintrag wartet das Skript während der ersten Kernelstunde; ab 3600 Sekunden rechnet es mit dem Maximum aus effektiver Raumgrundtemperatur und Außentemperatur und protokolliert eine Störung. Eine echte Nullmessung wird bewusst gleich behandelt. Das erste Ausgabefeld aus `/proc/uptime` wird direkt mit `ToFloat()` umgewandelt. Bei Abruffehler, leerem Feld oder nicht positivem Konvertierungsergebnis wird weiter gewartet; eine zusätzliche zeichenweise Zahlenprüfung erfolgt nicht. Diese Startphasenregel erkennt keinen alleinigen ReGa-Neustart.
 
 ### Übertemperatur im Raum
 
@@ -181,10 +182,9 @@ läuft tatsächlich unnötig.
 
 Der Schutz gegen unnötiges Heizen auf Skript-Ebene:
 
-- Die **Außentemperatur-Grenze**: Ist es draußen ≥ 19 °C, wird gar nicht geheizt.
+- Die **Außentemperatur-Grenze** unterdrückt neue Heizberechnungen ab dem Grenzwert; laufende übernommene Phasen sind davon zu unterscheiden.
 - Das **vorzeitige Heizende**: Die Heizung schaltet vor Terminende ab (konfigurierbar).
-- Die **Vorheizzeit-Deckelung**: Der Korrekturfaktor sinkt bei warmem Raum auf minimal 0,20 (20 %),
-  die Relais schalten also deutlich später ein als bei einem kalten Raum.
+- Die **Raumtemperatur-Anpassung** reduziert die berechnete Vorheizzeit bei warmem Raum; die konfigurierte Mindestvorlaufzeit bleibt erhalten.
 
 | Modus | Schutz bei Übertemperatur im Raum |
 | :--- | :--- |
@@ -226,6 +226,10 @@ Die folgenden drei Beispiele zeigen das Zusammenspiel aller Faktoren an einem ko
 | Grundtemperatur | 10,0 °C |
 | Außentemperatur-Grenze | 19,0 °C |
 | Wohlfühltemperatur | 20,0 °C |
+| Individueller und globaler Vorheizoffset | Jeweils 0 Minuten |
+| Faktor für die Heizkurve | 1,0 |
+| Kurvenanpassung | 0,8 |
+| Mindestvorlaufzeit | 15 Minuten |
 | Vorheizzeit-Kurve bei 8 °C | 196 min |
 | Vorheizzeit-Kurve bei 18,6 °C (interpoliert) | 93 min |
 
@@ -237,7 +241,9 @@ Die folgenden drei Beispiele zeigen das Zusammenspiel aller Faktoren an einem ko
 - 18:00 Uhr: 20 °C
 - 19:00 Uhr: 18,6 °C
 
-### Use Case 1 — Saal (mit Thermostat, Termin 19:00–22:00)
+### Beispiel 1: Saal mit Thermostat, Termin 19:00 bis 22:00 Uhr
+
+Für diese Modellrechnung wird angenommen, dass der Durchschnittswert 18,6 Grad bereits rechtzeitig vor dem berechneten Heizbeginn vorliegt. Liegt er tatsächlich erst um 19:00 Uhr vor, kann der Heizbeginn nicht rückwirkend erfolgen.
 
 | Parameter | Wert |
 | :--- | :--- |
@@ -245,36 +251,37 @@ Die folgenden drei Beispiele zeigen das Zusammenspiel aller Faktoren an einem ko
 | Außentemperatur um 19:00 Uhr | 18,6 °C |
 | Heizen erlaubt? | Ja (18,6 °C < 19 °C) |
 | Raumtemperatur in Formel | 20,0 °C (auf Wohlfühltemperatur gedeckelt) |
-| Korrekturfaktor | 1 − 0,6 × ((20−10)/(20−10)) = **0,40** |
+| Korrekturfaktor | $(2-0{,}8)\cdot(1-(20-10)/(20-10))=0$ |
 | Kurvenwert bei 18,6 °C | ~93 min (interpoliert) |
-| Vorheizzeit | 0,40 × 93 ≈ **37 min** |
-| Einschaltzeitpunkt | ~18:23 Uhr |
+| Vorheizzeit | $\max(0\cdot93,15)=15$ Minuten |
+| Einschaltzeitpunkt | 18:45 Uhr |
 | Ausschaltzeitpunkt | 21:30 Uhr (22:00 − 30 min) |
 
 ```txt
 Zeitachse:
-  ~18:23  Heizung EIN
+   18:45  Skript 3 schaltet nach berechneter Mindestvorlaufzeit ein
    19:00  Termin beginnt
    21:30  Heizung AUS (Terminende 22:00 − 30 min)
    22:00  Termin endet
 ```
 
-Der Raum ist bereits überwarm (21,1 °C). Die Formel begrenzt auf 20 °C → Minimalfaktor 40 %.
+Der Raum ist bereits wärmer als das Ziel. Der Faktor ist 0; maßgeblich bleibt die Mindestvorlaufzeit von 15 Minuten, nicht ein prozentualer Restfaktor.
 
 ```mermaid
 flowchart TD
-    Start["Termin Saal 19:00-22:00<br/>Pruefung um 19:00 Uhr"] --> AT{"Aussentemp. 18,6 C<br/>groesser/gleich Grenze 19 C?"}
-    AT -->|"Nein (18,6 kleiner 19)"| Faktor["Raumtemp. 21,1 C<br/>auf 20 C gedeckelt<br/>Korrekturfaktor = 0,40"]
+    Start["Termin Saal 19:00-22:00<br/>Berechnung rechtzeitig vor Heizbeginn"] --> AT{"Aussentemp. 18,6 C<br/>groesser/gleich Grenze 19 C?"}
+    AT -->|"Nein"| Faktor["Raumtemp. 21,1 C<br/>Ziel bereits erreicht<br/>Korrekturfaktor = 0"]
     AT -->|"Ja"| Aus1["Heizung bleibt aus"]
-    Faktor --> VZ["Vorheizzeit = 0,40 x 93 min = ca. 37 min<br/>Einschaltzeitpunkt ca. 18:23 Uhr"]
-    VZ --> Ein["Heizung EIN ca. 18:23 Uhr"]
+    Faktor --> VZ["Mindestvorlaufzeit = 15 min<br/>Einschaltzeitpunkt 18:45 Uhr"]
+    VZ --> Ein["Skript 3: Heizung EIN ab 18:45 Uhr"]
     Ein --> AusZeit["Heizung AUS 21:30 Uhr<br/>(Terminende 22:00 minus 30 min)"]
 ```
 
-Da es um 19:00 Uhr mit 18,6 °C knapp unter der Außentemperatur-Grenze liegt, wird geheizt.
-Das vorzeitige Schaltende (−30 min) schaltet die Heizung um 21:30 ab — die Wärmeträgheit hält den Komfort bis 22:00 aufrecht.
+Bei rechtzeitig vorliegendem Durchschnitt unter der Außentemperaturgrenze wird der Termin eingeplant. Das vorzeitige Schaltende liegt bei 21:30 Uhr; Skript 3 verarbeitet den Ausschaltzeitpunkt im regelmäßigen Lauf.
 
-### Use Case 2 — Bistro (mit Thermostat, Termin 15:00–18:00)
+### Beispiel 2: Bistro mit Thermostat, Termin 15:00 bis 18:00 Uhr
+
+Hier wird ein bislang nicht begonnener Heizvorgang bei Außentemperatur über der Grenze betrachtet. Eine schon begonnene und übernommene Heizphase verhielte sich anders.
 
 | Parameter | Wert |
 | :--- | :--- |
@@ -282,83 +289,78 @@ Das vorzeitige Schaltende (−30 min) schaltet die Heizung um 21:30 ab — die
 | Außentemperatur um ~13:42 Uhr | ≥ 19 °C |
 | Außentemperatur um 14:00 Uhr | 21 °C |
 | Heizen erlaubt? | **Nein** (Außentemp. ≥ Grenze bereits zum Vorheiz-Zeitpunkt) |
-| Korrekturfaktor | — (wird nicht berechnet) |
-| Vorheizzeit | **0 min** |
+| Korrekturfaktor | Wird wegen der Außentemperaturgrenze nicht berechnet |
+| Vorheizzeit | Kein neuer Heizlisteneintrag |
 | Einschaltzeitpunkt | **entfällt** |
 
 ```txt
 Zeitachse:
-  ~13:42  Rechnerischer Vorheiz-Start — ABER Außentemp. bereits >= 19 °C
-   15:00  Termin beginnt — Heizung bleibt aus
+   14:00  Neue Berechnung: Außentemperatur über der Grenze, kein Heizlisteneintrag
+   15:00  Termin beginnt, Heizung bleibt in diesem Fall aus
    18:00  Termin endet
 ```
 
-Obwohl rechnerisch ~78 Minuten Vorheizzeit benötigt würden (0,40 × 196 min),
-verhindert die Außentemperatur-Grenze das Heizen vollständig.
+Eine Rechnung mit Faktor 0,40 und 78 Minuten ist hier nicht passend. Das Ziel ist bereits erreicht; ohne die Außentemperaturgrenze wäre unter den Beispielparametern die Mindestvorlaufzeit maßgeblich. Da die Grenze bei der neuen Berechnung überschritten ist, wird dieser Heizvorgang nicht neu eingeplant.
 Das Systemprotokoll vermerkt:
 _„Heizen abgebrochen Aussentemperatur 21,0 °C größer Grenzwert 19,0 °C“_
 
 ```mermaid
 flowchart TD
-    Start["Termin Bistro 15:00-18:00<br/>Rechnerischer Vorheiz-Start ca. 13:42 Uhr"] --> AT{"Aussentemp. um 13:42 Uhr<br/>groesser/gleich Grenze 19 C?"}
-    AT -->|"Ja (bereits >= 19 C)"| Aus["Heizung bleibt aus<br/>Vorheizzeit = 0 min"]
-    AT -->|"Nein"| Rechnung["(wuerde rechnen:<br/>0,40 x 196 min = ca. 78 min)"]
+    Start["Termin Bistro 15:00-18:00<br/>noch keine begonnene Heizphase"] --> AT{"Aussentemperatur bei neuer Berechnung<br/>groesser/gleich Grenze 19 C?"}
+    AT -->|"Ja"| Aus["Kein neuer Heizlisteneintrag"]
+    AT -->|"Nein"| Rechnung["Normale Vorheizberechnung<br/>mit Mindestvorlaufzeit"]
     Aus --> Log["Protokoll: Heizen abgebrochen<br/>Aussentemp. 21,0 C groesser Grenzwert 19,0 C"]
 ```
 
-### Use Case 3 — Kellerbüro (ohne Thermostat, Termin 08:00–18:00)
+### Beispiel 3: Büro ohne Temperatursensor, Termin 08:00 bis 18:00 Uhr
+
+Dies ist ein allgemeines Rechenbeispiel, nicht die örtliche Konfiguration des UG-Büros. Die Außentemperatur ist bereits bei der rechtzeitigen Berechnung 8 Grad; ein späterer Anstieg beendet die begonnene, übernommene Heizphase nicht sofort.
 
 | Parameter | Wert |
 | :--- | :--- |
-| Raumtemperatur (real) | 18–19 °C (aber kein Thermostat konfiguriert) |
-| Raumtemperatur in Formel | **10 °C** (Fallback = Grundtemperatur) |
+| Raumtemperatur (real) | 18 bis 19 °C, dem Skript ohne Sensor nicht bekannt |
+| Raumtemperatur in Formel | $\max(10,8)=10$ Grad |
 | Außentemperatur morgens | 8 °C |
 | Außentemperatur ab ~13:42 | ≥ 19 °C |
-| Heizen erlaubt? | Ja (morgens), ab ~13:42 Uhr Nein |
-| Korrekturfaktor | 1 − 0,6 × ((10−10)/(20−10)) = **1,00** |
+| Heizen erlaubt? | Ja bei der neuen Berechnung; begonnene Phase wird später übernommen |
+| Korrekturfaktor | $1-0{,}8\cdot((10-10)/(20-10))=1$ |
 | Kurvenwert bei 8 °C | 196 min |
-| Vorheizzeit | 1,00 × 196 = **196 min (3 h 16 min)** |
+| Vorheizzeit | $\max(1\cdot196,15)=196$ Minuten, also 3 Stunden 16 Minuten |
 | Einschaltzeitpunkt | ~04:44 Uhr |
-| Ausschaltzeitpunkt | 17:30 Uhr (18:00 − 30 min) — irrelevant, Heizstopp bereits ab ~14:00 |
+| Ausschaltzeitpunkt | 17:30 Uhr, Terminende abzüglich 30 Minuten |
 
 ```txt
 Zeitachse:
-  ~04:44  Heizung EIN (volle Vorheizzeit wegen Fallback auf Grundtemperatur)
+   04:44  Skript 3 schaltet ein; Schätzwert in diesem Beispiel 10 Grad
    08:00  Termin beginnt
-  ~14:00  Außentemp. >= 19 °C → Heizung AUS (obwohl Termin noch läuft)
-   17:30  Heizung AUS (Terminende 18:00 − 30 min) — hier bereits durch Außentemp.-Grenze ab ~14:00 gestoppt
+   14:00  Außentemperatur über Grenze; übernommene Heizphase läuft weiter
+   17:30  Skript 3 verarbeitet den berechneten Ausschaltzeitpunkt
    18:00  Termin endet
 ```
 
-Ohne Thermostat kennt das Skript die echte Raumtemperatur nicht.
-Der Fallback auf die Grundtemperatur (10 °C) ergibt Korrekturfaktor 1,00 → volle Kurvenzeit.
-Die niedrig konfigurierte Grundtemperatur führt hier zu einem sehr frühen Einschaltzeitpunkt.
-Das vorzeitige Schaltende (−30 min) wäre 17:30 Uhr — irrelevant, da der Außentemp.-Grenzwert bereits ab ~14:00 stoppt.
-⚠ Hinweis: Auch bei real 18–19 °C Raumtemperatur rechnet das Skript ohne Thermostat stets mit der Grundtemperatur (10 °C).
+Der Schätzwert entspricht hier der Grundtemperatur, weil die Außentemperatur darunter liegt. Bei höherer Außentemperatur würde ein anderer Schätzwert verwendet. Die tatsächlichen 18 bis 19 Grad sind dem Skript nicht bekannt. Nach Beginn wird die geplante Heizphase übernommen; das vorzeitige Ende bleibt 17:30 Uhr. Ein Temperatursensor verbessert die Berechnungsgrundlage, ist aber keine Voraussetzung dieses Beispielmodus.
 
 ```mermaid
 flowchart TD
-    Start["Termin Kellerbuero 08:00-18:00<br/>kein Thermostat konfiguriert"] --> FB["Fallback: Raumtemp. = Grundtemp. 10 C<br/>Korrekturfaktor = 1,00"]
+    Start["Beispielbuero 08:00-18:00<br/>kein Temperatursensor"] --> FB["Schaetzwert: Maximum aus<br/>Grundtemperatur 10 C und Aussentemperatur 8 C<br/>Korrekturfaktor = 1"]
     FB --> VZ["Vorheizzeit = 1,00 x 196 min = 196 min<br/>Einschaltzeitpunkt ca. 04:44 Uhr"]
     VZ --> Ein["Heizung EIN ca. 04:44 Uhr (morgens 8 C)"]
-    Ein --> Lauf{"Aussentemp. im Verlauf<br/>groesser/gleich Grenze 19 C?"}
-    Lauf -->|"ab ca. 14:00 Uhr: Ja"| AusAT["Heizung AUS ca. 14:00 Uhr<br/>(obwohl Termin noch laeuft)"]
-    Lauf -->|"vormittags: Nein"| Weiter["Heizung bleibt an"]
+    Ein --> Lauf["Skript 2 uebernimmt begonnene Heizphase<br/>spaeterer Temperaturanstieg beendet sie nicht sofort"]
+    Lauf --> Aus["Skript 3 schaltet nach geplantem Ende<br/>ab 17:30 Uhr aus"]
 ```
 
-## Gegenüberstellung der Use Cases
+## Gegenüberstellung der Beispiele
 
 | | Saal | Bistro | Kellerbüro |
 | :--- | :--- | :--- | :--- |
-| Termin | 19:00–22:00 | 15:00–18:00 | 08:00–18:00 |
+| Termin | 19:00 bis 22:00 | 15:00 bis 18:00 | 08:00 bis 18:00 |
 | Thermostat | Ja | Ja | **Nein** |
-| Raumtemperatur | 21,1 °C | 20,4 °C | 18–19 °C (real, unbekannt) |
-| Raumtemperatur in Formel | 20,0 °C (gedeckelt) | — | 10,0 °C (Fallback) |
-| Außentemp. zum Vorheiz-Start | 18,6 °C um 19:00 | ≥ 19 °C um ~13:42 | 8 °C um ~04:44 |
-| Heizen erlaubt? | **Ja** | **Nein** | **Ja** / ab ~14:00 Nein |
-| Korrekturfaktor | 0,40 | — | 1,00 |
-| Vorheiz-Anteil | 40 % | 0 % | 100 % |
-| Kurvenwert | ~93 min (bei 18,6 °C) | — | 196 min (bei 8 °C) |
-| Vorheizzeit | **~37 min** | **—** | **196 min** |
-| Einschaltzeitpunkt | ~18:23 Uhr | entfällt | ~04:44 Uhr |
-| Vorzeitiges Heizende (−30 min) | 21:30 Uhr | — | 17:30 Uhr (überholt durch Außentemp.-Stop ~14:00) |
+| Raumtemperatur | 21,1 °C | 20,4 °C | 18 bis 19 °C, unbekannt |
+| Raumtemperatur in Formel | 20,0 °C, nach oben begrenzt | Nicht berechnet | 10,0 °C, Schätzwert |
+| Außentemperatur bei neuer Berechnung | 18,6 °C rechtzeitig vor Heizbeginn | Ab der Grenze | 8 °C rechtzeitig vor Heizbeginn |
+| Neu eingeplant? | Ja | Nein | Ja |
+| Korrekturfaktor | 0 | Nicht berechnet | 1 |
+| Kurvenwert | Etwa 93 Minuten | Nicht verwendet | 196 Minuten |
+| Effektive Vorheizzeit | 15 Minuten Mindestvorlauf | Kein neuer Eintrag | 196 Minuten |
+| Einschaltzeitpunkt | 18:45 Uhr | Entfällt | 04:44 Uhr |
+| Geplantes vorzeitiges Ende | 21:30 Uhr | Entfällt | 17:30 Uhr, kein sofortiger AT-Abbruch |

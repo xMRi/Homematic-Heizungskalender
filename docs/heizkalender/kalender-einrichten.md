@@ -38,14 +38,15 @@ dokumentiert. Grundsätzlich gilt: Bei Google wird ein API-Key und die Kalender-
 benötigt, bei ICS/iCal die öffentliche URL des Kalenders. In beiden Fällen muss der
 Raumname mit vorangestelltem `#` eindeutig im Termintitel stehen.
 
-Das iCal Skript unterstützt auch das `RRULE` Schlüsselwort für Terminwiederholungen. Jedoch sind dann sind nur folgende Terminwiederholungsarten erlaubt:
+**Bekannte Einschränkung:** Google und generisches iCal suchen die Raumkennung als Teilstring. `#Raum11` kann deshalb zusätzlich `Raum1` zugeordnet werden. Verwenden Sie Kennungen, die keine Präfixe anderer Kennungen sind. Das gilt auch für die optionalen Raumnamen, die als alternative Kennzeichnung erkannt werden. Eine Prüfung auf Trennzeichen findet derzeit nicht statt.
 
-- DAILY, WEEKLY; MONTHLY, YEARLY (Frequenz, täglich, wöchentlich, monatlich, jährlich)
-- UNTIL (bis Datum)
-- COUNT (Anzahl Termine)
-- BYDAY (Wiederholung Wöchentlich je Wochentag)
-- BYDAY (Wiederholung Monatlich erster, zweiter oder letzter Montag…)
-- INTERVAL (jede n‘te Wiederholung)
+Das generische iCal-Skript behält seinen vorhandenen Parser. Gezielt korrigiert werden einfache monatliche Wochentagspositionen wie `2MO` oder `-1MO`, Wochenintervalle mit BYDAY und eindeutige lokale Tages-/Wochenzeiten im vorhandenen TZID-Zweig. Ein nicht vorhandener fünfter Monatswochentag wird in diesem Zweig übersprungen. Die bestehende Monats-/Jahresfortschreibung ohne Positions-BYDAY hat weiterhin Einschränkungen bei Monatsenden und Schaltjahren.
+
+Wöchentliche Serien ohne `BYDAY` wiederholen sich am Wochentag des Serienbeginns. Mit `BYDAY=MO,TH;INTERVAL=2` gelten Montag und Donnerstag nur in jeder zweiten Serienwoche, mit Montag als Wochenbeginn. `WKST` wird nicht zusätzlich verarbeitet.
+
+Die bisherige Datums- und Zeitzoneninterpretation bleibt unverändert. Der lokale Kalenderfortschritt betrifft nur den vom vorhandenen Parser als lokal behandelten TZID-Zweig. UTC-/Floating-Umrechnung, fremde Zeitzonen, reine Datumswerte und weitere Parameter werden nicht durch einen neuen Parser abgesichert und bleiben eingeschränkt.
+
+**Wichtig:** Die lokalen Prüfungen beziehen sich auf diesen kleineren Korrekturumfang. Frühere isolierte CCU-Tests der größeren Engine sind keine Abnahme dieser Fassung. Ausnahmen (`EXDATE`), zusätzliche Termine (`RDATE`), verschobene Einzeltermine (`RECURRENCE-ID`) und gefaltete Zeilen werden nicht vollständig verarbeitet. Es handelt sich nicht um vollständige iCal-Unterstützung. Den genauen Umfang, Grenzen und Prüfstand beschreibt die [Skript-Dokumentation](../skripte/readme.md#hk-skript-1_icalhsc).
 
 ## Weiter geht es
 

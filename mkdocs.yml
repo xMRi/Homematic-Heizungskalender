@@ -69,4 +69,3 @@ nav:
 docs_dir: docs
 exclude_docs: |
   archiv/**
-  addon/prd.md

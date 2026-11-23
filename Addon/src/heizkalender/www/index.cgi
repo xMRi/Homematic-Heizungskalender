@@ -156,6 +156,10 @@ set rega_script {
         }
     }
     if (sv5) { result = result # "\n===VLZ===\n" # vlz; }
+    var sv6 = dom.GetObject("HK2-Aussentemperatur-Abrufzeit");
+    string abruf = "";
+    if (sv6) { abruf = sv6.Value(); }
+    result = result # "\n===ABRUF===\n" # abruf;
     WriteLine(result);
 }
 
@@ -166,6 +170,16 @@ if {[catch {set rega_raw [rega_script $rega_script]} err]} {
     return
 }
 set raw [extract_stdout $rega_raw]
+
+# Abrufzeit der Aussentemperatur (optional) als letzten, eigenen Abschnitt abtrennen,
+# damit die uebrigen Abschnitte unveraendert ausgewertet werden.
+set abruf_sep "\n===ABRUF===\n"
+set abruf_raw ""
+set pa [string first $abruf_sep $raw]
+if {$pa >= 0} {
+    set abruf_raw [string trim [string range $raw [expr {$pa + [string length $abruf_sep]}] end]]
+    set raw [string range $raw 0 [expr {$pa - 1}]]
+}
 
 # Sechs Abschnitte trennen
 set sl_sep    "\n===SL===\n"
@@ -492,6 +506,41 @@ if {![string equal $aussentemp_raw ""]} {
     }
 }
 
+# Letzter erfolgreicher Wetterabruf (nur Anzeige, keine Auswirkung auf die Heizung).
+# Ergebnis: Text (HTML-sicher, feste Entities) und Warnkennzeichen.
+set abruf_text ""
+set abruf_warn 0
+# ReGa und Tcl verwenden dieselbe lokale CCU-Zeitzone.
+# Die doppelte lokale Stunde bei Zeitumstellung ist nicht epocheneindeutig.
+set abruf_ts [parse_ts $abruf_raw]
+set abruf_roundtrip ""
+set abruf_display ""
+if {$abruf_ts > 0} {
+    catch {set abruf_roundtrip [clock format $abruf_ts -format "%Y-%m-%d %H:%M:%S"]}
+    catch {set abruf_display [format_ts $abruf_ts]}
+}
+if {[string equal $abruf_raw ""]} {
+    set abruf_text "Abrufzeit unbekannt"
+    set abruf_warn 1
+} elseif {$abruf_ts <= 0 || ![string equal $abruf_roundtrip $abruf_raw] || [string equal $abruf_display ""]} {
+    set abruf_text "Abrufzeit ung&uuml;ltig"
+    set abruf_warn 1
+} else {
+    set abruf_now 0
+    catch {set abruf_now [clock seconds]}
+    set abruf_age [expr {$abruf_now - $abruf_ts}]
+    if {$abruf_age < 0} {
+        set abruf_text "Abrufzeit ung&uuml;ltig"
+        set abruf_warn 1
+    } else {
+        set abruf_text "Letzter Wetterabruf: <strong>$abruf_display</strong>"
+        if {$abruf_age > 10800} {
+            append abruf_text ": <strong class=\"hk-warn\">Wetterabruf veraltet</strong>"
+            set abruf_warn 1
+        }
+    }
+}
+
 if {![string equal $aussentemp_str ""]} {
     set at_line "Au&szlig;entemperatur (gleitender Durchschnitt): <strong>$aussentemp_str</strong>"
     if {![string equal $at_akt_str ""]} {
@@ -500,7 +549,11 @@ if {![string equal $aussentemp_str ""]} {
     if {![string equal $at_min_str ""]} {
         append at_line " / Min. Prognose 12h: <strong>$at_min_str</strong>"
     }
+    append at_line " / $abruf_text"
     puts "  <p class=\"hk-hint\">${at_line}</p>"
+} elseif {![string equal $abruf_raw ""]} {
+    # Keine Temperatur, aber ein Abrufwert ist gesetzt: Diagnose trotzdem zeigen
+    puts "  <p class=\"hk-hint\">Au&szlig;entemperatur: nicht verf&uuml;gbar / $abruf_text</p>"
 }
 
 if {[llength $raeume] == 0} {

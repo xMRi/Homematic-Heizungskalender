@@ -1,30 +1,22 @@
 # Updates
 
-Neue Programmversionen führen evtl. zu der Einführung neuer Systemvariablen. Das bedeutet, dass die neuen Skripte nur mit diesen Variablen funktionieren können.
+Neue Skriptstände können zusätzliche Systemvariablen oder besondere Updateskripte benötigen. Beachten Sie vor dem Update die Hinweise zum jeweiligen Stand: Pflichtvariablen müssen vorhanden sein; optionale Variablen werden nur für die beschriebenen Zusatzfunktionen benötigt.
 
-Das heißt, dass zur Nutzung einer neueren Programmversion und Ihrer Features, es nötig macht, dass das Anlegen neuer Systemvariablen nötig macht.
+Die Heizskripte tragen einen Datumsstand im Dateiheader. Verwenden Sie die Skripte eines kompatiblen Release-Standes gemeinsam. Das Addon besitzt dagegen eine eigenständige Versionsnummer in `Addon/src/VERSION`; diese ist nicht mit dem Skriptdatum gleichzusetzen.
 
-Andere Änderungen könnten auch spezielle Updates-Skripte benötigen.
-
-Bitte lesen Sie unbedingt die Anmerkungen zu speziellen Updates, denn auch Änderungen in der Funktionsweise können Anpassungen an Ihrer Installation nötig machen.
-
-Alle Software-Versionen werden immer durch ein Release Datum gekennzeichnet. In den Anmerkungen finden Sie also evtl. Anweisungen für *"Softwarestand vor dem yyyy-mm-dd"*.
-
-Relevant sind entsprechend  
+Sichern Sie vor Änderungen die CCU-Konfiguration und notieren Sie individuelle Einstellungen.
 
 ## Updates über `HeizkalenderInstallation.exe`
 
-Der einfachste Weg für ein Update ist die Nutzung der `HeizkalenderInstallation.exe`. Dieses Programm führt alle Änderungen und auch das Anlegen der Systemvariablen oder Programme automatisch durch.
+Der Installer aktualisiert die unterstützten Skripte, Systemvariablen und Programme anhand seiner einkompilierten Metaskripte. Die separat gepflegten manuellen Init-Skripte sind nicht seine Datenquelle. Prüfen Sie daher, ob der verwendete Installerstand die benötigten Anpassungen bereits enthält. Siehe [Installer-Anleitung](../heizkalender-installation/readme.md).
 
 ## Manuelle Updates
 
-Hier müssen die neuen/geänderten Init-Skripte erneut ausgeführt werden.
+Prüfen Sie die zum Zielstand gehörenden Skripte und Einrichtungshinweise. Führen Sie erforderliche Init-Skripte gezielt aus, etwa `HK-Init-Skript 2+3.hsc`, das Init-Skript der gewählten Kalenderquelle oder `HK-Init-Variablen Logging.hsc`.
 
-Init-Skripte können ohne Gefahr neu ausgeführt werden. Änderungen am Skript-Typ1 sind selten.
+`HK-Init-Skript 2+3.hsc` legt fehlende Variablen an und lässt bereits vorhandene Objekte unverändert. Es korrigiert damit keine bestehenden falschen Typen oder Werte. Prüfen Sie vor der Ausführung insbesondere den konfigurierten Präfix und die Variablennamen; eine pauschale Zusage gefahrloser Ausführung gilt nicht.
 
-Zur Sicherheit können Sie immer das `HK-Init-Skript 2+3.hsc` und das `HK-Init-Variablen Logging.hsc`ausführen.
-
-**Kein Init-Skript überschreibt bestehende Variablen!**
+Die optionale Wetterabrufzeitvariable kann manuell eingerichtet werden, siehe [Abrufzeit einrichten](../skripte/readme.md#hk2-aussentemperatur-abrufzeit). Ihr Fehlen verhindert die normale Heizberechnung nicht.
 
 ## Anmerkungen zu speziellen Versionen
 
@@ -32,9 +24,6 @@ Die folgenden Anmerkungen betreffen ältere Versionen der Heizkalender Software:
 
 ### Softwarestand vor dem [2026-11-08]
 
-Die Berechnung der Vorheizzeit hat sich geändert. Die Vorheizzeit wird nun exakt nach der bisher erreichten Ist- und Zieltemperatur erfolgt.
+Mit diesem Stand wurde die Anpassung der Vorheizzeit an Ist- und Zieltemperatur geändert. Der damalige Updatehinweis nannte für ältere Stände eine bis zu 35 Prozent längere Vorheizzeit; das ist keine allgemeine Zusage für heutige Berechnungen.
 
-Bisher diese Vorheizzeit weniger stark geäürzt. D.h. ältere Softwareversionen berechneten eine bis zu 35% längere Vorheizzeit. 
-
-Wenn also nun eine neue Softwareversion eingesetzt wird, kann es notwendig sein. Die Vorheizzeiten anzupassen und evtl. Raumfaktoren zu erhöhen oder im Extremfall die `HK2-Kurve`anzupassen.
-
+Nach einem solchen Wechsel kann eine Überprüfung der raumbezogenen Vorheizzeiten, Faktoren und `HK2-Kurve` nötig sein. Beobachten Sie die tatsächlichen Heizvorgänge, statt die Parameter pauschal zu erhöhen. Die aktuelle Berechnung einschließlich Mindestvorlaufzeit beschreibt die [Vorheizzeit-Dokumentation](heizsteuerung-vorheizzeit.md).

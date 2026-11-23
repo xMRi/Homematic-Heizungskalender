@@ -98,6 +98,7 @@ Dieses Skript legt alle Systemvariablen an, die für das Berechnungs- und das Sc
 | HK2-A.Temp.Grenze | Außentemperatur ab der kein Heizen mehr erfolgt |
 | HK2-Aussentemperatur | Gleitende Durchschnitts-Außentemperatur über das konfigurierte Zeitfenster. Wird durch Skript _HK-Außentemperatur-Open-Meteo.hsc_ gesetzt oder alternativ durch einen Außentemperatursensor. |
 | HK2-Aussentemperatur-Aktuell | Optional. Momentaner Außentemperaturwert der letzten vollen Stunde (kein Durchschnitt). Wird vom AT-Skript geschrieben, nur wenn die Variable vorhanden ist. Dient zur Anzeige und als Diagnosewert. |
+| HK2-Aussentemperatur-Abrufzeit | Optional. Zeitpunkt des letzten erfolgreichen Open-Meteo-Abrufs als lesbarer lokaler Datum-/Zeittext `JJJJ-MM-TT HH:MM:SS` in einer Zeichenkette. Wird auch bei unveränderter Temperatur aktualisiert; dient der Aktualitätsanzeige im Addon. Manuell anlegen, siehe Abschnitt zum Außentemperatur-Skript. |
 | HK2-Hand-Temp | Wenn `true` Vorrang einer manuell am Thermostat eingestellten Temperatur beim Ausschalten |
 | HK2-Hand-Grundtemp | Wenn `true` aktiviert die Nachtschaltung. `HK-Skript 3` prüft täglich zwischen 00:57 und 01:03 Uhr alle Räume und setzt sie auf Grundtemperatur, sofern kein aktiver Termin (Schaltzustand=1) vorliegt. Bei Heizräumen (HSFlag=H) wird die Solltemperatur am Thermostat gesetzt, bei Schaltaktoren (HSFlag=S/HS) wird der Aktor ausgeschaltet. Die Prüfung erfolgt direkt am Aktor, nicht nur in der Systemvariablen. |
 | HK2-VorzeitAus | Globale Grundoffsetzeit in Minuten, um die vor Terminende ausgeschaltet wird. Wird nur bei Heizvorgängen angewendet, nicht bei reinem Schalten. Gegenstück zu HK2-Kurvenversatz (Einschalt-Offset). Default: 0 |
@@ -126,7 +127,7 @@ Die Protokollierung erfolgt über die nachfolgenden Kategorien:
 | HK1-Log | Variable um ein einfaches Log im System Protokoll zu erzeugen |
 | HK2-Logging | Flag das Logging vom Typ `HK2-Log` steuert |
 | HK2-Log | Variable um ein einfaches Log im System Protokoll zu erzeugen |
-| HK3-Logging | Flag das Logging vom Typ `HK2-Log` steuert |
+| HK3-Logging | Flag das Logging vom Typ `HK3-Log` steuert |
 | HK3-Log | Variable um ein einfaches Log im System Protokoll zu erzeugen |
 | HK-LoggingHeizkurvenkontrolle | Flag das Logging vom Typ `HK-LogHeizkurvenkontrolle` steuert |
 | HK-LogHeizkurvenkontrolle | Variable um ein einfaches Log im System Protokoll zu erzeugen |
@@ -158,6 +159,8 @@ Optional: `HK1-Vorlaufzeit`
 
 Skript für den Zugriff auf die internen Kalender in ChurchDesk über die ChurchDesk iCal Kalender der Ressourcen.
 
+Der HTTPS-Abruf deaktiviert die Zertifikatsprüfung von `wget` nicht. Die CCU benötigt einen passenden Zertifikatsbestand und eine kompatible TLS-Version. Bei einem Zertifikatsfehler gibt es keinen Rückfall auf eine ungeprüfte Verbindung. Nach fünf erfolglosen Abrufversuchen wird die Ressource übersprungen; bei aktiviertem Logging warnt `HK1-Log` vor möglicherweise fehlenden Terminen in der neu aufgebauten Schaltliste. Die Zertifikatsprüfung behebt kein Problem mit einer vom Server nicht mehr unterstützten TLS-Version.
+
 Benötigte Variablen: `HK1-CD-OrganisationsId`, `HK1-CD-Token`
 Sowie die Variablen: `HK1-R-Liste`, `HK2-HKG-Liste`, `HK1-Schaltliste`, `HK1-Log`, `HK1-Logging`
 Optional: `HK1-Vorlaufzeit`
@@ -174,6 +177,10 @@ Optional: `HK1-Vorlaufzeit`
 
 Skript für den Zugriff auf einen Kalender in Google über die Google Calendar-API. Bei diesem Verfahren muss der Raumname mit einem vorangestellten #-Zeichen im Titel des Termines stehen. Es wird ein API-Key für die Google-Calendar-API benötigt. Der Google-Kalender selbst muss auch öffentlich sein.
 
+Der Abruf umfasst heute 00:00 Uhr bis übermorgen 00:00 Uhr in der lokalen CCU-Zeitzone. Längere konfigurierte Vor- oder Nachläufe erweitern diese Grenzen. Beide Grenzen enthalten ihren jeweils gültigen Zeitzonenversatz, auch bei einem Sommerzeitwechsel. Die anschließende lokale Auswahl nach Vor- und Nachlauf bleibt bestehen.
+
+Pro Abruf werden höchstens 2500 Termine angefordert. Liefert Google ein `nextPageToken`, wird eine Fehlermeldung ausgegeben und bei aktiviertem Logging protokolliert. Die gelieferte Ergebnisseite wird wie bisher verarbeitet und die `HK1-Schaltliste` daraus aktualisiert. Weitere Ergebnisseiten werden nicht abgerufen. Termine auf diesen Seiten können deshalb fehlen, auch wenn weniger als 2500 Termine geliefert wurden. Dieses Verhalten wird aus Kompatibilitätsgründen beibehalten.
+
 Benötigte Variablen: `HK1-GK-API-Key`, `HK1-GK-Kalender-ID`
 Sowie die Variablen: `HK1-R-Liste`, `HK2-HKG-Liste`, `HK1-Schaltliste`, `HK1-Log`, `HK1-Logging`
 Optional: `HK1-Vorlaufzeit`
@@ -182,18 +189,26 @@ Optional: `HK1-Vorlaufzeit`
 
 Skript für den Zugriff auf einen iCal-Kalender über eine URL. Bei diesem Verfahren muss der Raumname mit einem vorangestellten #-Zeichen im Titel des Termines stehen.
 
+Bei Google und generischem iCal erfolgt die Raumzuordnung weiterhin durch eine Teilstringsuche ohne Prüfung des Kennzeichnungsendes. Beispielsweise trifft `#Raum11` auch auf die konfigurierte Kennzeichnung `Raum1` zu. Verwenden Sie deshalb Kennzeichnungen, die keine Präfixe anderer Kennzeichnungen sind. Die Erkennung wird aus Kompatibilitätsgründen unverändert beibehalten.
+
 Benötigte Variablen: `HK1-ICS-Url`
 Sowie die Variablen: `HK1-R-Liste`, `HK2-HKG-Liste`, `HK1-Schaltliste`, `HK1-Log`, `HK1-Logging`
 Optional: `HK1-Vorlaufzeit`
 
-Das iCal Skript unterstützt auch das `RRULE` Schlüsselwort für Terminwiederholunge. Jedoch sind dann sind nur folgende Terminwiederholungsarten erlaubt:
+Die vorhandene RRULE-Verarbeitung bleibt auf einfache tägliche, wöchentliche, monatliche und jährliche Serien begrenzt. Die gezielten Korrekturen ersetzen den Parser nicht:
 
-- DAILY, WEEKLY; MONTHLY, YEARLY (Frequenz, täglich, wöchentlich, monatlich, jährlich)
-- UNTIL (bis Datum)
-- COUNT (Anzahl Termine)
-- BYDAY (Wiederholung Wöchentlich je Wochentag)
-- BYDAY (Wiederholung Monatlich erster, zweiter oder letzter Montag…)
-- INTERVAL (jede n‘te Wiederholung)
+- `WEEKLY` ohne `BYDAY` behält den Wochentag des Serienbeginns; `INTERVAL=2` bedeutet alle zwei Wochen. Mit einer Wochentagsliste wie `BYDAY=MO,TH` werden nur die zum Intervall gehörenden Serienwochen berücksichtigt. Wochenbeginn ist Montag; `WKST` wird nicht zusätzlich unterstützt.
+- `MONTHLY` mit einem einzelnen Positions-Wochentag wie `2MO`, `-1MO` oder `3TU` verwendet die entsprechende Monatsposition. Ein nicht vorhandener fünfter Wochentag wird in diesem Zweig übersprungen, nicht auf einen anderen Tag gekürzt. Die inklusive UNTIL-Grenze wird auch nach Berechnung des Monatstags berücksichtigt.
+- Die vorhandene COUNT-Verarbeitung zählt gültige Kandidaten; die Korrektur ist keine vollständige RFC-Prüfung der Kombination von Serienbeginn, BYDAY und COUNT.
+- DAILY und WEEKLY im vom bisherigen Parser lokal interpretierten TZID-Zweig führen das Kalenderdatum fort und setzen die ursprüngliche lokale Uhrzeit wieder ein. UTC- und Floating-Zweige behalten den bisherigen festen Sekundenfortschritt.
+
+Die Auswertung von `DTSTART`, `DTEND` und `UNTIL` bleibt wie im Upstream-Skript. Ein benannter TZID-Wert wird nicht durch eine neue Zeitzonendatenbank umgerechnet; die verwendete lokale Zeit muss zur CCU passen. Ohne TZID bleibt die bisherige Umrechnung mit dem aktuellen Zeitversatz erhalten. Insbesondere UTC- und Floating-Serien können dadurch bei unterschiedlichen Sommer-/Winterzeitphasen verschoben sein. Diese Einschränkung wurde nicht durch einen neuen Datumsparser beseitigt.
+
+Verwenden Sie positive Wiederholungsintervalle und nur die beschriebenen einfachen Regelkombinationen. Es gibt keine neue umfassende Eingabevalidierung, keine zusätzliche Kandidatengrenze und kein neues Vorspulen alter Serien. Ungültige Intervalle und weitere unbekannte oder kombinierte RRULE-Angaben können weiterhin falsch verarbeitet werden. Reine Datumswerte, DURATION, fremde Zeitzonen, BYDAY-Listen bei MONTHLY und weitere Parameter sind nicht zuverlässig vollständig unterstützt; sie werden nicht durch eine neue einheitliche Prüfschicht abgefangen.
+
+Bei MONTHLY ohne Positions-BYDAY sowie YEARLY bleiben die bestehenden Einschränkungen bei nicht vorhandenen Monatstagen und Schaltjahren erhalten. Es wird nicht zugesagt, dass eine Serie vom 31. eines Monats oder vom 29. Februar vollständig RFC-gemäß fortgesetzt wird. Auch Ausnahmen (`EXDATE`), zusätzliche Vorkommen (`RDATE`), verschobene Einzeltermine (`RECURRENCE-ID`) und gefaltete Zeilen sind nicht vollständig abgedeckt. Die Dauer bleibt eine feste Sekundenzahl; pro Event und Lauf wird nur das erste passende Vorkommen ausgegeben.
+
+**Prüfstand:** Der kleinere Korrekturumfang wird anhand gezielter lokaler Quell- und Referenzprüfungen unter `Tests/Skript1_iCal-Wiederholungen/` geprüft. Die früheren zehn isolierten CCU-Fälle gehörten zur inzwischen zurückgenommenen größeren Engine und sind kein Laufzeitnachweis dieser kleineren Fassung. Eine vollständige CCU-, Kalender- oder RFC-Abnahme wird nicht behauptet. Mehrdeutige beziehungsweise nicht existierende lokale Uhrzeiten während der Zeitumstellung bleiben ungeprüft.
 
 ## Schaltskript
 
@@ -202,11 +217,11 @@ Das iCal Skript unterstützt auch das `RRULE` Schlüsselwort für Terminwiederho
 >
 > _Die Dokumentation dient nur zur Erklärung der Skript-Grundlagen und wenn es notwendig sein sollte, dass eine manuelle Installation erfolgen muss._
 
-Das Schaltskript ist das Herzstück der Heizkalender Software. Es muss zwingend alle 5 Minuten laufen. Das Skript schaltet die Heizthermostate ein und auch wieder aus.
+Berechnung und Aktoransteuerung sind getrennt: Skript 2 berechnet aus `HK1-Schaltliste` die Schaltzeiten und schreibt `HK2-Schaltliste`. Skript 3 liest diese Liste und steuert die Thermostate beziehungsweise Schaltaktoren. Beide Skripte laufen alle 5 Minuten.
 
 ## HK-Skript 2.hsc
 
-Das Skript 2 ist ein Hauptskript um eigentlichen Schaltzeiten zu berechnen.
+Skript 2 berechnet die Heiz- und Schaltzeiten; es steuert die Aktoren nicht selbst. Die Übergabe an Skript 3 erfolgt über `HK2-Schaltliste`.
 
 Benötigte Variablen: `HK1-R-Liste`, `HK1-Schaltliste`, `HK2-Aussentemperatur`, `HK2-Grundtemperatur`, `HK2-HKG-Liste`, `HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Log`, `HK2-Logging`, `HK2-VorzeitAus`. Optional (wird beschrieben falls vorhanden): `HK2-Kurvenanpassung`, `HK2-Schaltzeiten`
 Sowie weitere Raum-Variablen `HKG-Raum-*`
@@ -262,10 +277,23 @@ Das Skript schreibt folgende Variablen:
 
 | Variable | Bedeutung |
 | :--- | :--- |
-| `HK2-Aussentemperatur` | Gleitender Durchschnitt über das Zeitfenster (immer geschrieben) |
+| `HK2-Aussentemperatur` | Gleitender Durchschnitt über das Zeitfenster, bei erfolgreicher Berechnung in die vorhandene Zielvariable geschrieben |
 | `HK2-Aussentemperatur-Aktuell` | Momentanwert der letzten vollen Stunde (nur wenn die Variable vorhanden ist) |
+| `HK2-Aussentemperatur-Abrufzeit` | Letzter erfolgreicher Abruf mit geschriebenem Durchschnitt, lokaler Datum-/Zeittext als Zeichenkette (nur wenn die Variable vorhanden ist) |
 
 `HK2-Aussentemperatur-Aktuell` ist eine optionale Variable: Das Skript schreibt sie nur, wenn sie auf der CCU bereits angelegt ist. Sie kann mit `HK-Init-Skript 2+3.hsc` angelegt werden.
+
+#### HK2-Aussentemperatur-Abrufzeit
+
+Die optionale Variable hat den Typ **Zeichenkette** und einen leeren Startwert; die Archivierung ist standardmäßig ausgeschaltet. Sie ist in `Skripte/HK-Init-Skript 2+3.hsc` enthalten. Das Init-Skript legt sie bei manueller Ausführung an, sofern sie noch fehlt, und lässt bereits vorhandene Variablen unverändert. Der Windows-Installer bleibt unverändert; die Anpassung muss mit der Installerpflege abgestimmt werden.
+
+Alternativ kann die Variable in der CCU-WebUI unter **Einstellungen > Systemvariable** mit dem Namen `HK2-Aussentemperatur-Abrufzeit`, dem Typ **Zeichenkette** und zunächst leerem Inhalt angelegt werden. Bei einem konfigurierten Skriptpräfix dieses dem Namen voranstellen.
+
+Nach erfolgreicher Berechnung und Schreiben von `HK2-Aussentemperatur` setzt das Open-Meteo-Skript die Abrufzeit mit `system.Date().ToTime().ToString()` auf den aktuellen lokalen Datum-/Zeittext `JJJJ-MM-TT HH:MM:SS`, auch wenn sich die Temperatur nicht geändert hat. Fehlerhafte Abrufe verändern die Abrufzeit nicht. Sie bezeichnet den erfolgreichen Abruf, nicht den Erstellungszeitpunkt der Wetterprognose. Bei einer alternativen Temperaturquelle ist der Zeitstempel keine Aktualitätsaussage für deren Messwerte.
+
+Das Addon erwartet ausschließlich diesen Datum-/Zeittext. Numerische Unixsekunden werden nicht unterstützt. Skript und CGI müssen dieselbe CCU-Zeitzone verwenden; der Text enthält keinen Zeitzonenversatz. Die bei der Sommerzeitumstellung doppelt auftretende lokale Stunde lässt sich daraus nicht eindeutig unterscheiden.
+
+Die Addon-Raumübersicht zeigt den letzten erfolgreichen Abruf und einen Warnhinweis, wenn dieser mehr als drei Stunden zurückliegt. Fehlt ein gültiger Zeitstempel, ist die Aktualität unbekannt. Diese Überwachung verändert weder die Vorheizberechnung noch das Ersatzverhalten bei Wetterausfall.
 
 ### HK-Heizkurvenkontrolle.hsc
 

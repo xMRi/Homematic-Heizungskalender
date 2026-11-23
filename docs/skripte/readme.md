@@ -293,7 +293,6 @@ Nach erfolgreicher Berechnung und Schreiben von `HK2-Aussentemperatur` setzt das
 
 Die Addon-Raumübersicht zeigt den letzten erfolgreichen Abruf und einen Warnhinweis, wenn dieser mehr als drei Stunden zurückliegt. Fehlt ein gültiger Zeitstempel, ist die Aktualität unbekannt. Diese Überwachung verändert weder die Vorheizberechnung noch das Ersatzverhalten bei Wetterausfall.
 
-
 ### HK-Heizkurvenkontrolle.hsc
 
 Dieses Skript erzeugt zusätzliche Einträge im Systemprotokoll mit dem die aktuellen Vorheizzeiten der Räume kontrolliert werden können.

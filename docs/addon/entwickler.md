@@ -32,9 +32,9 @@ Addon/
         syslog.cgi                 Syslog (/var/log/messages)
         sysvars.cgi                Systemvariablen-Übersicht
         hkconfig.cgi               Grundeinstellungen
-        update_check.cgi           Update-Check (GitHub Releases API)
+        update_check.cgi           Versionsabruf (VERSION aus dem main-Branch)
         heizkalender.css           Eigenes Stylesheet
-        hk-logo-300.png            Logo (Navigation)
+        hk-logo-200.png            Logo (Navigation)
         hk-logo-50.png             Logo (CCU-Zusatzsoftware-Seite)
         favicon.ico                Favicon
         favicon-16x16.png          Favicon 16x16
@@ -75,7 +75,7 @@ heizkalender-addon-<Version>.tar.gz
 │       ├── hkconfig.cgi
 │       ├── update_check.cgi
 │       ├── heizkalender.css
-│       ├── hk-logo-300.png
+│       ├── hk-logo-200.png
 │       ├── hk-logo-50.png
 │       ├── favicon.ico
 │       ├── favicon-16x16.png
@@ -219,18 +219,14 @@ Fehler-Zeilen (kein Sensor) haben statt Leerzeichen vor dem Ereignis einen Doppe
 
 **Herkunft der Namen im Log:**
 
-Alle Skripte arbeiten ausschließlich mit Kalender-Ressourcennamen, nicht mit CCU-internen Bezeichnungen. Die Verbindung zwischen den Systemvariablen und dem Log-Format:
+Kalender-Ressourcen und CCU-Räume müssen nicht gleich heißen. `HK1-R-Liste` enthält Ressourcen-IDs mit optionalem Kalendernamen; `HK2-HKG-Liste` ordnet ihnen positionsbasiert die Raumvariablen zu. Eine Ressource kann mehrere Räume enthalten, und ein Nebenraum benötigt nicht zwingend eine eigene Kalenderressource.
 
-- `HK1-R-Liste` enthält `ID=Kalendername`, z.B. `11=EG-Eltern-Kind-Raum`
-- `HK2-HKG-Liste` enthält die zugehörigen CCU-Raumvariablen, z.B. `HKG-Raum-EG-Eltern-Kind-Raum+HKG-Raum-UG-Büro`
-- Die Namen in `HK2-HKG-Liste` (ohne Präfix `HKG-Raum-`) sind identisch mit den Kalender-Ressourcennamen aus `HK1-R-Liste`
+Der Logname enthält Ressourcenname und ID sowie bei abweichendem Raum einen Raum-Suffix:
 
-Daraus ergibt sich das Log-Format:
+- `UG-Büro(22)`: `log_raumname` extrahiert `UG-Büro` vor der Klammer.
+- `EG-Eltern-Kind-Raum(11)-UG-Büro`: `log_raumname` extrahiert den Suffix `UG-Büro` nach `)-`.
 
-- **Normalfall** (ein Raum pro Ressource): `EG-Eltern-Kind-Raum(11)` — Raumname und Ressourcenname sind identisch, kein Suffix
-- **Gruppenfall** (mehrere Räume per `+` verbunden): `EG-Eltern-Kind-Raum(11)-UG-Büro` — der zweite Raum der Gruppe wird als Suffix angehängt; `UG-Büro` ist dabei ebenfalls ein eigenständiger Eintrag in `HK1-R-Liste`
-
-Der Dropdown in `hkkurve.cgi` verwendet `HK1-R-Liste` als Quelle. Eine Substring-Suche auf den gewählten Namen findet damit sowohl den Normalfall (`UG-Büro(22)`) als auch alle Gruppeneinträge, in denen dieser Raum vorkommt (`EG-Eltern-Kind-Raum(11)-UG-Büro`).
+Das Dropdown wird direkt aus den vorhandenen `HKG-Raum-*`-Systemvariablen aufgebaut. Der Vergleich verwendet den ausgewählten Raum und den extrahierten Lograum nach der vorhandenen ASCII-Normalisierung auf Gleichheit. Es ist keine Teilstringsuche: Der Gruppenlogeintrag gehört zum Raum `UG-Büro`, nicht automatisch zu jedem im Ressourcenpräfix enthaltenen Namen. Die Normalisierung ist eine technische Einschränkung, keine Zusage einer vollständigen Unicode-Namensidentität.
 
 ### hkrechner.cgi: Vorheizzeit-Rechner
 
@@ -250,12 +246,13 @@ Interaktive Simulationsseite für die Vorheizzeit-Berechnung. Das Tcl-CGI lädt 
 
 Die gesamte Berechnungslogik (Zwei-Geraden-Modell für faktor2HeizBedarf, lineare Interpolation der HK2-Kurve, Mindest-Vorlaufzeit-Clamp) läuft clientseitig in `hkrechner.js`. Die Berechnung wird bei jedem `input`-Event live ausgelöst, ohne Seiten-Reload. Ungültige Felder erhalten die CSS-Klasse `hkr-invalid` (rote Umrandung) und eine einzeilige Fehlermeldung. Berechnung und Canvas werden nur aktualisiert, wenn alle Felder gültig sind.
 
-`hkrechner.js` zeichnet vier `<canvas>`-Elemente:
+`hkrechner.js` verwendet vier Grunddiagramme und einen zusätzlichen, bedingten Raumvergleich:
 
 - **faktor2HeizBedarf-Kurve:** Zeigt das Zwei-Geraden-Modell im Bereich GT bis ZIEL; IST-Wert mit rotem Marker.
-- **Zeitanteile:** Horizontales Balkendiagramm mit V_raum+V_global (blau), AT-Zeit skaliert mit f1 (orange), Reduktion durch faktor2 (grau gestrichelt), Mindest-Linie (rot vertikal) und effektiver Gesamtvorheizzeit (grün/rot).
+- **Zeitanteile:** Drei horizontale Balkenzeilen: Rohwerte vor dem Heizbedarf-Faktor, getrennt skalierte Anteile nach dessen Anwendung und effektive Gesamtvorheizzeit einschließlich Mindestvorlauf. Die Rohanteile sind blau beziehungsweise orange, die skalierten Anteile heller dargestellt, die effektive Zeit grün. Ein gestrichelter Reduktionsbereich oder eine rote Mindestlinie wird in diesem Diagramm nicht gezeichnet.
 - **Heizkurven-Verlauf:** Zeigt die interpolierte HK2-Kurve über den Außentemperaturbereich sowie die skalierten Zeitanteile. Eine grüne gestrichelte Linie markiert die aktuelle Außentemperatur; ist `HK2-A.Temp.Grenze` definiert, erscheint sie als rote gestrichelte Linie.
 - **Temperaturverlauf:** Zeigt den modellierten Temperaturanstieg vom Start bis zur Wohlfühltemperatur über die berechnete Vorheizzeit (inverses Zwei-Geraden-Modell); eingetragen sind Grundtemperatur (blaugrau), Wohlfühltemperatur (grau gestrichelt) und IST-Punkt (roter Marker).
+- **Raumvergleich:** Wird bei gültiger Berechnung und mehr als einem verfügbaren Rechnerraum eingeblendet. Er verwendet die gemeinsame Ist-Temperatur aus dem Eingabefeld sowie raumindividuelle Ziel-, Grund- und Vorheizparameter. Die Mindestvorlaufwirkung und die Außentemperaturgrenze werden getrennt angezeigt. Das ist eine Simulation, keine neue Messung jedes Raums.
 
 #### Layout-Ansatz: feste Pixelbreiten
 
@@ -269,7 +266,7 @@ Zeigt Logging-Flags, Kurveneinstellungen und eine Raumübersicht in aufbereitete
 
 ### hklog.cgi: HK-Log
 
-Liest direkt aus Logdateien auf dem USB-Stick. Kein ReGa-Aufruf. Die Seite zeigt die letzten N Zeilen der gewählten Datei (tail-Prinzip).
+Liest direkt aus Logdateien auf dem USB-Stick. Kein ReGa-Aufruf. Ohne Quellenfilter zeigt die Seite die letzten N Dateizeilen; mit Filter werden zuerst die passenden Einträge ausgewählt und anschließend die letzten N Treffer angezeigt. Die Ausgabe ist chronologisch. Die gesamte Datei wird eingelesen, die Anzeigegrenze begrenzt daher nicht den Speicherbedarf.
 
 Zeitstempel im Log haben das Format `JJJJ-MM-TT HH:MM:SS` (aus der CCU-Historiendatenbank, geschrieben von `HK-SystemProtokoll sichern.hsc`). Da dieses Skript alle 29 Minuten läuft, kann die Anzeige im Addon bis zu 29 Minuten hinter dem aktuellen Geschehen zurückliegen.
 
@@ -298,14 +295,14 @@ Besondere Darstellung für `HK-RäumeHeizkurvenkontrolle`: Der Wert hat das Form
 
 ### update_check.cgi: Update-Check
 
-Prüft auf neue Releases. Unterstützte Query-Parameter (`cmd`):
+Liefert den Versionsstand aus der VERSION-Datei des `main`-Branches. Unterstützte Query-Parameter (`cmd`):
 
 | Kommando | Verhalten |
 | -------- | --------- |
-| `check_version` | Liest die `VERSION`-Datei direkt aus dem GitHub-Repository und gibt die neueste Versionsnummer als Plaintext zurück (oder `n/a` bei Fehler) |
-| `download` | Leitet per HTTP-Redirect auf die GitHub-Releases-Seite weiter; der Nutzer lädt das Paket dort selbst herunter |
+| `check_version` | Liest VERSION aus dem `main`-Branch und gibt eine gültige Versionszeichenkette als Plaintext zurück, sonst `n/a` |
+| `download` | Liefert eine HTML-Seite mit Meta-Refresh zur GitHub-Releases-Seite; der Nutzer lädt das Paket dort selbst herunter |
 
-Die `VERSION`-Datei wird direkt von GitHub gelesen:
+Die installierte lokale VERSION-Datei wird von diesem CGI nicht gelesen, der übergebene Versionsparameter nicht verglichen. Ein möglicher Versionsvergleich durch die CCU-Oberfläche liegt außerhalb dieser CGI-Implementierung und wurde hier nicht geprüft. Der Branch-Stand ist nicht automatisch das neueste veröffentlichte Release.
 
 ---
 
@@ -341,13 +338,13 @@ Klassen-Übersicht (Auswahl):
 
 ## Update-Check
 
-`update_check.cgi` prüft auf neue Releases, indem es die `VERSION`-Datei direkt aus dem GitHub-Repository liest:
+`update_check.cgi` liest den Versionsstand des `main`-Branches aus folgender Datei, nicht aus der GitHub-Releases-API:
 
 ```txt
 https://raw.githubusercontent.com/xMRi/Homematic-Heizungskalender/main/Addon/src/VERSION
 ```
 
-Das entspricht dem Vorbild von `hm-watchdog`. Kein JSON-Parsing, kein fester Asset-Name. Beim Download-Befehl leitet das Script auf die GitHub-Releases-Seite weiter; der Nutzer lädt das passende Asset dort selbst herunter.
+Das entspricht dem Vorbild von `hm-watchdog`. Kein JSON-Parsing, kein fester Asset-Name. Beim Download-Befehl liefert das Skript eine HTML-Weiterleitung zur Releases-Seite. Ein abweichender Branch- und Releasestand ist möglich; der Abruf belegt nicht das neueste veröffentlichte Paket.
 
 ---
 

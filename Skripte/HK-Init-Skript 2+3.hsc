@@ -19,12 +19,12 @@
 !// meiner Gemeinde anzupassen.
 !//
 !// TT:  2026-11-21 Optionale HK2-Aussentemperatur-Abrufzeit als Zeichenkette mit leerem Startwert ergaenzt.
-!// TT:   2026-11-13 HK2-Aussentemperatur-Aktuell ergaenzt
-!// TT:   2026-11-10 HK2-Kurvenanpassung: optionaler Kurvenanpassungsfaktor fuer das Zwei-Geraden-Modell (0.3..1.0, Vorgabe 0.8)
-!// MRi:  2026-11-03 Neue Variable für Skript3, HK2-Schaltliste
-!// TT:   2026-10-25 HK2-Schaltzeiten: Schlüssel von ResID auf Raumvariablenname (RVN) umgestellt.
-!// TT:   2026-10-19 HK2-Schaltzeiten ergaenzt (Ausgabe berechneter Schaltzeiten durch Skript 2)
-!// TT:   2026-10-04 Beschreibung von HK2-Aussentemperatur praezisiert (gleitender Durchschnitt)
+!// TT:  2026-11-13 HK2-Aussentemperatur-Aktuell ergaenzt
+!// TT:  2026-11-10 HK2-Kurvenanpassung: optionaler Kurvenanpassungsfaktor fuer das Zwei-Geraden-Modell (0.3..1.0, Vorgabe 0.8)
+!// MRi: 2026-11-03 Neue Variable für Skript3, HK2-Schaltliste
+!// TT:  2026-10-25 HK2-Schaltzeiten: Schlüssel von ResID auf Raumvariablenname (RVN) umgestellt.
+!// TT:  2026-10-19 HK2-Schaltzeiten ergaenzt (Ausgabe berechneter Schaltzeiten durch Skript 2)
+!// TT:  2026-10-04 Beschreibung von HK2-Aussentemperatur praezisiert (gleitender Durchschnitt)
 
 !// Dieses Skript erstellt die nötigen Systemvariablen des Heizkalenders für Skript 2+3. Diese
 !// dienen der Berechnung und dem eigentlichen des Heizkalenders.

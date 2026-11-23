@@ -21,6 +21,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 ### Geändert
 
 - Addon-Version auf 0.10.5 erhöht.
+- Historisches Addon-PRD nach `docs/archiv/` verschoben und als unverbindlichen Entwurf gekennzeichnet.
 
 ### Behoben
 
@@ -33,6 +34,7 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Skript 2: Bei Temperaturwert 0 alte Planung erhalten; ohne Planung ab einer Stunde Kernellaufzeit mit dem Maximum aus Grund- und Außentemperatur rechnen. Bei unlesbarer Laufzeit weiter warten.
 - Addon-Installation: Erforderliche Dateioperationen und Web-Symlink prüfen; Fehler protokollieren und mit Status 1 abbrechen. Erfolg bleibt Status 0, ohne automatisches Rollback.
 - Heizkalender-Dokumentation: Berechnung und Aktorsteuerung getrennt beschrieben; Vorheizformeln, Beispiele, Raum- und Listenformate sowie Sonderbefehle berichtigt und Grenzen der Raumkennung dokumentiert.
+- Addon- und Installer-Dokumentation: Rechnerdiagramme, Logfilter, Versionsabruf und Tool-Updates berichtigt; Update- und Einrichtungshinweise präzisiert.
 
 ## [2026-11-20]
 

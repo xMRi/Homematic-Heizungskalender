@@ -12,11 +12,11 @@ Bei der Verwendung von ChurchTools oder ChurchDesk werden zusätzlich die benöt
 
 - Betriebssystem: Windows
 - Die CCU muss in den Sicherheitseinstellungen den Zugriff auf die Remote Homematic-Script API erlauben. Dabei muss entweder ein eingeschränkter Zugriff auf die benötigten Funktionen oder ein Vollzugriff gewährt werden, damit die `HeizkalenderInstallation.exe` die notwendigen Skripte und Variablen erstellen kann.
-- Ein Administrator-Benutzer und das zugehörige Kennwort müssen bekannt sein.  
+- Ein Administrator-Benutzer und das zugehörige Kennwort müssen bekannt sein.
     Alternativ kann der Zugriff auch über den  CloudMatic Fernzugriff erfolgen oder eine VPN-Lösung wie WireGuard.
-- Alle Skripte, die installiert werden sollen, müssen im Programmverzeichnis der `HeizkalenderInstallation.exe` liegen. Die Namen sind vorgegeben und dürfen nicht verändert werden. Es können weitere Tool-Skripte hinzugefügt werden. Diese werden ebenfalls installiert und später aktualisiert, solange die entsprechenden Dateien im Verzeichnis der `HeizkalenderInstallation.exe` liegen.
+- Alle Skripte, die installiert werden sollen, müssen im Programmverzeichnis der `HeizkalenderInstallation.exe` liegen. Die Quelldateinamen sind vorgegeben und dürfen nicht verändert werden. Zusätzliche Tool-Skripte werden nur zur Aktualisierung bereits vorhandener geeigneter CCU-Programme verwendet; das Ablegen einer Tool-Datei bewirkt keine Erstinstallation des Tools.
 - Um auf Ressourcen und externe Kalender zugreifen zu können, muss der Rechner mit dem Internet verbunden sein.
-- Eine Installation über einen funktionierenden CloudMatic Zugang ist möglich. 
+- Eine Installation über einen funktionierenden CloudMatic Zugang ist möglich.
 
 Eine lauffähige Kopie der `HeizkalenderInstallation.exe` liegt im Skripte-Verzeichnis.
 
@@ -33,7 +33,7 @@ Eine lauffähige Kopie der `HeizkalenderInstallation.exe` liegt im Skripte-Verze
 
 Um auf die CCU Zugreifen zu können müssen auch die Sicherheitseinstellungen diesen Zugriff erlauben.
 
-### Netzwerkeinstellungen 
+### Netzwerkeinstellungen
 
 Damit die `HeizkalenderInstallation.exe` ausgeführt werden kann, muss der Zugriff auf die Homematic-Script-API freigeschaltet werden. Dies geschieht in der Homematic-WebUI unter *Einstellungen → Firewall konfigurieren → Remote Homematic-Script API*. Dort wird entweder *Vollzugriff* eingestellt:
 
@@ -47,7 +47,7 @@ Freigegebene IP-Adresse für den Zugriff:
 
 ![CCU-Zugriff: Freigegebene IP-Adresse](bilder/CCU-Zugriff-3.png)
 
-**Alternativ kann der Zugriff auch über den CloudMatic Fernzugriff erfolgen.**  
+**Alternativ kann der Zugriff auch über den CloudMatic Fernzugriff erfolgen.**
 **In diesem Fall folgen Sie der [CloudMatic Dokumentation](https://docs.easy-smarthome.de/CloudMatic/Connect/Fernzugriff/?utm_source=chatgpt.com) für das Einrichten und Vorbereiten Ihrer CCU für die Nutzung der CloudMatic mit dem Fernzugriff.**
 
 ### Sicherheitseinstellungen
@@ -122,7 +122,7 @@ Im ersten Schritt muss eine Verbindung zur CCU aufgebaut werden, bevor weitere E
 
 1. Geben Sie die Ziel-IP der CCU an, oder den Namen Ihrer CloudMatic Verbindung.
 2. Wählen Sie aus ob die Verbindung lokal oder über HTTPS und eine CloudMatic Verbindung hergestellt werden soll.
-3. Geben Sie einen CCU Benutzernamen und Kennwort an, der administrativen Zugriff auf die CCU hat, sofern der Zugriff auf eine lokale CCU (lokale IP) erfolgt.  
+3. Geben Sie einen CCU Benutzernamen und Kennwort an, der administrativen Zugriff auf die CCU hat, sofern der Zugriff auf eine lokale CCU (lokale IP) erfolgt.
     Erfolgt der Zugriff über die CloudMatic geben SIe hier bitte den Benutzernamen und das Kennwort für Ihren CloudMatic Fernzugriff an. Die Adresse hat dann folgendes Format: *\<cloudmaticid>.meinecloudmatic.de*.
 4. Geben Sie optional einen Prefix für Variablen und Skripte an (siehe Hinweis unten).
 5. Klicken Sie auf den Schalter **Verbinden mit der CCU**.
@@ -209,7 +209,7 @@ Bei einer bestehenden, eingerichteten CCU erhalten Sie eine Anzeige über den Ve
 
 #### Wechsel zu einer anderen Ressourcen-Variante
 
-Es ist möglich in einer bestehenden Installation die Terminquelle zu wechseln. 
+Es ist möglich in einer bestehenden Installation die Terminquelle zu wechseln.
 
 > [!WARNING]
 > Bitte nehmen Sie hier nur dann einen Wechsel der Terminquelle vor, wenn dies auch wirklich gewünscht wird.  Andernfalls können Einstellungen verloren gehen.
@@ -220,11 +220,15 @@ Nach dem Wechsel der Terminquelle empfiehlt es sich die Raum- und Ressourcenlist
 
 Über diese Seite der `HeizkalenderInstallation.exe` werden alle installierten Programme angezeigt. Liegt für ein Programm ein Update vor, wird dies in der Informationsspalte angezeigt. Außerdem werden der aktuelle Programmstand und der Stand des Updates angezeigt, sofern vorhanden.
 
-Die Programme mit den folgenden Namen sind reserviert und werden von der `HeizkalenderInstallation.exe` automatisch berücksichtigt. Sie müssen im Programmverzeichnis der `HeizkalenderInstallation.exe` liegen:
+Die folgenden Quelldateien müssen im Programmverzeichnis der `HeizkalenderInstallation.exe` liegen. Der Installer lädt die Dateien mit ihren variantenspezifischen Namen und richtet daraus die reservierten CCU-Programme ein. Für Skript 1 wird nur die ausgewählte Kalenderquelle eingesetzt; der CCU-Programmname ist vom Quelldateinamen zu unterscheiden:
 
 - `HK-Außentemperatur-Open-Meteo.hsc`
 - `HK-Heizkurvenkontrolle.hsc`
-- `HK-Skript 1.hsc`
+- `HK-Skript 1_ChurchDeskAPI.hsc`
+- `HK-Skript 1_ChurchDeskiCal.hsc`
+- `HK-Skript 1_ChurchTools.hsc`
+- `HK-Skript 1_iCal.hsc`
+- `HK-Skript 1_Google.hsc`
 - `HK-Skript 2.hsc`
 - `HK-Skript 3.hsc`
 - `HK-Systemprotokoll sichern.hsc`
@@ -256,12 +260,12 @@ Um die Funktionsweise des Heizkalenders transparent zu machen, wird das Systempr
     Dieser Wert wird in der Variable `HK1-Logging` gespeichert.
 
 - **Protokollierung für Skript 2**
-    Das `HK-Skript 2` führt anhand der gelesenen Termine eine Berechnung der benötigten Schaltzeiten aus. Über diese Option kann die Protokollierung ein- und ausgeschaltet werden. 
+    Das `HK-Skript 2` führt anhand der gelesenen Termine eine Berechnung der benötigten Schaltzeiten aus. Über diese Option kann die Protokollierung ein- und ausgeschaltet werden.
     Dieser Wert wird in der Variable `HK2-Logging` gespeichert.
 
 - **Protokollierung für Skript 3**
     Das `HK-Skript 3` führt anhand der errechneten Schaltzeiten die eigentlichen Schaltvorgänge für die Heizungssteuerung durch. Über diese Option kann die Protokollierung ein- und ausgeschaltet werden.
-    Dieser Wert wird in der Variable `HK2-Logging` gespeichert.
+    Dieser Wert wird in `HK3-Logging` gespeichert; die Einträge werden über `HK3-Log` erzeugt.
 
 - **Protokollierung für die Heizkurvenkontrolle**
     Das spezielle Skript `HK-Heizkurvenkontrolle` analysiert die aktuellen Heiztemperaturen. Mit den Einträgen dieses Protokolls lässt sich die Heizkurve optimieren oder grundsätzlich prüfen, ob die eingestellte Heizkurve funktioniert.
@@ -518,7 +522,7 @@ Die Einstellungen werden gespeichert, indem Sie im Hauptdialog auf den Schalter 
 **Wurden alle Einstellungen kontrolliert erfolgt vor dem Update der CCU die folgende Frage:**
 ![Änderungen speichern](bilder/HKI-ÄnderungenSpeichern2.png)
 
-Wird diese Frage mit **Ja** beantwortet, erfolgt ein Update der CCU.  
+Wird diese Frage mit **Ja** beantwortet, erfolgt ein Update der CCU.
 Beachten Sie, dass viele der Änderungen, insbesondere bei Änderungen der Kalenderquelle oder dem Aktualisieren der Raumliste, nicht rückgängig gemacht werden können.
 Halten Sie aus diesem Grund immer ein aktuelles Backup bereit.
 

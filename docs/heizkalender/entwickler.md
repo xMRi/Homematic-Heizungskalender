@@ -186,7 +186,7 @@ Status;Modus;Heiztyp;Wohlfühltemp[/Grundtemp];Vorheizzeit[*Faktor[*MindestMin]]
 | Faktor | 4 | Float | Optional, Suffix `*Faktor`: Skalierungsfaktor für den kurvenbasierten Anteil der Vorheizzeit (0,20–5,0). Gesamtvorheizzeit = Offset + Faktor × HK2-Kurve(Außentemperatur); z.B. `60*1.5` |
 | MindestMin | 4 | Integer | Optional, zweiter Suffix `*Faktor*MindestMin`: Mindest-Vorlaufzeit in Minuten (1–480, Default 15); verhindert, dass faktor2HeizBedarf die Zeit bei IST nahe ZIEL wegrechnet |
 | VorzeitAus | 5 | Integer | Minuten vor Terminende, nach denen abgeschaltet wird |
-| Thermostat | 6 | String | Nur bei Modus `HS`: CCU-Kanaladresse des Thermostats, der als Temperatursensor dient |
+| Thermostat | 6 | String | Bei Modus `H` Steuerungs- und Temperaturkanal, bei `HS` nur Temperaturquelle |
 | Schaltaktor(en) | 7+ | String | Nur bei Modus `HS`: CCU-Kanaladdresse(n) der Schaltaktoren; mehrere Aktoren werden durch weitere `;`-Felder angehängt |
 
 Trennzeichen innerhalb eines Wertes:
@@ -215,14 +215,16 @@ Der Modus (Feld 1) steuert grundlegend, wie der Heizkalender den Raum behandelt.
 Jeder Modus hat unterschiedliche Auswirkungen auf Vorheizzeit-Berechnung,
 Aktor-Ansteuerung und Sensorik.
 
+Beim normalen Einschalten prüft Skript 3 in H und HS sämtliche konfigurierten Steuerobjekte und die benötigten Datenpunkte, bevor ein Befehl ausgegeben wird. Fehlt ein Objekt oder Datenpunkt oder ist die Steuerliste leer, bleibt der Raumstatus unverändert und ein Fehler wird protokolliert. Bei gültiger Konfiguration bleibt der bestehende Reglervorrang wirksam. Die Prüfung ist lokal, keine Funk- oder Hardwarebestätigung. Ausschalten, Sonderbefehle, S und V wurden durch diese begrenzte Korrektur nicht geändert.
+
 ##### `H` — Heizen
 
 Steuert einen Thermostat (z.B. HmIP-eTRV) über dessen Solltemperatur.
 
 | Eigenschaft | Verhalten |
 | :--- | :--- |
-| Aktor-Typ | Thermostat (Feld 7); Ansteuerung über `DPByHssDP` mit Thermostat-Parameter (`SET_POINT_TEMPERATURE`, `SET_TEMPERATURE` etc. je nach Heiztyp) |
-| Sensor (Feld 6) | Optional; CCU-Gerätekanal für IST-Temperatur und Luftfeuchte |
+| Aktor-Typ | Thermostatkanal ab Feld 6; Ansteuerung über `DPByHssDP` mit Thermostat-Parameter (`SET_POINT_TEMPERATURE`, `SET_TEMPERATURE` etc. je nach Heiztyp) |
+| Sensor (Feld 6) | Temperatur und Luftfeuchte vom Steuerkanal, sofern die jeweiligen Datenpunkte vorhanden sind |
 | Vorheizzeit | Vollständig wirksam: Offset + Faktor × HK2-Kurve(AT), skaliert mit faktor2HeizBedarf (IST-Temperatur-Korrektur) |
 | AT-Schwelle | Heizvorgang wird unterdrückt wenn Außentemperatur ≥ `HK2-A.Temp.Grenze` |
 | Einschalten | Setzt Solltemperatur (Wohlfühltemp) am Thermostat |
@@ -241,8 +243,8 @@ separatem Stellantrieb.
 | Sensor (Feld 6) | CCU-Gerätekanal des Thermostats — wird für IST-Temperatur gelesen |
 | Vorheizzeit | Wie `H`: Offset + Faktor × HK2-Kurve(AT), skaliert mit faktor2HeizBedarf (IST-Temperatur-Korrektur) |
 | AT-Schwelle | Wie `H`: Heizvorgang wird unterdrückt wenn AT ≥ Grenze |
-| Einschalten | Setzt Solltemperatur am Thermostat (Feld 6) **und** schaltet Aktoren ein (Feld 7+) |
-| Ausschalten | Setzt Grundtemperatur am Thermostat **und** schaltet Aktoren aus |
+| Einschalten | Schaltet die Aktoren ab Feld 7 ein; der Thermostat an Feld 6 dient nur als Temperaturquelle |
+| Ausschalten | Schaltet die Aktoren ab Feld 7 aus; keine Soll- oder Grundtemperaturänderung an der Temperaturquelle |
 | Heizkurvenkontrolle | Aktiv |
 
 ##### `S` — Schalten

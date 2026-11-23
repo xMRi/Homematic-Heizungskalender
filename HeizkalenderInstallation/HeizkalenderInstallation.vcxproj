@@ -244,11 +244,6 @@
     <None Include="res\HeizkalenderInstallation.rc2">
       <FileType>Text</FileType>
     </None>
-    <None Include="res\SYSVARS-Init.hsc" />
-    <None Include="res\SYSVARS_Init_ChurchDesk.hsc" />
-    <None Include="res\SYSVARS_Init_ChurchTools.hsc" />
-    <None Include="res\SYSVARS_Init_Google.hsc" />
-    <None Include="res\SYSVARS_Init_iCal.hsc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\HeizkalenderInstallation.ico" />

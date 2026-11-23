@@ -64,6 +64,16 @@ enum class DataType {
 	// vtTime = 5,
 };
 
+enum class DataSubType {
+	istGeneric = 0,
+	istBoolean = 2,
+	istInteger = 4,
+	istChar8859 = 11,
+};
+
+DataType StringToDataType(CString const& str);
+DataSubType GetSubTypeForDataType(DataType dt);
+
 class CDataSystemVariable : public CDataEntry
 {
 public:
@@ -72,7 +82,7 @@ public:
 	}
 	CDataSystemVariable(CString const& strLine);
 	CDataSystemVariable(int id,CString const& strName,CString const& strContent,CString const& strDescription,
-						DataType dt,bool bProtocoll,bool bVisible);
+						DataType dt,bool bProtocoll,bool bVisible, CString const& strAttributes);
 
 	int		m_id{};
 	CString m_strName;
@@ -83,16 +93,18 @@ public:
 	bool m_bModifiedName{false},
 		 m_bProtocoll{false}, 
 		 m_bVisible{false};		
+	CString m_strAttributes;	// String kodierte Attribute (min, max, unit, true, false, etc.)
 
 	// Funktionen
 	void ClearContent()
 	{
 		SetContent(CString{});
 	}
-
 	void SetContent(CString const& str);
-
 	CString GetDataAsLine();
+	std::map<CString, CString> GetAttributesAsMap() const;
+
+	// Neue Raumvariable anlegen. Dabei werden alle Werte auf Default gesetzt und der Name übernommen.
 	void InitNeuerRaum(CString const &strName);
 };
 

@@ -120,15 +120,6 @@
     <None Include="res\HeizkalenderInstallation.rc2">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\SYSVARS-Init.hsc">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\SYSVARS_Init_ChurchDesk.hsc">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\SYSVARS_Init_ChurchTools.hsc">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\Create_HK-Außentemperatur-Open-Meteo.hsc">
       <Filter>Resource Files</Filter>
     </None>
@@ -142,12 +133,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\Create_HK-Systemprotokoll sichern.hsc">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\SYSVARS_Init_iCal.hsc">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\SYSVARS_Init_Google.hsc">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\Create_HK-Skript 3.hsc">

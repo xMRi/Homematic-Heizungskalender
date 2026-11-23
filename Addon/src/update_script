@@ -10,14 +10,21 @@ WWW_DIR=$CONF_DIR/addons/www/$ADDON
 # 0 = update (OpenCCU startet nicht automatisch neu)
 EXITCODE=0
 
-mount | grep /usr/local 2>&1 >/dev/null
-if [ $? -eq 1 ]; then
-    mount /usr/local
+fail() {
+    logger -t heizkalender-addon "Installation fehlgeschlagen: $*"
+    exit 1
+}
+
+MOUNTS="$(mount)" || fail "Eingehaengte Dateisysteme lesen"
+if ! printf '%s\n' "$MOUNTS" | grep /usr/local >/dev/null 2>&1; then
+    mount /usr/local || fail "/usr/local einhaengen"
 fi
 
-mkdir -p $ADDONS_DIR && chmod 755 $ADDONS_DIR
-mkdir -p $CONF_DIR/addons/www && chmod 755 $CONF_DIR/addons/www
-mkdir -p $CONF_DIR/rc.d
+mkdir -p "$ADDONS_DIR" || fail "Addon-Verzeichnis anlegen"
+chmod 755 "$ADDONS_DIR" || fail "Addon-Verzeichnisrechte setzen"
+mkdir -p "$CONF_DIR/addons/www" || fail "Web-Verzeichnis anlegen"
+chmod 755 "$CONF_DIR/addons/www" || fail "Web-Verzeichnisrechte setzen"
+mkdir -p "$CONF_DIR/rc.d" || fail "rc.d-Verzeichnis anlegen"
 
 # Update-Erkennung: rc.d-Skript vorhanden = Update
 if [ -f $CONF_DIR/rc.d/$ADDON ]; then
@@ -26,19 +33,26 @@ if [ -f $CONF_DIR/rc.d/$ADDON ]; then
 fi
 
 # Addon-Dateien kopieren (www/ komplett ersetzen, damit keine veralteten Dateien bleiben)
-mkdir -p $ADDON_DIR
-rm -rf $ADDON_DIR/www
-cp VERSION $ADDON_DIR/VERSION
-cp -r heizkalender/www $ADDON_DIR/www
+mkdir -p "$ADDON_DIR" || fail "Installationsverzeichnis anlegen"
+rm -rf "$ADDON_DIR/www" || fail "Alte Webdateien entfernen"
+cp VERSION "$ADDON_DIR/VERSION" || fail "VERSION kopieren"
+cp -r heizkalender/www "$ADDON_DIR/www" || fail "Webdateien kopieren (manuelle Reparatur erforderlich)"
 
 # rc.d-Skript installieren
-cp rc.d/$ADDON $CONF_DIR/rc.d/$ADDON
-chmod 755 $CONF_DIR/rc.d/$ADDON
+cp "rc.d/$ADDON" "$CONF_DIR/rc.d/$ADDON" || fail "rc.d-Skript kopieren"
+chmod 755 "$CONF_DIR/rc.d/$ADDON" || fail "rc.d-Skriptrechte setzen"
 
 # WWW-Symlink anlegen (-n ersetzt auch einen existierenden Verzeichnis-Symlink)
-rmdir $WWW_DIR 2>/dev/null
-ln -sfn $ADDON_DIR/www $WWW_DIR
+# Nur ein leeres echtes Verzeichnis entfernen. Fremde Inhalte bleiben erhalten.
+rmdir "$WWW_DIR" 2>/dev/null || true
+if [ -d "$WWW_DIR" ] && [ ! -L "$WWW_DIR" ]; then
+    fail "Web-Ziel ist ein nicht entfernbares Verzeichnis"
+fi
+ln -sfn "$ADDON_DIR/www" "$WWW_DIR" || fail "Web-Symlink anlegen"
+[ -L "$WWW_DIR" ] || fail "Web-Symlink fehlt"
+LINK_TARGET="$(readlink "$WWW_DIR")" || fail "Web-Symlink lesen"
+[ "$LINK_TARGET" = "$ADDON_DIR/www" ] || fail "Web-Symlink hat falsches Ziel"
 
-sync
+sync || fail "Dateien synchronisieren"
 
 exit $EXITCODE

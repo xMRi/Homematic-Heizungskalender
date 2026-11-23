@@ -60,6 +60,7 @@ Das Installationspaket ist ein tar.gz-Archiv mit dem Namen `heizkalender-addon-<
 heizkalender-addon-<Version>.tar.gz
 ├── VERSION
 ├── update_script
+├── heizkalender-addon.sha256
 ├── heizkalender/
 │   └── www/
 │       ├── index.cgi
@@ -95,14 +96,16 @@ heizkalender-addon-<Version>.tar.gz
 
 Das Skript liest die Version aus `Addon/src/VERSION` und legt das Archiv unter `Addon/build/heizkalender-addon-<Version>.tar.gz` ab. Das `build/`-Verzeichnis ist per `.gitignore` vom Repository ausgeschlossen.
 
-Das Archiv enthält im Root `VERSION`, `update_script` und die Verzeichnisse `heizkalender/` und `rc.d/`.
+Das Archiv enthält im Root `VERSION`, `update_script`, `heizkalender-addon.sha256` und die Verzeichnisse `heizkalender/` und `rc.d/`. Der Paketbau erstellt das Prüfsummenmanifest aus den tatsächlich archivierten regulären Dateien einschließlich VERSION, Installationsskript, Webdateien und rc.d-Skript. Das Manifest selbst wird nicht gehasht. Ein isoliertes Build-Verzeichnis verhindert erzeugte Dateien unter `Addon/src/`; macOS-Metadaten werden ausgeschlossen. Für SHA256 wird `sha256sum` oder ersatzweise `shasum -a 256` verwendet.
 
 **Ablauf bei Installation/Update durch die CCU:**
 
-1. CCU entpackt das Archiv nach `/usr/local/tmp/` und ruft `update_script HM-RASPBERRYMATIC` auf.
-2. Das Script legt `/usr/local/addons/heizkalender/` an und kopiert die Dateien.
-3. Es setzt den Symlink für die Webinhalte und trägt das Addon in `hm_addons.cfg` ein.
-4. Bei Neuinstallation und Update: Rückgabewert `0`. Das Addon fordert keinen Neustart an. OpenCCU führt daher keinen installationsbedingten Neustart aus. Die ursprüngliche CCU3-Firmware startet nach dem Hochladen unabhängig vom Rückgabewert neu.
+1. Die Firmware entpackt das Archiv unter `/usr/local/tmp/`. OpenCCU prüft vor der Skriptausführung die obersten `*.sha256`-Dateien mit `sha256sum -sc` und bricht bei Fehlern ab. Die ursprüngliche CCU3-Installation erfolgt beim Herunterfahren im Chroot und bietet im dokumentierten Ablauf keine entsprechende automatische Prüfung. Unser `update_script` enthält bewusst keine zusätzliche Prüfsummenprüfung.
+2. `update_script HM-RASPBERRYMATIC` erstellt die erforderlichen Verzeichnisse, entfernt die eigenen alten Webdateien und kopiert die neuen Dateien.
+3. Es kopiert das rc.d-Skript, setzt dessen Ausführungsrechte und erstellt den Web-Symlink. Der tatsächliche Symlinktyp und das Ziel werden geprüft. Die Metadatenpflege über das rc.d-Kommando `info` bleibt davon getrennt.
+4. Erforderliche Dateioperationen werden auf Fehler geprüft. Bei Fehlern wird unter der Syslog-Kennung `heizkalender-addon` protokolliert und mit Status `1` abgebrochen. Bei erfolgreicher Neuinstallation und Aktualisierung bleibt der Status `0`. Das Addon fordert keinen Neustart an. OpenCCU führt daher keinen installationsbedingten Neustart aus. Die ursprüngliche CCU3-Firmware startet nach dem Hochladen unabhängig vom Rückgabewert neu.
+
+Es gibt bewusst kein Rollback: Scheitert das Kopieren nach dem Entfernen der alten Webdateien, muss die Installation manuell repariert werden. Paket-Prüfsummen erkennen fehlende oder beschädigte Quelldateien, nicht spätere Kopierfehler oder die Echtheit eines Pakets. Lokale Installationsfehler- und Pakettests stehen unter `Tests/Addon-Installation/`; sie ersetzen keinen Firmware-Installationstest.
 
 Da das Addon keinen Daemon hat, entfällt das Starten und Stoppen eines Service.
 
@@ -110,7 +113,7 @@ Da das Addon keinen Daemon hat, entfällt das Starten und Stoppen eines Service.
 
 ## rc.d-Script
 
-Das rc.d-Script liegt unter `Addon/rc.d/heizkalender` und wird bei der Installation nach `/usr/local/etc/config/rc.d/heizkalender` verlinkt.
+Die Quelle liegt unter `Addon/src/rc.d/heizkalender`. Im Paket liegt sie unter `rc.d/heizkalender`; `update_script` kopiert sie nach `/usr/local/etc/config/rc.d/heizkalender` und setzt die Ausführungsrechte. Der separat angelegte Symlink betrifft die Webinhalte, nicht das rc.d-Skript.
 
 Da das Addon keinen eigenen Daemon hat, implementiert das Script nur die Pflicht-Kommandos:
 

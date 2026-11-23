@@ -176,6 +176,10 @@ Optional: `HK1-Vorlaufzeit`
 
 Skript für den Zugriff auf einen Kalender in Google über die Google Calendar-API. Bei diesem Verfahren muss der Raumname mit einem vorangestellten #-Zeichen im Titel des Termines stehen. Es wird ein API-Key für die Google-Calendar-API benötigt. Der Google-Kalender selbst muss auch öffentlich sein.
 
+Der Abruf umfasst heute 00:00 Uhr bis übermorgen 00:00 Uhr in der lokalen CCU-Zeitzone. Längere konfigurierte Vor- oder Nachläufe erweitern diese Grenzen. Beide Grenzen enthalten ihren jeweils gültigen Zeitzonenversatz, auch bei einem Sommerzeitwechsel. Die anschließende lokale Auswahl nach Vor- und Nachlauf bleibt bestehen.
+
+Pro Abruf werden höchstens 2500 Termine angefordert. Liefert Google ein `nextPageToken`, wird eine Fehlermeldung ausgegeben und bei aktiviertem Logging protokolliert. Die gelieferte Ergebnisseite wird wie bisher verarbeitet und die `HK1-Schaltliste` daraus aktualisiert. Weitere Ergebnisseiten werden nicht abgerufen. Termine auf diesen Seiten können deshalb fehlen, auch wenn weniger als 2500 Termine geliefert wurden. Dieses Verhalten wird aus Kompatibilitätsgründen beibehalten.
+
 Benötigte Variablen: `HK1-GK-API-Key`, `HK1-GK-Kalender-ID`
 Sowie die Variablen: `HK1-R-Liste`, `HK2-HKG-Liste`, `HK1-Schaltliste`, `HK1-Log`, `HK1-Logging`
 Optional: `HK1-Vorlaufzeit`

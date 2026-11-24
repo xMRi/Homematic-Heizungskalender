@@ -188,6 +188,8 @@ Verwendete Systemvariablen:
 
 Ereignisdaten stammen nicht aus Systemvariablen, sondern aus den HK-Log-Dateien auf dem USB-Stick (`/media/usb0/HK-Log_*.log`), gefiltert nach `HK-LogHeizkurvenkontrolle`. Die Dateien werden von `HK-SystemProtokoll sichern.hsc` befüllt, das alle 29 Minuten läuft. Die Anzeige im Addon kann daher bis zu 29 Minuten hinter dem aktuellen Geschehen zurückliegen.
 
+Die Checkbox „Raumtemperatur anzeigen“ steht direkt nach dem Ereignis-Dropdown. Nur `raumtemperatur=1` aktiviert sie; ohne Parameter oder bei anderen Werten bleiben Ereignisse mit dem exakten Namen `Raumtemperatur` ausgeblendet. Der Zustand wird im Formular erhalten, die Anzeige über den vorhandenen Submit aktualisiert. Raum-, Zeitraum- und Ereignisfilter wirken weiterhin zusätzlich. Der vorhandene Ereignisparser wird unverändert verwendet; das CGI erzeugt keine neuen Logeinträge und benötigt dafür weder neue Systemvariablen noch JavaScript. Lokale Mockprüfungen stehen unter `Tests/Addon-Heizkurven-Raumtemperatur/`.
+
 **Log-Format (geschrieben von `HK-Heizkurvenkontrolle.hsc`):**
 
 Jede Zeile in der Logdatei hat den Tab-getrennten Aufbau:

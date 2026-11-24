@@ -357,7 +357,7 @@ flowchart TD
     Liste --> S3["HK-Skript 3 (alle 5 Minuten)"]
     S3 --> Zeit{"Einschaltzeit erreicht und<br/>Ausschaltzeit noch nicht erreicht?"}
     Zeit -->|"Nein"| Warten["Nicht neu einschalten<br/>bzw. normale Heizphase beenden"]
-    Zeit -->|"Ja"| Ein["Bei Raumstatus Aus und gueltiger<br/>Steuerkonfiguration einschalten"]
+    Zeit -->|"Ja"| Ein["Bei Raumstatus Aus<br/>verfuegbare Steuerobjekte ansteuern"]
 ```
 
 Der Einschaltzeitpunkt selbst ergibt sich aus der Vorheizzeit (siehe oben): je

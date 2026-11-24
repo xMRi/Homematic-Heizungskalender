@@ -17,19 +17,20 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 - Wetterabrufzeit: Letzten erfolgreichen Open-Meteo-Abruf speichern und im Addon mit Aktualitätswarnung anzeigen, ohne das Heizverhalten zu ändern.
 - Addon-Pakete enthalten ein SHA256-Manifest der archivierten regulären Dateien zur Integritätsprüfung durch OpenCCU.
+- Heizkurvenkontrolle im Addon: Zusätzliche Raumtemperatur-Zeilen standardmäßig ausblenden und über eine Checkbox nach dem Ereignisfilter einblenden.
 
 ### Geändert
 
-- Addon-Version auf 0.10.5 erhöht.
+- Addon-Version auf 0.10.6 erhöht.
 - Historisches Addon-PRD nach `docs/archiv/` verschoben und als unverbindlichen Entwurf gekennzeichnet.
 - Skript 2: Kernellaufzeit direkt aus dem ersten `/proc/uptime`-Ausgabefeld mit `ToFloat()` lesen; zusätzliche zeichenweise Zahlenprüfung entfernt. Wartefrist und Ersatzberechnung bleiben bestehen.
 - Wetterabrufzeit als lesbaren lokalen Datum-/Zeittext speichern und im Addon auswerten; bisheriges Unixsekundenformat ohne Übergangsunterstützung ersetzt.
+- Skript 3: Zusätzliche Gesamtprüfung vor normalem EIN zurückgenommen; vorhandene Aktoren trotz fehlender anderer Steuerobjekte wieder einzeln ansteuern. Fehlerprotokollierung und bisheriges Statusverhalten bleiben erhalten.
 
 ### Behoben
 
 -Skript: Heizkurvenkontrolle Wenn ein Termin in der AUS Phase ist, darf er für einen Heizbeginn nicht berücksichtigt werden. Er gehört vermutlich zu einem späteren SLListen Eintrag.
 
-- Skript 3: Ungültige oder leere Steuerkonfiguration verhindert im normalen H/HS-Einschaltpfad Befehle und Status EIN.
 - ChurchDesk-iCal: Zertifikatsprüfung nicht mehr deaktiviert; Abruffehler warnen bei aktiviertem Logging vor fehlenden Ressourcenterminen.
 - iCal: Monatspositionen, Wochenintervalle mit BYDAY und lokale TZID-Uhrzeiten korrigiert; Monatskandidaten nach UNTIL werden nicht übernommen.
 - Google: Abrufgrenzen an lokale Tagesgrenzen und Vor-/Nachlauf angepasst, Zeitzonenversätze je Grenze berücksichtigt und unvollständige Ergebnisseiten gemeldet.

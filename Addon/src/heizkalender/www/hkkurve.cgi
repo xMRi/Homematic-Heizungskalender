@@ -113,6 +113,7 @@ proc log_raumname {logname} {
 set filter_raum "alle"
 set filter_tage "1"
 set filter_ereignis "alle"
+set zeige_raumtemp 0
 
 set query_string ""
 catch {set query_string $env(QUERY_STRING)}
@@ -125,6 +126,9 @@ foreach param [split $query_string "&"] {
     set val [url_decode $val]
     if {[string equal $key "raum"]} { set filter_raum $val }
     if {[string equal $key "ereignis"]} { set filter_ereignis $val }
+    if {[string equal $key "raumtemperatur"]} {
+        if {[string equal $val "1"]} { set zeige_raumtemp 1 } else { set zeige_raumtemp 0 }
+    }
     if {[string equal $key "tage"]} {
         if {[string equal $val "0"] || [string equal $val "1"] || [string equal $val "24"] || [string equal $val "7"] || [string equal $val "30"] || [string equal $val "90"]} {
             set filter_tage $val
@@ -352,6 +356,7 @@ if {[llength $log_files] > 0} {
         if {![string equal $filter_raum "alle"]} {
             if {![string equal $filter_raum [to_ascii [log_raumname $raumname]]]} { continue }
         }
+        if {!$zeige_raumtemp && [string equal $ereignis "Raumtemperatur"]} { continue }
         if {![string equal $filter_ereignis "alle"] && ![string equal $ereignis $filter_ereignis]} { continue }
 
         lappend alle_ereignisse [list $raumname $ts $ereignis $delta $ist $ziel $max_val $at_val]
@@ -433,6 +438,8 @@ foreach {eval elabel} {
     puts "          <option value=\"[htmlquote $eval]\"${sel}>[htmlquote $elabel]</option>"
 }
 puts "        </select></label> &nbsp;"
+set chk [expr {$zeige_raumtemp ? " checked" : ""}]
+puts "        <label><input type=\"checkbox\" name=\"raumtemperatur\" value=\"1\"${chk}> Raumtemperatur anzeigen</label> &nbsp;"
 puts "        <button type=\"submit\">Anzeigen</button>"
 puts {      </fieldset>}
 puts "    </form>"

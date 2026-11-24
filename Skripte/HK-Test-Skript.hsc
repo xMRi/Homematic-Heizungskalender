@@ -1,6 +1,6 @@
 !// Skript zum Testen der Einstellungen für den Heizkalender.
 !//================================================================================================
-!// Stand:    08.11.2026
+!// Stand:    24.11.2026
 !// Autor:    Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
 !//------------------------------------------------------------------------------------------------
@@ -321,7 +321,7 @@ foreach(RName,ListeRaumVariablen.Split(";")){
   string stemp = RaumDef.StrValueByIndex(";",4).StrValueByIndex("*",1);
   if (stemp){
     !// Optionale Kurvenkorrektur
-    WriteLine("Kurvenkorr.:\t" # stemp.ToFloat().ToString(2));
+    WriteLine("Faktor Heizk.:\t" # stemp.ToFloat().ToString(2));
   }
   string stemp = RaumDef.StrValueByIndex(";",4).StrValueByIndex("*",2);
   if (stemp){

@@ -419,7 +419,7 @@ In diesem Dialog legen Sie die individuellen Eigenschaften eines Raumes sowie di
     Erlaubt sind Werte zwischen 0,2 und 5. Das entspricht minimal 20 % und maximal dem Fünffachen der errechneten Vorheizzeit.
 
 - **Minimale Vorheizzeit**
-    Die minimale Vorheizzeit, schaltet die Heizung immer zu diesem Zeitpunkt ein. Selbst wenn die Vorheizzeit weiter gekürzt würde, weil die Istttemperatur zum Beispiel schon sehr nach an der Wohlfühltemperatur liegt.
+    Die minimale Vorheizzeit, schaltet die Heizung immer zu diesem Zeitpunkt ein. Selbst wenn die Vorheizzeit weiter gekürzt würde, weil die Istttemperatur zum Beispiel schon sehr nahe an der Wohlfühltemperatur liegt. Der Standard für die minimale Vorheizzeit ist 15min.
 
 ##### Modus
 

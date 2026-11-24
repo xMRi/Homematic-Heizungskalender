@@ -1,6 +1,6 @@
 !// Skript 2 für das berechnen der Schaltzeiten
 !//================================================================================================
-!// Stand:    23.11.2026
+!// Stand:    24.11.2026
 !// Autoren:  Lukas Helduser    (Youtube: https://www.youtube.com/LukasvandeHaag)
 !//           Martin Richter    (heizkalender@m-ri.de) http://blog.m-ri.de/
 !// Projekt:  Helmut Diedrichs  (helmut@diedrichs.de) https://diedrichs.de
@@ -14,6 +14,7 @@
 !//
 !// Skript sollte alle 5min laufen
 !//
+!// MRi: 2026-11-24 Doku zu Kernellaufzeit verbessert und COde verschlankt.
 !// TT:  2026-11-23 Kernellaufzeit direkt aus dem vorhandenen ersten Feld konvertieren; Zeichenprüfung zur Vereinfachung entfernt
 !// TT:  2026-11-22 Integration: Neustartlogik und automatische Erhöhung der HK1-Vorlaufzeit erhalten
 !// TT:  2026-11-21 Bei 0°C alte Planung erhalten; ohne Planung nach einer Stunde Kernellaufzeit mit GT.Max(AT) rechnen, bei unlesbarer Laufzeit weiter warten
@@ -92,6 +93,7 @@ integer maxVorlauf = 0;
 !// Kernellaufzeit nur bei 0°C ohne alte Planung einmal je Skriptlauf lesen.
 !// Ein alleiniger ReGa-Neustart setzt diese Laufzeit nicht zurueck.
 boolean kernelLaufzeitGelesen=false;
+real kernelLaufzeitSekunden = 0.0;
 
 !// Logging vorbereiten
 var logObj=dom.GetObject(vrp # "HK2-Log");
@@ -506,21 +508,19 @@ foreach(TLEintrag,TerminListe){
             continue;
           }
 
+          !// Nur einmal je Skriptlauf die Kernel Laufzeit lesen. Bei einem Fehler keine Neuberechnung in diesem 
+          !// Durchlauf. Ansonsten nach 1h Notberechnung zulassen.
           if (!kernelLaufzeitGelesen){
-            boolean kernelLaufzeitGueltig=false;
+            kernelLaufzeitGelesen = true;
             string kernelLaufzeitAusgabe="";
             string kernelLaufzeitFehler="";
-            string kernelLaufzeitText="";
-            real kernelLaufzeitSekunden=0.0;
-            kernelLaufzeitGelesen=true;
             system.Exec("cat /proc/uptime", &kernelLaufzeitAusgabe, &kernelLaufzeitFehler);
-            kernelLaufzeitText=kernelLaufzeitAusgabe.StrValueByIndex(" ",0);
-            if ((kernelLaufzeitFehler=="") && (kernelLaufzeitText!="")){
-              kernelLaufzeitSekunden=kernelLaufzeitText.ToFloat();
-              kernelLaufzeitGueltig=(kernelLaufzeitSekunden>0.0);
+            kernelLaufzeitAusgabe=kernelLaufzeitAusgabe.StrValueByIndex(" ",0);
+            if ((kernelLaufzeitFehler=="") && (kernelLaufzeitAusgabe!="")){
+              kernelLaufzeitSekunden = kernelLaufzeitAusgabe.ToFloat();
             }
           }
-          if (!kernelLaufzeitGueltig){
+          if (kernelLaufzeitSekunden<=0.0){
             if(log){logObj.State(RaumLogName # ": Kernellaufzeit nicht lesbar oder ungueltig; bei 0°C ohne alte Planung bleibt die Neuberechnung verschoben!");}
             if(DEBUG) {WriteLine(RaumLogName # ": Kernellaufzeit nicht lesbar oder ungueltig; bei 0°C ohne alte Planung bleibt die Neuberechnung verschoben!");}
             continue;
@@ -530,6 +530,8 @@ foreach(TLEintrag,TerminListe){
             if(DEBUG) {WriteLine(RaumLogName # ": 0°C ohne alte Planung innerhalb der ersten Stunde seit Systemstart; Neuberechnung verschoben!");}
             continue;
           }
+
+          !// Notberechnung mit max(AT,GT) als Basis, weil wir nach 60min immer noch keine Temperatur haben.
           ISTTemperatur=GT.Max(AT);
           if(log){logObj.State(RaumLogName # ": Temperaturstoerung (0°C) nach mindestens einer Stunde Kernellaufzeit; Neuberechnung mit Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)!");}
           if(DEBUG) {WriteLine(RaumLogName # ": Temperaturstoerung (0°C) nach mindestens einer Stunde Kernellaufzeit; Neuberechnung mit Raumtemp.-Schaetzwert=" # ISTTemperatur.ToString(1) # "°C (Max aus Grundtemp./Aussentemp.)!");}

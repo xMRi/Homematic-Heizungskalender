@@ -45,6 +45,7 @@ public:
 
 	bool m_bSimulation = {};
 	bool m_bForceUpdate = {};
+	bool m_bNoProgramUpdate = {};
 	CString m_strScriptDir;
 };
 
@@ -71,9 +72,15 @@ void CInstallerCommandLineInfo::ParseParam(const char* pszParam, BOOL bFlag, BOO
 		{
 			m_bSimulation = true;
 		}
-		else if (_stricmp(pszParam, "force")==0)
+		else if (_stricmp(pszParam, "force")==0 ||
+			     _stricmp(pszParam, "updateerzwingen")==0)
 		{
 			m_bForceUpdate = true;
+		}
+		else if (_stricmp(pszParam, "noupdate")==0 ||
+			     _stricmp(pszParam, "keinupdate")==0)
+		{
+			m_bNoProgramUpdate = true;
 		}
 		else
 			ParseParamFlag(pszParam);
@@ -180,6 +187,7 @@ BOOL CHeizkalenderInstallationApp::InitInstance()
 		m_strScriptPath = cmdInfo.m_strScriptDir;
 	m_bSimulation = cmdInfo.m_bSimulation;
 	m_bForceUpdate = cmdInfo.m_bForceUpdate;
+	m_bNoProgramUpdate = cmdInfo.m_bNoProgramUpdate;
 
 	// Warnungs dialog anzeigen
 	if (GetProfileInt(_T("General"), _T("ShowWarning"), TRUE))
@@ -556,14 +564,14 @@ bool CHeizkalenderInstallationApp::AnalyseLoadedData()
 		if (pVar)
 		{
 			// Wir legen die Variable nur neu an wenn der Datentyp nicht stimmt.
-			// DIe Beschreibung wird später bei einem Update korrigiert.
+			// Die Beschreibung wird später bei einem Update korrigiert.
 			if (pVar->m_dataType!=e.m_dataType)
 			{
 				// Neu erzeugen, aber Inhalt erhalten. bNew==true && id!=0
 				// Name, Id, Inhalt werden übernommen.
 				CDataSystemVariable data { e };
 				data.m_strName = strVarName;
-				data.m_id = pVar->m_id;
+				data.m_id = pVar->m_id; 
 				data.m_strContent = pVar->m_strContent;
 				data.m_bNew = true;
 				// Replace entry completely
@@ -1005,7 +1013,7 @@ CString CHeizkalenderInstallationApp::GenerateNewRoomName(CString strTemplate)
 {
 	strTemplate = CleanupNameForRoom(strTemplate);
 	CString strRaumName{ strTemplate };
-	for (int i=0; m_lstSysVars.Find(AddRoomPrefix(strRaumName)); ++i)
+	for (int i=1; m_lstSysVars.Find(AddRoomPrefix(strRaumName)); ++i)
 		strRaumName = strTemplate + _T("_") + IntToString(i);
 	return strRaumName;
 }
@@ -1707,14 +1715,15 @@ void CHeizkalenderInstallationApp::UpdateCCU()
 			e.m_bDeleted = true;
 
 		if ((e.m_bNew || e.m_bDeleted) && e.m_id)
-			AppendTextWithDelimiter(strSVids,IntToString(e.m_id),_T("\t"));
+			AppendTextWithDelimiter(strSVids,IntToString(e.m_id),_T("\\t"));
 	}
 
-	// Delete Varoables
+	// Delete Variables
 	if (!strSVids.IsEmpty())
 	{
-		CStringA strUpdateVar = R"x(
-string sIds = "%1%";
+		CStringA strUpdateVar;
+		strUpdateVar.Format(R"x(
+string sIds = "%s";
 object oSV;
 string sId;
 foreach(sId,sIds) {
@@ -1723,175 +1732,153 @@ foreach(sId,sIds) {
 		dom.DeleteObject(sId);
 	}
 }
-)x";
-		strUpdateVar.Replace("%1%", CStringA{ strSVids });
+)x",
+			CStringA{ strSVids }.GetString()
+		);
+
 		// An die Liste aller Statements anfügen
 		strScriptForUpdate += strUpdateVar;
 	}
 
-	// Skript zum Anlegen aller normalen Variablen ablaufen lasse, wenn es was zu tun gibt
-	// Dieses Skript legt nur an, ändert aber nichts.
-	bool bAnyNew = false;
+	// Alle Variablen anlegen, die wir brauchen.
+	// Dieses Skript macht alles was für eine neue gefüllte Variable nötig ist.
 	for (auto& e : m_lstSysVars)
 	{
 		if (e.m_bNew && IsSysVarCompatibeWithModeScript1(RemovePrefix(e.m_strName),m_modeScript1))
 		{
-			bAnyNew = true;
-			break;
-		}
-	}
-	if (bAnyNew)
-	{
-		CStringA strUpdateTemplate;
-		if (LoadStringFromResource(strUpdateTemplate, _T("SYSVARS-Init"), _T("SCRIPT"), true))
-		{
-			// Zu ändernde Daten einfügen.
-			CStringA strUpdate = strUpdateTemplate;
-			strUpdate.Replace("%1%", CStringA{ m_strPrefix });
-
-			strScriptForUpdate += strUpdate;
-			strScriptForUpdate += "\n!//##########################################################\n";
-		}
-		else
-		{
-			ASSERT(FALSE);
-		}
-	}
-
-	// Lade Skript für Variablen des Modus für Skript 1
-	CString strName;
-	if (m_modeScript1==ModeScript1::ChurchToolsAPI)
-		strName = _T("ChurchTools");
-	else if (m_modeScript1==ModeScript1::ChurchDeskAPI || m_modeScript1==ModeScript1::ChurchDeskiCal)
-		strName = _T("ChurchDesk");
-	else if (m_modeScript1==ModeScript1::iCal)
-		strName = _T("iCal");
-	else if (m_modeScript1==ModeScript1::Google)
-		strName = _T("Google");
-
-	// Skript zum anlegen aller normalen Variablen ablaufen lassen.
-	if (!strName.IsEmpty() && bAnyNew)
-	{
-		CStringA strUpdateTemplate;
-		if (LoadStringFromResource(strUpdateTemplate, _T("SYSVARS-Init-")+strName, _T("SCRIPT"), true))
-		{
-			// Zu ändernde Daten einfügen.
-			CStringA strUpdate = strUpdateTemplate;
-			strUpdate.Replace("%1%", CStringA{ m_strPrefix });
-
-			strScriptForUpdate += strUpdate;
-			strScriptForUpdate += "\n!//##########################################################\n";
-		}
-		else
-		{
-			ASSERT(FALSE);
-		}
-	}
-
-	// Jetzt bauen wir das Script auf, um die nicht benutzen Systemvariablen zu löschen
-	for (auto const& e : m_lstSysVars)
-	{
-		if (e.m_bDeleted && e.m_id)
-		{
-			CStringA strDeleteVar = R"x(
-object oSV = dom.GetObject (ID_SYSTEM_VARIABLES).Get(%1%);
-if (oSV) {
-  dom.DeleteObject(oSV);
-}
-)x";
-			strDeleteVar.Replace("%1%", CStringA{ IntToString(e.m_id) });
-
-			// An die Liste aller Statements anfügen
-			strScriptForUpdate += strDeleteVar;
-		}
-	}
-
-	// Jetzt bauen wir das Script auf, um Raumvariablen neu anzulegen
-	for (auto const& e : m_lstSysVars)
-	{
-		// Wir legen nur Raumvariablen so an. Alle anderen Variablen werden mit 
-		// den SYSVARS-Init Skripts angelegt.
-		if (e.m_bNew && !e.m_bDeleted && IsMatchingRoomPrefix(e.m_strName))
-		{
-			CStringA strCreateVar = R"x(
-object oSV = dom.CreateObject(1089);
+			// Wir legen hier normale Variablen an.
+			CStringA strUpdate;
+			strUpdate.Format(
+R"x(
+object oSV = dom.CreateObject(OT_VARDP); 
 dom.GetObject(ID_SYSTEM_VARIABLES).Add(oSV.ID()); 
-oSV.Name("%1%"); 
-oSV.ValueType(20); 
-oSV.ValueSubType(11);
-oSV.DPInfo("Raumbeschreibung für HK-Skript 2"); 
-oSV.ValueUnit(""); 
-oSV.Internal(false); 
-oSV.Visible(true); 
-oSV.Unerasable(false);
-oSV.DPArchive (true);
-oSV.Variable(%2%);
-!//--------------------
-)x";
-			strCreateVar.Replace("%1%", CStringA{ e.m_strName });
-			strCreateVar.Replace("%2%", CStringA{ e.m_dataType==DataType::vtString ? QuoteString(e.m_strContent) : e.m_strContent });
+oSV.Name(%s); 
+oSV.ValueType(%d); 
+oSV.ValueSubType(%d);
+oSV.DPInfo(%s); 
+oSV.Visible(%s); 
+oSV.DPArchive(%s); 
+oSV.Variable(%s);
+)x",
+					CStringA{ QuoteString(e.m_strName) }.GetString(),
+					static_cast<int>(e.m_dataType),
+					static_cast<int>(GetSubTypeForDataType(e.m_dataType)),
+					CStringA{ QuoteString(e.m_strDescription) }.GetString(),
+					e.m_bVisible ? "true" : "false",
+					e.m_bProtocoll ? "true" : "false",
+					CStringA{ e.m_dataType==DataType::vtString ? QuoteString(e.m_strContent) : e.m_strContent }.GetString()
+			);
 
-			// An die Liste aller Statements anfügen
-			strScriptForUpdate += strCreateVar;
+			// Prüfe was wir evtl. für Daten in den Attributen haben.
+			auto mapAttr = e.GetAttributesAsMap();
+
+			// Unit
+			auto const &strUnit = mapAttr[_T("unit")];
+			if (!strUnit.IsEmpty())
+			{
+				strUpdate.AppendFormat("oSV.ValueUnit(%s);\n",
+					CStringA{ QuoteString(strUnit) }.GetString()
+				);
+			}
+
+			auto const &strMin = mapAttr[_T("min")];
+			if (!strMin.IsEmpty())
+			{
+				strUpdate.AppendFormat("oSV.ValueMin(%s);\n",
+					CStringA{ strMin }.GetString()
+				);
+			}
+
+			auto const &strMax = mapAttr[_T("max")];
+			if (!strMax.IsEmpty())
+			{
+				strUpdate.AppendFormat("oSV.ValueMax(%s);\n",
+					CStringA{ strMax }.GetString()
+				);
+			}
+
+			auto const &strFalse = mapAttr[_T("false")];
+			if (!strFalse.IsEmpty())
+			{
+				strUpdate.AppendFormat("oSV.ValueName0(%s);\n",
+					CStringA{ QuoteString(strFalse) }.GetString()
+				);
+			}
+
+			auto const &strTrue = mapAttr[_T("true")];
+			if (!strTrue.IsEmpty())
+			{
+				strUpdate.AppendFormat("oSV.ValueName1(%s);\n",
+					CStringA{ QuoteString(strTrue) }.GetString()
+				);
+			}
+
+			strScriptForUpdate += strUpdate;
 		}
 	}
 
-	// Jetzt bauen wir das Script auf, um die Systemvariablen ändern, dass schließt Namensänderungen 
-	// ein und auch Änderungen der Beschreibung ein. Hier ist es wichtig, dass auch neu angelegte 
-	// Variablen hier erst Ihren eigentlichn Inhalt bekommen. 
-	// Die SYSVARS-Init-Skripte zuvor haben die Variablen nur angelegt.
+	// Jetzt bauen wir das Script auf, um die Systemvariablen zu ändern, dass 
+	// schließt Namensänderungen ein und auch Änderungen der Beschreibung ein. 
 	for (auto const& e : m_lstSysVars)
 	{
 		// Typ wir nicht kennen. Intern kennen wir nur boolean, integer und string. Alle anderen Typen ignorieren wir.
-		if (!IsMatchingSysVar(e.m_strName) ||
-			e.m_strName[0]==_T('$') || 			
-			(e.m_dataType!=DataType::vtboolean && e.m_dataType!=DataType::vtInteger && e.m_dataType!=DataType::vtString))
-			continue;
-
-		// Wir müssen die Beschreibung prüfen, ob sie sich geändert hat. Dazu holen wir uns die Default-Variable
-		auto const *pSysVarDefault = m_lstSysVarsDefault.Find(RemovePrefix(e.m_strName));
-		bool bBeschreibungGeaendert = (pSysVarDefault && e.m_strDescription!=pSysVarDefault->m_strDescription);
-		CString strNeueBeschreibung{ bBeschreibungGeaendert ? pSysVarDefault->m_strDescription : _T("") };
+		if (!e.m_bNew && !e.m_bDeleted &&		// Neue und gelöschte wurden behandelt. Hier geht es nur um Updates
+			IsMatchingSysVar(e.m_strName) &&
+			(e.m_dataType==DataType::vtboolean || e.m_dataType==DataType::vtInteger || e.m_dataType==DataType::vtString))
 		{
-			CStringA strUpdateVar = R"x(
-object oSV = dom.GetObject (ID_SYSTEM_VARIABLES).Get(%1%);
-if (oSV) {
-  var temp = %2%;
-  if (%1%!=temp) {
-    oSV.Name(temp);
-  }
-  var temp = %3%;
-  if (oSV.State()!=temp) {
-    oSV.State(temp);
-  }
-  var temp = %4%;
-  if (temp!="") {
-	oSV.DPInfo(temp);
-  }
-}
-!//--------------------
-)x";
+			// Variable über Namen oder Id finden, oder anlegen
+			auto const* pSysVarDefault = m_lstSysVarsDefault.Find(RemovePrefix(e.m_strName));
+
 			// Es besteht die Mögliochkeit, dass die Variable schon da ist, wenn 
 			// nicht müssen wir über den Namen die Variable aktualisieren
+			CStringA strName;
 			if (e.m_id && !e.m_bNew)
-				strUpdateVar.Replace("%1%", CStringA{ IntToString(e.m_id) });
-			else 
-				strUpdateVar.Replace("%1%", CStringA{ QuoteString(e.m_strName) });
-			strUpdateVar.Replace("%2%", CStringA{ QuoteString(e.m_strName) });
-
-			// Wir aktualisieren nur veränderte Variablen. (Dadurch bleiben Schallisten und Log Variablen unverändert
-			if (e.m_bModified)
-				strUpdateVar.Replace("%3%", CStringA{ e.m_dataType==DataType::vtString ? QuoteString(e.m_strContent) : e.m_strContent });
+				strName = CStringA{ IntToString(e.m_id) };
 			else
-				strUpdateVar.Replace("%3%", "oSV.State()");
+				strName = CStringA{ QuoteString(e.m_strName) };
 
-			// Neue Beschreibung wnen vorhanden
-			strUpdateVar.Replace("%4%",CStringA{ QuoteString(strNeueBeschreibung) });
+			CStringA strUpdateVar;
+			strUpdateVar.Format("\nobject oSV = dom.GetObject (ID_SYSTEM_VARIABLES).Get(%s);\n",
+				strName.GetString()
+			);
+			int iInitialeLaenge = strUpdateVar.GetLength();
 
-			// An die Liste aller Statements anfügen
-			strScriptForUpdate += strUpdateVar;
+			// Evtl. der Name geändert
+			if (e.m_bModifiedName)
+			{
+				strUpdateVar.AppendFormat("oSV.Name(%s);\n",
+					CStringA{ QuoteString(e.m_strName) }.GetString()
+				);
+			}
+
+			// Wert geändert? 
+			if (e.m_bNew || e.m_bModified || e.m_strContent!=e.m_strContentOld)
+			{
+				strUpdateVar.AppendFormat("oSV.Variable(%s);\n",
+					CStringA{ e.m_dataType==DataType::vtString ? QuoteString(e.m_strContent) : e.m_strContent }.GetString()
+				);
+			}
+
+			// Prüfe ob sich die Beschreibung geändert hat.
+			if (pSysVarDefault && e.m_strDescription!=pSysVarDefault->m_strDescription)
+			{
+				strUpdateVar.AppendFormat("oSV.DPInfo(%s);\n",
+					CStringA{ QuoteString(e.m_strDescription) }.GetString()
+				);
+			}
+
+			// Nur wenn wir was zu tun haben, schreiben wir das Update Script. Ansonsten ist die Variable schon korrekt.
+			if (iInitialeLaenge!=strUpdateVar.GetLength())
+			{
+				strUpdateVar += "\n";
+
+				// An die Liste aller Statements anfügen
+				strScriptForUpdate += strUpdateVar;
+			}
 		}
 	}
+
+	strScriptForUpdate += "\n!//##########################################################\n";
 
 	// Hide Some vars
 	{

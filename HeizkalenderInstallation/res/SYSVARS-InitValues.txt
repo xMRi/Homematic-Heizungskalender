@@ -1,35 +1,37 @@
-4326	HK-Log		Variable um ein einfaches Log im System Protokoll zu erzeugen	20	true	false
-4324	HK-Logging	true	Flag um das Logging für Tools ein- und auszuschalten	2	true	true
-4336	HK-LoggingHeizkurvenkontrolle	true	Flag um das Logging für die Heizkurvenkontrolle ein- und auszuschalten	2	true	true
-4338	HK-LogHeizkurvenkontrolle		Variable um ein einfaches Log im System Protokoll zu erzeugen	20	true	false
-4340	HK-RäumeHeizkurvenkontrolle		Aktuelle Raumdaten in der Heizkurvenkontrlle	20	true	true
-4363	HK1-R-Liste		Zuordnung der Räume aus der Ressourcenverwaltung	20	true	true
-4361	HK1-Schaltliste		Gelesene Termine aus Skript 1. Hier bitte nichts verändern!	20	true	true
-4365	HK1-CD-OrganisationsId		Organisations ID in ChurchDesk	20	true	true
-4367	HK1-CD-Token		API-Token für ChurchDesk	20	false	true
-4351	HK1-CT-Gemeindename		Name der Gemeinde in Churchtools	20	true	true
-4357	HK1-CT-Token		Sicherheitstoken für ChurchTools	20	false	true
-6194	HK1-ICS-Url		URL des iCal Kalender	20	false	true
-6216	HK1-GK-API-Key		API-Key für den Google-Kalender	20	false	true
-6218	HK1-GK-Kalender-ID		ID des Google-Kalender	20	true	true
-4330	HK1-Log		Variable um ein einfaches Log im System Protokoll zu erzeugen	20	true	false
-4328	HK1-Logging	true	Flag um das Logging für Skript 1 ein- und auszuschalten	2	true	true
-4310	HK2-A.Temp.Grenze	19.000000	Außentemperatur-Grenzwert für das Heizen	4	true	true
-4312	HK2-Aussentemperatur	0.000000	Außentemperatur für Vorheizzeit-Berechnung (gleitender Durchschnitt)	4	true	true
-4308	HK2-Grundtemperatur	16.000000	Grundtemperatur	4	true	true
-4316	HK2-Hand-Grundtemp	true	Rückstellung auf Grundtemperatur	2	true	true
-4314	HK2-Hand-Temp	false	Vorrang manuell eingestellte Temperatur beim Ausschalten	2	true	true
-4306	HK2-HKG-Liste		Liste der HK-Raum-Variablen	20	true	true
-4322	HK2-Kurve	162;130;100;59;50;41;30;20	Hzg.-Vorlaufzeit: Eingeben in Minuten zu Außentemperaturen kleiner als -10, -5, 0, 8, 10, 12, 15, 17,5	20	true	true
-4320	HK2-Kurvenversatz	0.000000	Grundoffsetzeit Einschalten	4	true	true
-4334	HK2-Log		Variable um ein einfaches Log im System Protokoll zu erzeugen	20	true	false
-4332	HK2-Logging	true	Flag um das Logging für Skript 2 ein- und auszuschalten	2	true	true
-4318	HK2-VorzeitAus	0.000000	Grundoffsetzeit Ausschalten	4	true	true
-4329	HK1-Vorlaufzeit	720.00000	Zeithorizont für Terminabfrage in Minuten (Default 720, max. 1380)	4	true	true
-4311	HK2-Schaltzeiten		Berechnete Schaltzeiten pro Raum von Skript 2 für das Addon. Hier bitte nichts verändern!	20	false	true
-7322	HK2-HKK-Zieltemperatur	-90;-60;0;30	Heizkurvenkontrolle Zieltemperatur: Kritisch-vor;Perfekt-von;Perfekt-bis;Kritisch-nach	20	true	true
-7323	HK3-Log		Variable um ein einfaches Log im System Protokoll zu erzeugen	20	true	false
-7324	HK3-Logging	true	Flag um das Logging für Skript 3 ein- und auszuschalten	2	true	true
-7325	HK2-Schaltliste		Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!	20	true	true
-7326	HK2-Kurvenanpassung	0.800000	Kurvenanpassungsfaktor für das Zwei-Geraden-Modell der Vorheizzeit-Berechnung (0.3 bis 1.0). Vorgabe 0.8	4	true	true
-7327	HK2-Aussentemperatur-Aktuell	0.000000	Aktuelle Außentemperatur (letzte volle Stunde, von Open-Meteo). Wird vom AT-Skript geschrieben.	4	true	true
+#Id	Name	Wert	Beschreibung	Typ	Protokolliert	Sichtbar	
+1000	HK-Log		Variable um ein einfaches Log im System Protokoll zu erzeugen	vtString	true	false	
+1001	HK-Logging	true	Flag um das Logging für Tools ein- und auszuschalten	vtBoolean	true	true	true=Logging eingeschaltet;false=Logging ausgeschaltet
+1002	HK-LoggingHeizkurvenkontrolle	true	Flag um das Logging für die Heizkurvenkontrolle ein- und auszuschalten	vtBoolean	true	true	
+1003	HK-LogHeizkurvenkontrolle		Variable um ein einfaches Log im System Protokoll zu erzeugen	vtString	true	false	
+1004	HK-RäumeHeizkurvenkontrolle		Aktuelle Raumdaten in der Heizkurvenkontrlle	vtString	true	true	
+1005	HK1-CD-OrganisationsId		Organisations ID in ChurchDesk	vtString	true	true	
+1006	HK1-CD-Token		API-Token für ChurchDesk	vtString	false	true	
+1007	HK1-CT-Gemeindename		Name der Gemeinde in Churchtools	vtString	true	true	
+1008	HK1-CT-Token		Sicherheitstoken für ChurchTools	vtString	false	true	
+1009	HK1-GK-API-Key		API-Key für den Google-Kalender	vtString	false	true	
+1010	HK1-GK-Kalender-ID		ID des Google-Kalender	vtString	true	true	
+1011	HK1-ICS-Url		URL des iCal Kalender	vtString	false	true	
+1012	HK1-Log		Variable um ein einfaches Log im System Protokoll zu erzeugen	vtString	true	false	
+1013	HK1-Logging	true	Flag um das Logging für Skript 1 ein- und auszuschalten	vtBoolean	true	true	true=Logging eingeschaltet;false=Logging ausgeschaltet
+1014	HK1-R-Liste		Zuordnung der Räume aus der Ressourcenverwaltung	vtString	true	true	
+1015	HK1-Schaltliste		Gelesene Termine aus Skript 1. Hier bitte nichts verändern!	vtString	true	true	
+1016	HK1-Vorlaufzeit	720.0	Zeithorizont für Terminabfrage in Minuten (Default 720, max. 1380)	vtInteger	true	true	unit=min;min=0;max=1380
+1017	HK2-A.Temp.Grenze	19.0	Außentemperatur-Grenzwert für das Heizen	vtInteger	true	true	unit=°C;min=-50;max=50
+1018	HK2-Aussentemperatur	0.0	Außentemperatur für Vorheizzeit-Berechnung (gleitender Durchschnitt)	vtInteger	true	true	unit=°C;min=-50;max=50
+1019	HK2-Aussentemperatur-Abrufzeit		Datum und Zeit des letzten erfolgreichen Open-Meteo-Abrufs. Wird vom AT-Skript geschrieben, nicht manuell ändern.	vtString	true	true	
+1020	HK2-Aussentemperatur-Aktuell	0.0	Aktuelle Außentemperatur (letzte volle Stunde, von Open-Meteo). Wird vom AT-Skript geschrieben.	vtInteger	true	true	unit=°C;min=-50;max=50
+1021	HK2-Grundtemperatur	16.0	Grundtemperatur	vtInteger	true	true	unit=°C;min=-5;max=30
+1022	HK2-Hand-Grundtemp	true	Rückstellung auf Grundtemperatur	vtBoolean	true	true	true=Rückstellung auf Grundtemperatur um 01:00 Uhr;false=Keine Rückstellung auf Grundtemperatur um 01:00 Uhr
+1023	HK2-Hand-Temp	false	Vorrang manuell eingestellte Temperatur beim Ausschalten	vtBoolean	true	true	true=Manuelle Temperatur hat Vorrang;false=Immer auf Grundtemperatur zurücksetzen
+1024	HK2-HKG-Liste		Liste der HK-Raum-Variablen	vtString	true	true	
+1025	HK2-HKK-Zieltemperatur	-90;-60;0;30	Heizkurvenkontrolle Zieltemperatur: Kritisch-vor;Perfekt-von;Perfekt-bis;Kritisch-nach	vtString	true	true	
+1026	HK2-Kurve	162;130;100;59;50;41;30;20	Hzg.-Vorlaufzeit: Eingeben in Minuten zu Außentemperaturen kleiner als -10, -5, 0, 8, 10, 12, 15, 17,5	vtString	true	true	unit=min
+1027	HK2-Kurvenanpassung	0.8	Kurvenanpassungsfaktor für das Zwei-Geraden-Modell der Vorheizzeit-Berechnung (0.3 bis 1.0). Vorgabe 0.8	vtInteger	true	true	min=0.3;max=1.0
+1028	HK2-Kurvenversatz	0.0	Grundoffsetzeit Einschalten	vtInteger	true	true	unit=min;min=-100;max=100
+1029	HK2-Log		Variable um ein einfaches Log im System Protokoll zu erzeugen	vtString	true	false	
+1030	HK2-Logging	true	Flag um das Logging für Skript 2 ein- und auszuschalten	vtBoolean	true	true	true=Logging eingeschaltet;false=Logging ausgeschaltet
+1031	HK2-Schaltliste		Berechnete Schaltzeiten pro Raum von Skript 2 für den Schaltvorgang. Hier bitte nichts verändern!	vtString	true	true	
+1032	HK2-Schaltzeiten		Berechnete Schaltzeiten pro Raum von Skript 2 für das Addon. Hier bitte nichts verändern!	vtString	false	true	
+1033	HK2-VorzeitAus	0	Grundoffsetzeit Ausschalten	vtInteger	true	true	unit=min;min=0;max=120
+1034	HK3-Log		Variable um ein einfaches Log im System Protokoll zu erzeugen	vtString	true	false	
+1035	HK3-Logging	true	Flag um das Logging für Skript 3 ein- und auszuschalten	vtBoolean	true	true	true=Logging eingeschaltet;false=Logging ausgeschaltet

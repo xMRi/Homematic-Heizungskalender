@@ -47,13 +47,20 @@ void CListSystemVariables::LoadFromString(CStringA const &strOut)
 	{
 		int iPos = strOut.Find('\n', iStart);
 		if (iPos<0)
-			iPos = strOut.GetLength();
-		CString strLine{ strOut.Mid(iStart,iPos-iStart) };
+			iPos = strOut.GetLength()+1;
 
-		// Werte übernehmen
-		CDataSystemVariable data{ strLine };
+		// Without the newline
+		CString strLine{ strOut.Mid(iStart,iPos-iStart-1) };
+
+		// Kommentare überspringen
+		if (strLine.Left(1)!=_T("#"))
+		{
+			// Werte übernehmen
+			CDataSystemVariable data{ strLine };
+			push_back(data);
+		}
+
 		iStart = iPos+1;
-		push_back(data);
 	}
 }
 
@@ -84,7 +91,8 @@ CDataSystemVariable::CDataSystemVariable(
 	CString const& strDescription,
 	DataType dt,
 	bool bProtocoll,
-	bool bVisible
+	bool bVisible,
+	CString const& strAttributes
 )	
 	: m_id{ id }
 	, m_strName{ strName }
@@ -93,20 +101,22 @@ CDataSystemVariable::CDataSystemVariable(
 	, m_dataType{ dt }
 	, m_bProtocoll{ bProtocoll }
 	, m_bVisible{ bVisible }
+	, m_strAttributes{ strAttributes }
 {
 	m_strContentOld = m_strContent;
 }
 
 CDataSystemVariable::CDataSystemVariable(CString const& strLine) : 
-	// Id, Name, Inhalt, Beschreibung, Type, Protokolliert, Sichtbar
+	// Id, Name, Inhalt, Beschreibung, Type, Protokolliert, Sichtbar, Attribute
 	CDataSystemVariable(
 		StringToInt(StrValueByIndex(strLine, 0)),
 		StrValueByIndex(strLine, 1),
 		StrValueByIndex(strLine, 2),
 		StrValueByIndex(strLine, 3),
-		static_cast<DataType>(StringToInt(StrValueByIndex(strLine, 4))),
+		StringToDataType(StrValueByIndex(strLine, 4)),
 		StringToBool(StrValueByIndex(strLine, 5)),
-		StringToBool(StrValueByIndex(strLine, 6))
+		StringToBool(StrValueByIndex(strLine, 6)),
+		StrValueByIndex(strLine, 7)	
 	)
 {
 }
@@ -140,7 +150,21 @@ CString CDataSystemVariable::GetDataAsLine()
 		m_strDescription + _T('\t') +
 		IntToString(static_cast<int>(m_dataType)) + _T('\t') +
 		BoolToString(m_bProtocoll) + _T('\t') +
-		BoolToString(m_bVisible);
+		BoolToString(m_bVisible) + _T('\t') + 
+		m_strAttributes;
+}
+
+std::map<CString, CString> CDataSystemVariable::GetAttributesAsMap() const
+{
+	std::map<CString, CString> mapAttr;
+	auto const lst = SplitString(m_strAttributes, _T(';'));
+	for (auto const& strAttr : lst)
+	{
+		auto strKey = StrValueByIndex(strAttr, 0, _T('='));
+		auto strValue = StrValueByIndex(strAttr, 1, _T('='));
+		mapAttr[strKey] = strValue;
+	}
+	return mapAttr;
 }
 
 void CDataSystemVariable::InitNeuerRaum(CString const& strName)
@@ -150,6 +174,7 @@ void CDataSystemVariable::InitNeuerRaum(CString const& strName)
 	ASSERT(theApp.IsMatchingRoomPrefix(strName));
 	m_strName = strName;
 	m_strContent = RAUM_DEFAULT + theApp.RemoveRoomPrefix(strName);
+	m_strDescription = _T("Raumbeschreibung für HK-Skript 2+3");
 	m_dataType = DataType::vtString;
 	m_bNew = true;
 	m_bProtocoll = m_bVisible = true;
@@ -324,3 +349,35 @@ CString CDataDevice::GetDataAsLine()
 			IntToString(static_cast<int>(m_channelType)) + _T("\t") +
 			m_strDataPoint;
 }
+
+DataType StringToDataType(CString const& str)
+{
+	if (str[0]>=_T('0') && str[0]<=_T('9'))
+	{
+		return static_cast<DataType>(StringToInt(str));
+	}
+	else if (str.CompareNoCase(_T("vtUnknown"))==0)
+		return DataType::vtUnknown;
+	else if (str.CompareNoCase(_T("vtboolean"))==0)
+		return DataType::vtboolean;
+	else if (str.CompareNoCase(_T("vtInteger"))==0)
+		return DataType::vtInteger;
+	else if (str.CompareNoCase(_T("vtString"))==0)
+		return DataType::vtString;
+	else
+		return DataType::vtUnknown;
+}
+
+DataSubType GetSubTypeForDataType(DataType dt)
+{
+	if (dt==DataType::vtString)
+		return DataSubType::istChar8859;
+	else if (dt==DataType::vtInteger)
+		return DataSubType::istGeneric;
+	else if (dt==DataType::vtboolean)
+		return DataSubType::istBoolean;
+	else
+		return DataSubType::istGeneric;
+}
+
+//-----------------------------------------------------------------------------

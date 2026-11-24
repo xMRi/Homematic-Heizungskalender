@@ -1273,8 +1273,10 @@ void CPageRooms::OnBnClickedBtModify()
 		strRaumNameAlt = theApp.AddRoomPrefix(strRaumNameAlt);
 		strRaumNameNeu = theApp.AddRoomPrefix(strRaumNameNeu);
 		ASSERT(theApp.m_lstSysVars.Find(strRaumNameNeu)==nullptr);
-		pRaum->m_bModified = true;
+		pRaum->m_bModified = 
+		pRaum->m_bModifiedName = true;
 		pRaum->m_strName = strRaumNameNeu;
+
 		// Wir müsen aber nun auch in der mapRaumListe den Namen umändern.
 		CMapRaumListe mapRaumListe;
 		theApp.LoadRoomMapFromSysVars(mapRaumListe);

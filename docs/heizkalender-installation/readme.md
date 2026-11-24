@@ -13,7 +13,7 @@ Bei der Verwendung von ChurchTools oder ChurchDesk werden zusätzlich die benöt
 - Betriebssystem: Windows
 - Die CCU muss in den Sicherheitseinstellungen den Zugriff auf die Remote Homematic-Script API erlauben. Dabei muss entweder ein eingeschränkter Zugriff auf die benötigten Funktionen oder ein Vollzugriff gewährt werden, damit die `HeizkalenderInstallation.exe` die notwendigen Skripte und Variablen erstellen kann.
 - Ein Administrator-Benutzer und das zugehörige Kennwort müssen bekannt sein.
-    Alternativ kann der Zugriff auch über den  CloudMatic Fernzugriff erfolgen oder eine VPN-Lösung wie WireGuard.
+- Der Zugriff erfolgt über das lokale Netzwerk auf die CCU. Alternativ kann der Zugriff auch über den  CloudMatic Fernzugriff erfolgen oder eine VPN-Lösung wie WireGuard oder Tailscale.
 - Alle Skripte, die installiert werden sollen, müssen im Programmverzeichnis der `HeizkalenderInstallation.exe` liegen. Die Quelldateinamen sind vorgegeben und dürfen nicht verändert werden. Zusätzliche Tool-Skripte werden nur zur Aktualisierung bereits vorhandener geeigneter CCU-Programme verwendet; das Ablegen einer Tool-Datei bewirkt keine Erstinstallation des Tools.
 - Um auf Ressourcen und externe Kalender zugreifen zu können, muss der Rechner mit dem Internet verbunden sein.
 - Eine Installation über einen funktionierenden CloudMatic Zugang ist möglich.
@@ -97,6 +97,32 @@ Für ein Update oder das Ändern der aktuellen Parameter starten Sie die `Heizka
 1. **Ressourcen / Räume einlesen** anklicken und die angezeigten Fragen und Warnungen beantworten
 1. Anpassungen durchführen (evtl. nicht benötigte Ressourcen wieder löschen)
 1. **OK** anklicken
+
+## Befehlszeilenparameter der `HeizkalenderInstallation.exe`
+
+Die `HeizkalenderInstallation.exe` unterstützt verschiedene Kommandozeilenparameter, die die Arbeit mit dem Installationstool erleichtern und zusätzliche Steuerungsmöglichkeiten bieten.
+
+- **-scripts:"\<Pfad zu den Skriptdateien>"**  
+  **-scripte:"\<Pfad zu den Skriptdateien>"**  
+  Mit dieser Option kann das Verzeichnis festgelegt werden, in dem die zu installierenden Skripte gesucht werden. Standardmäßig wird das Verzeichnis verwendet, aus dem die `HeizkalenderInstallation.exe` gestartet wurde.  
+  Der Pfad kann frei gewählt werden, sodass beispielsweise auch zwischen verschiedenen Skriptversionen gewechselt werden kann.
+
+- **-force**  
+  **-updateerzwingen**  
+  Normalerweise erlaubt die `HeizkalenderInstallation.exe` kein Downgrade. Außerdem werden Programme nicht erneut installiert, wenn ihr Zeitstempel bereits dem aktuellen Datum entspricht.  
+  Mit dieser Option wird die Installation **aller** Programme erzwungen. Dabei werden die vorhandenen Programme auf der CCU durch die Versionen aus dem angegebenen Skriptverzeichnis ersetzt.
+
+- **-noupdate**  
+  **-keinupdate**  
+  Mit dieser Option werden keine Programme aktualisiert. Dadurch können beispielsweise Raumparameter geändert werden, ohne gleichzeitig ein Update der Skripte durchzuführen.  
+  Wird zusätzlich die Option **-force / -updateerzwingen** angegeben, hat diese Vorrang und die Aktualisierung wird in jedem Fall durchgeführt.
+
+  Wird diese Option gesetzt werden auf der Eigenschaftsseite *Programme* alle Programme als *ignoriert* gekennzeichnet.  
+  Beim Speichern der Einstellungen erfolgt ein zusätzlicher Hinweis, dass Programme nicht aktualisiert werden.
+
+- **-simulation**  
+  Startet das Installationstool im Simulationsmodus. Dabei werden keine Änderungen an einer CCU vorgenommen. Eine Verbindung zu einer CCU ist nicht erforderlich.  
+  Alle Änderungen werden stattdessen lokal auf dem Rechner in der Registry gespeichert. So können die Funktionen des Installationstools ausprobiert und verschiedene Installationsszenarien durchgespielt werden.
 
 ## Beschreibung der `HeizkalenderInstallation.exe`
 

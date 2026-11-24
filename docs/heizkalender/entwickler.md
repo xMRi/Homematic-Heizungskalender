@@ -215,7 +215,7 @@ Der Modus (Feld 1) steuert grundlegend, wie der Heizkalender den Raum behandelt.
 Jeder Modus hat unterschiedliche Auswirkungen auf Vorheizzeit-Berechnung,
 Aktor-Ansteuerung und Sensorik.
 
-Beim normalen Einschalten prüft Skript 3 in H und HS sämtliche konfigurierten Steuerobjekte und die benötigten Datenpunkte, bevor ein Befehl ausgegeben wird. Fehlt ein Objekt oder Datenpunkt oder ist die Steuerliste leer, bleibt der Raumstatus unverändert und ein Fehler wird protokolliert. Bei gültiger Konfiguration bleibt der bestehende Reglervorrang wirksam. Die Prüfung ist lokal, keine Funk- oder Hardwarebestätigung. Ausschalten, Sonderbefehle, S und V wurden durch diese begrenzte Korrektur nicht geändert.
+Beim normalen Einschalten verarbeitet Skript 3 die Steuerobjekte einzeln. Fehlende Objekte oder Datenpunkte werden bei aktiviertem Logging beziehungsweise DEBUG gemeldet; vorhandene andere Aktoren werden weiterhin angesteuert. Es gibt keine vorgelagerte Gesamtprüfung, die bei einem fehlenden Aktor alle Befehle verhindert. Der Raumstatus wird anschließend wie bisher auf Ein gesetzt, auch wenn kein Steuerbefehl ausgegeben wurde. Dieser Softwarestatus ist keine Funk- oder Hardwarebestätigung. Der bestehende Reglervorrang sowie Ausschalten, Sonderbefehle, S und V bleiben unverändert.
 
 ##### `H` — Heizen
 

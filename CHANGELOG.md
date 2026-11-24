@@ -13,19 +13,28 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-24]
+
+### Geändert
+
+- Heizkalender-Installation:Version 5.2.0
+- Heizkalender-Installation: Anlegen und Ändern von Variablen wurde vereinfacht. Es gibt nur noch eine Textdatei, die alle Grundwerte steuert. Eine entsprechende Excel Tabelle befindet sich nun auch im Projekt
+
 ## [2026-11-23]
 
 ### Hinzugefügt
 
 - Wetterabrufzeit: Letzten erfolgreichen Open-Meteo-Abruf speichern und im Addon mit Aktualitätswarnung anzeigen, ohne das Heizverhalten zu ändern.
 - Addon-Pakete enthalten ein SHA256-Manifest der archivierten regulären Dateien zur Integritätsprüfung durch OpenCCU.
+- Heizkurvenkontrolle im Addon: Zusätzliche Raumtemperatur-Zeilen standardmäßig ausblenden und über eine Checkbox nach dem Ereignisfilter einblenden.
 
 ### Geändert
 
-- Addon-Version auf 0.10.5 erhöht.
+- Addon-Version auf 0.10.6 erhöht.
 - Historisches Addon-PRD nach `docs/archiv/` verschoben und als unverbindlichen Entwurf gekennzeichnet.
 - Skript 2: Kernellaufzeit direkt aus dem ersten `/proc/uptime`-Ausgabefeld mit `ToFloat()` lesen; zusätzliche zeichenweise Zahlenprüfung entfernt. Wartefrist und Ersatzberechnung bleiben bestehen.
 - Wetterabrufzeit als lesbaren lokalen Datum-/Zeittext speichern und im Addon auswerten; bisheriges Unixsekundenformat ohne Übergangsunterstützung ersetzt.
+- Skript 3: Zusätzliche Gesamtprüfung vor normalem EIN zurückgenommen; vorhandene Aktoren trotz fehlender anderer Steuerobjekte wieder einzeln ansteuern. Fehlerprotokollierung und bisheriges Statusverhalten bleiben erhalten.
 
 ### Behoben
 

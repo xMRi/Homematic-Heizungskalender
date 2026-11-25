@@ -375,7 +375,7 @@ while(SListe!=""){
   !//   2. Bisherige maximale Temperatur
   !//   3. ausTerminMax: maximales Terminende der aktuellen Heizphase (Zeitwert)
   !//   4. letzte Zeit eines Temperaturlogs (Zeitwert)
-  !//   5. letztes berechnetes Heizphasenende (Unixsekunden, optional)
+  !//   5. letztes berechnetes Heizphasenende (Zeitwert)
   if (DEBUG) { WriteLine("RaumListe=" # RaumListe); }
   string strTemp;
   string RaumParameter="";
@@ -406,8 +406,8 @@ while(SListe!=""){
   real maxTemperatur = RaumParameter.StrValueByIndex(";",2).ToFloat();
   integer ausTerminMax = 0;
   integer letzterTemperaturLog = RaumParameter.StrValueByIndex(";",4).ToTime().ToInteger();
-  !// Ohne Feld 5 ergibt sich 0; ein alter laufender Zyklus wird deshalb nicht neu begonnen.
-  integer letzteHeizphaseAus = RaumParameter.StrValueByIndex(";",5).ToInteger();
+  !// Ohne Feld 5 ergibt sich 0; ein alter laufender Zyklus wird deshalb nicht neu begonnen
+  integer letzteHeizphaseAus = RaumParameter.StrValueByIndex(";",5).ToTime().ToInteger();
 
   !// Beginn Heizphasen-Statuswechsel
   !// Check 1: Eine Lücke zwischen den berechneten Phasen erkennt die neue Phase auch dann,
@@ -473,7 +473,7 @@ while(SListe!=""){
     !// Räume merken, die wir bearbeitet haben.
     bearbeiteteRaeume = bearbeiteteRaeume # RVN # ";";
     !// Merker (Bit 3) erhalten, damit der Hinweis nicht bei jedem Lauf erneut kommt.
-    RaumListe = RaumListe # "#" # RVN # ";" # status # ";" # maxTemperatur.ToString(1) # ";" # ausTerminMax.ToTime() # ";" # letzterTemperaturLog.ToTime() # ";" # heizphaseAus;
+    RaumListe = RaumListe # "#" # RVN # ";" # status # ";" # maxTemperatur.ToString(1) # ";" # ausTerminMax.ToTime() # ";" # letzterTemperaturLog.ToTime() # ";" # heizphaseAus.ToTime();
     continue;
   }
 

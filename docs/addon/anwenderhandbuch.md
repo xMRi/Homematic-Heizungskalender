@@ -142,6 +142,8 @@ In den Zeilen *Terminbeginn* und *Terminende* erscheint neben der Temperatur ein
 
 Der Vorheizzeit-Rechner simuliert die Vorheizzeit-Berechnung aus HK-Skript 2 für einen frei konfigurierbaren Simulationsraum. Er erlaubt es, Parameteränderungen zu testen, ohne auf einen echten Schaltvorgang warten zu müssen.
 
+![Vorheizzeit-Rechner mit Eingabefeldern und Diagrammen](images/hkrechner.png "Heizkalender: Vorheizzeit-Rechner")
+
 Die Vorbelegung der Felder stammt direkt aus den Systemvariablen der CCU (`HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Grundtemperatur`, `HK2-Aussentemperatur`, `HK2-A.Temp.Grenze`) sowie aus der ersten Raumvariable der CCU. Alle Eingaben werden live im Browser ausgewertet; ein Seiten-Reload ist nicht nötig.
 
 **Eingabefelder:**

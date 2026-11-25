@@ -13,6 +13,11 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+### Behoben
+
+- Heizkurvenkontrolle: Ereignismerker, Maximaltemperatur und Temperatur-Logzeitpunkt beim Wechsel in eine getrennte Heizphase zurücksetzen, auch ohne beobachteten Aus-Lauf. Zusammenhängende Heizintervalle bleiben eine gemeinsame Phase.
+- Heizkurvenkontrolle: Das späteste Original-Terminende aller direkt oder indirekt verbundenen Heizintervalle berücksichtigen, ohne getrennte zukünftige Phasen oder entfernte Termine einzubeziehen. Stündliche Temperaturprotokolle und die bestehende Auswahl des Bezugstermins bleiben erhalten.
+
 ## [2026-11-24]
 
 ### Geändert

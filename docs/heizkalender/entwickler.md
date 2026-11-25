@@ -429,16 +429,23 @@ HKG-Raum-GrSaal;320;2026-10-18 04:10:00;2026-10-18 09:30:00;2026-10-18 12:00:00;
 Speichert den laufenden Zustand der Heizkurvenkontrolle für alle überwachten Räume. Wird von `HK-Heizkurvenkontrolle.hsc` geschrieben und bei jedem Skriptlauf aktualisiert. Die Variable ist flüchtig (kein USB-Backup).
 
 ```txt
-#<Raumvariable>;<Status>;<IstTemp>#<Raumvariable>;<Status>;<IstTemp>#...
+#<Raumvariable>;<Status>;<MaxTemp>;<AUS_Termin>;<LetzterTempLog>;<HeizphaseAus>#...
 ```
 
 | Feld | Typ | Bedeutung |
 | ---- | --- | --------- |
 | Raumvariable | String | Name der `HKG-Raum-*`-Systemvariable |
 | Status | Integer (Bitmap) | Zustand des Raums in der aktuellen Heizphase |
-| IstTemp | Float | Zuletzt gemessene Ist-Temperatur des Temperatursensors |
-| AUS_Termin | Zeitstempel | maximaler AUS_Termin über alle überlappenden Einträge |
+| MaxTemp | Float | Bisherige Maximaltemperatur der überwachten Heizphase |
+| AUS_Termin | Zeitstempel | Spätestes Original-Terminende der zusammenhängenden Heizphase |
 | LetzterTempLog | Zeitstempel | Letzter Log der Raumtemperatur im Protokoll (stündlich) |
+| HeizphaseAus | Integer (Unixsekunden, optional) | Zuletzt berechnetes Ende des zusammenhängenden Heizintervalls; interner Merker für den Phasenwechsel |
+
+Für die Heizkurvenkontrolle bilden überlappende oder unmittelbar aneinander anschließende berechnete Heizintervalle eine gemeinsame Phase. Auch indirekte Überlappungen über weitere Einträge werden berücksichtigt. Das späteste Original-Terminende wird nur innerhalb dieser Phase ermittelt; getrennte zukünftige Heizphasen verlängern es nicht. Ein Wechsel des ausgewählten Bezugstermins innerhalb derselben Phase erzeugt keinen neuen Heizbeginn.
+
+Die Grenzen und das Original-Terminende werden aus der aktuellen Schaltliste neu ermittelt. Wird ein überlappender Termin entfernt, bleibt dessen früheres Ende nicht als Maximum erhalten. Liegt der Beginn der ausgewählten Phase nach dem gespeicherten `HeizphaseAus`, werden Ereignismerker, Maximaltemperatur und der Temperatur-Logzeitpunkt zurückgesetzt. Das gilt auch, wenn der vorherige Aus-Zustand zwischen zwei Skriptläufen nicht beobachtet wurde.
+
+Zusätzlich startet ein beobachteter Wechsel vom bereits protokollierten Aus-Zustand zum Softwarestatus Ein innerhalb des aktuellen Heizintervalls einen neuen Protokollzyklus. Das ist keine Funkbestätigung. Bei älteren Raumwerten ohne das zusätzliche Feld ergibt dessen `ToInteger()`-Konvertierung 0; ein laufender Zyklus wird allein wegen des fehlenden Feldes nicht zurückgesetzt. Bereits protokolliertes Aus mit anschließendem Ein wird weiterhin erkannt. Es wird keine neue Systemvariable benötigt, und bereits geschriebene Protokolle werden nicht nachträglich korrigiert.
 
 **Status-Bitmap:**
 
@@ -452,7 +459,7 @@ Speichert den laufenden Zustand der Heizkurvenkontrolle für alle überwachten R
 | 5 | 32 | Terminbeginn bereits geloggt |
   
 
-Beispiel: `#HKG-Raum-KlSaal;1;18.8;2026-11-23 18:00:00;2026-11-23 12:55:30#HKG-Raum-Foyer;3;21.1;2026-11-23 18:00:00;2026-11-23 12:55:30`
+Beispiel: `#HKG-Raum-KlSaal;1;18.8;2026-11-23 18:00:00;2026-11-23 12:55:30;1795451400#HKG-Raum-Foyer;3;21.1;2026-11-23 18:00:00;2026-11-23 12:55:30;1795451400`
 
 ## Skript-Syntax (HomeMatic HSC)
 

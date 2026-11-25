@@ -13,6 +13,8 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-25]
+
 ### Hinzugefügt
 
 - Addon-Raumübersicht: Kleines `index.js` und die Checkbox „Alle aufklappen“ im Spaltenkopf „Termin“ zum gemeinsamen Auf-/Zuklappen der Termindetails, ohne erneuten Seitenabruf. Einzelumschaltungen werden einschließlich Mischzustand berücksichtigt.

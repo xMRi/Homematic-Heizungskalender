@@ -574,7 +574,7 @@ while(SListe!=""){
   !// Wir speichern einen Raum nur, mit dem neuen Status. Wenn er sich nicht in einem unbeheizten Zustand (status==0)
   !// wird das in der nächsten Schleife korrigiert.
   !// Neuen RaumParameter zusammensetzen (Feld 3: Terminende, Feld 5: Heizphasenende in Unixsekunden)
-  RaumParameter = "#" # RVN # ";" # status # ";" # maxTemperatur.ToString(1) # ";" # ausTerminMax.ToTime() # ";" # letzterTemperaturLog.ToTime() # ";" # heizphaseAus;
+  RaumParameter = "#" # RVN # ";" # status # ";" # maxTemperatur.ToString(1) # ";" # ausTerminMax.ToTime() # ";" # letzterTemperaturLog.ToTime() # ";" # heizphaseAus.ToTime();
   if (DEBUG) { WriteLine("RaumParameter=" # RaumParameter); }
   RaumListe = RaumListe # RaumParameter;
   if (DEBUG) { WriteLine("RaumListe=" # RaumListe); }

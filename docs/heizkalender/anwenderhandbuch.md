@@ -574,7 +574,13 @@ Ist ein Raum bei Nutzungsbeginn noch zu kalt, können die Vorheizzeiten angepass
 
 ### Das Protokoll der Heizkurvenkontrolle
 
-Die Heizkurvenkontrolle erzeugt Log Einträge für jeden Raum. Die Einträge schlüsseln sich auf nach bestimmten Ereignistypen und werden mit den zusätzlichen Informationen angereichert:
+Die Heizkurvenkontrolle erzeugt Log-Einträge für jeden Raum.
+
+Betrachtet werden zusammenhängende Heizphasen: Überlappende oder unmittelbar aneinander anschließende berechnete Heizintervalle gehören zu einer gemeinsamen Phase. Ein bloßer Wechsel des ausgewählten Termins innerhalb dieser Phase erzeugt keine zusätzlichen Heizbeginn- oder Heizende-Ereignisse. Das Ereignis **Terminende** richtet sich nach dem spätesten Original-Terminende dieser Phase, nicht allein nach dem gerade ausgewählten Termin. Getrennte zukünftige Heizphasen verlängern dieses Ende nicht.
+
+Beim Beginn einer getrennten neuen Heizphase werden die Ereignismerker und die Maximaltemperatur neu begonnen. Auch ein beobachteter Wechsel vom protokollierten Aus-Zustand zum Softwarestatus Ein innerhalb des aktuellen Heizintervalls startet einen neuen Protokollzyklus; das bestätigt nicht die tatsächliche Aktorausführung. Die relativen Minutenangaben beziehen sich weiterhin auf den aktuell ausgewählten relevanten Termin. Wechselt dieser innerhalb einer gemeinsamen Phase, können sich auch die Bezugszeiten ändern. Zusätzlich werden ungefähr stündlich **Raumtemperatur**-Werte protokolliert.
+
+Die Einträge enthalten folgende Ereignisarten und Zusatzinformationen:
 
 - Ereignisart
     - Heizbeginn 
@@ -582,6 +588,7 @@ Die Heizkurvenkontrolle erzeugt Log Einträge für jeden Raum. Die Einträge sch
     - Zieltemperatur erreicht
     - Heizende 
     - Terminende 
+    - Raumtemperatur (ungefähr stündlich)
 - Zeit relativ zum Terminbeginn
 - Außentemperatur bei Heizbeginn
 - aktuelle Raumtemperatur zum jeweiligen Ereignis

@@ -13,6 +13,18 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-25]
+
+### Hinzugefügt
+
+- Addon-Raumübersicht: Kleines `index.js` und die Checkbox „Alle aufklappen“ im Spaltenkopf „Termin“ zum gemeinsamen Auf-/Zuklappen der Termindetails, ohne erneuten Seitenabruf. Einzelumschaltungen werden einschließlich Mischzustand berücksichtigt.
+
+### Geändert
+
+- Addon-Version auf 0.10.7 erhöht.
+- Addon-Raumübersicht: Mehrere Termine pro Raum standardmäßig aufgeklappt anzeigen, auch ohne JavaScript. Die chronologische Reihenfolge bleibt erhalten; die Checkbox ist nur bei wirksamem JavaScript und vorhandenen Mehrfachterminen sichtbar.
+- Addon-Raumübersicht: Die Checkbox sitzt platzsparend direkt im Spaltenkopf statt in einem separaten Filter-Fieldset. Die Temperaturinfo bleibt als eigene Zeile oberhalb der Tabelle, der erklärende Hinweis zu Vorlauf und Heizbeginn separat darunter.
+
 ### Behoben
 
 - Heizkurvenkontrolle: Ereignismerker, Maximaltemperatur und Temperatur-Logzeitpunkt beim Wechsel in eine getrennte Heizphase zurücksetzen, auch ohne beobachteten Aus-Lauf. Zusammenhängende Heizintervalle bleiben eine gemeinsame Phase.

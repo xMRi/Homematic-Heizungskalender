@@ -40,7 +40,7 @@ Nach dem Neustart erscheint der Heizkalender in der Liste der installierten Zusa
 
 Die Raumübersicht zeigt für jeden konfigurierten Raum den aktuellen Heizstatus auf einen Blick.
 
-![Raumübersicht mit aktiven Terminen für EG-Kinderraum, EG-Foyer und EG-Eltern-Kind-Raum sowie EG-Saal](images/raumuebersicht.png "Heizkalender: Raumübersicht")
+![Raumübersicht mit Heizstatus, Raumwerten und Terminen](images/raumuebersicht.png "Heizkalender: Raumübersicht")
 
 | Spalte | Bedeutung |
 | ------ | --------- |
@@ -51,20 +51,22 @@ Die Raumübersicht zeigt für jeden konfigurierten Raum den aktuellen Heizstatus
 | Luftfeuchte | Aktuelle Luftfeuchtigkeit (wenn der Sensor diesen Wert liefert) |
 | Vorlauf | Berechnete Vorheizzeit in Minuten (nur wenn `HK2-Schaltzeiten` vorhanden) |
 | Heizen ab | Berechneter Einschaltzeitpunkt (nur wenn `HK2-Schaltzeiten` vorhanden) |
-| Termin | Beginn und Ende des nächsten oder laufenden Termins aus der Schaltliste; bei mehreren Terminen aufklappbar |
+| Termin | Beginn und Ende der Termine aus der Schaltliste, chronologisch nach Beginn; bei mehreren Terminen standardmäßig aufgeklappt |
 | Wohlfühltemperatur | Zieltemperatur für den Raum |
 
 Die Spalten **Vorlauf** und **Heizen ab** werden nur angezeigt, wenn die Systemvariable `HK2-Schaltzeiten` auf der CCU vorhanden ist. Ist sie nicht angelegt, entfallen diese beiden Spalten.
 
 **Statusermittlung:** Der Status wird direkt aus Feld 0 der jeweiligen `HKG-Raum-*`-Systemvariablen gelesen (0 = `Aus`, 1 = `Ein`, 2 = `Dauer-Aus`, 3 = `Dauer-Ein`). `Ein` und `Dauer-Ein` werden aktiv hervorgehoben. Andere Statuswerte erscheinen als `Unbekannt`. Die Spalte „Termin" zeigen die Zeiten aus der Schaltliste (`HK1-Schaltliste`).
 
-Ganz oben wird, falls vorhanden, die aktuelle Außentemperatur (gleitender Mittelwert) angezeigt, die für die Vorheizzeitberechnung verwendet wird.
+Oberhalb der Raumtabelle steht, falls vorhanden, eine eigene Zeile mit der Außentemperatur und dem gleitenden Mittelwert für die Vorheizzeitberechnung. Der erklärende Hinweis zu den Spalten **Vorlauf** und **Heizen ab** bleibt als getrennte Zeile unterhalb der Tabelle erhalten.
 
 Zusätzlich zeigt die Seite den Zeitpunkt des letzten erfolgreichen Wetterabrufs aus der optionalen Zeichenketten-Systemvariable `HK2-Aussentemperatur-Abrufzeit`. Liegt dieser mehr als drei Stunden zurück, erscheint eine Warnung. Fehlende, leere oder ungültige Abrufzeiten lassen keine Aussage zur Aktualität zu; ein Zeitpunkt in der Zukunft ist ebenfalls ungültig. Die Anzeige ist rein informativ und schaltet die Heizung nicht ab. Der Zeitpunkt bezeichnet den Abruf, nicht das Alter der zugrunde liegenden Wetterprognose.
 
 Die Variable wird über das manuell ausgeführte `HK-Init-Skript 2+3.hsc` oder direkt in der CCU-WebUI angelegt, nicht durch den Windows-Installer. Name: `HK2-Aussentemperatur-Abrufzeit`, Typ: **Zeichenkette**, Inhalt zunächst leer. Das aktualisierte Open-Meteo-Skript schreibt anschließend einen lesbaren lokalen Datum-/Zeittext im Format `JJJJ-MM-TT HH:MM:SS` hinein; die Seite stellt ihn als Datum und Uhrzeit dar und berechnet daraus das Alter. Numerische Unixsekunden werden nicht unterstützt. Ohne diese Variable bleiben die bisherigen Temperatur- und Raumdaten verfügbar. Bei einer anderen Temperaturquelle gilt die Wetterabrufzeit nicht automatisch als deren Messzeitpunkt. Einrichtung, Zeitzone und Bedeutung sind im [eigenen Variablenabschnitt](../skripte/readme.md#hk2-aussentemperatur-abrufzeit) beschrieben.
 
-**Mehrere Termine pro Raum und Tag:** Hat ein Raum an einem Tag mehr als einen Termin in der Schaltliste, wird in der Terminspalte zunächst nur der erste Eintrag angezeigt. Durch Klick auf diesen Eintrag klappt die Zelle auf und zeigt alle weiteren Termine des Raums.
+**Mehrere Termine pro Raum:** Alle vorhandenen Termine werden nach Beginn aufsteigend angezeigt. Bei mehreren Terminen ist die Liste beim Laden der Seite aufgeklappt. Ein Klick auf den ersten Eintrag klappt die weiteren Termine dieses Raums zu oder wieder auf. Bereits abgelaufene Termine bleiben sichtbar, solange sie noch in der Schaltliste enthalten sind.
+
+Im Spaltenkopf **Termin** steuert die Checkbox **Alle aufklappen** alle Terminlisten gemeinsam. Sie ist beim Laden angehakt. Entfernen des Häkchens klappt die Listen zu, Setzen des Häkchens öffnet sie wieder. Die Änderung wirkt mit JavaScript sofort, ohne zusätzlichen „Anzeigen“-Button oder erneuten Seitenabruf. Werden einzelne Listen von Hand umgeschaltet, zeigt die Checkbox bei teils offenen und teils geschlossenen Listen einen Mischzustand; der nächste Klick öffnet alle Listen. Ohne JavaScript bleiben alle Listen zunächst geöffnet und einzeln bedienbar; nur die Checkbox bleibt verborgen, die Spaltenüberschrift bleibt lesbar. Nach einem erneuten Seitenabruf sind die Listen wieder geöffnet.
 
 **Raum-Gruppen:** Ein Raum kann über `HK2-HKG-Liste` als Teil einer Gruppe konfiguriert sein, d.h. er wird bei der Buchung anderer Ressourcen mitgeheizt. In diesem Fall sammelt das Addon alle Ressourcen-IDs, für die der Raum zuständig ist (eigene Ressource und alle Gruppen, in denen er Mitglied ist), und zeigt sämtliche zugehörigen Termine in einer einzigen Zeile an. Der Raum erscheint also immer nur einmal in der Tabelle, egal wie viele Ressourcen ihn einschließen.
 
@@ -78,7 +80,7 @@ Die Variable wird über das manuell ausgeführte `HK-Init-Skript 2+3.hsc` oder d
 
 Die Heizkurvenkontrolle wertet die aufgezeichneten Heizereignisse aus dem USB-Stick-Archiv aus und zeigt, wie gut die Heizung die gewünschte Temperatur zum Terminbeginn erreicht hat.
 
-![Heizkurvenkontrolle mit gefilterten Einträgen für einen Raum über 30 Tage](images/heizkurvenkontrolle.png "Heizkalender: Heizkurvenkontrolle")
+![Heizkurvenkontrolle mit gefilterten Heizereignissen](images/heizkurvenkontrolle.png "Heizkalender: Heizkurvenkontrolle")
 
 > [!NOTE]
 > **Voraussetzung:** USB-Stick mit HK-Log-Dateien (siehe [HK-Log](#hk-log)).
@@ -140,6 +142,8 @@ In den Zeilen *Terminbeginn* und *Terminende* erscheint neben der Temperatur ein
 
 Der Vorheizzeit-Rechner simuliert die Vorheizzeit-Berechnung aus HK-Skript 2 für einen frei konfigurierbaren Simulationsraum. Er erlaubt es, Parameteränderungen zu testen, ohne auf einen echten Schaltvorgang warten zu müssen.
 
+![Vorheizzeit-Rechner mit Eingabefeldern und Diagrammen](images/hkrechner.png "Heizkalender: Vorheizzeit-Rechner")
+
 Die Vorbelegung der Felder stammt direkt aus den Systemvariablen der CCU (`HK2-Kurve`, `HK2-Kurvenversatz`, `HK2-Grundtemperatur`, `HK2-Aussentemperatur`, `HK2-A.Temp.Grenze`) sowie aus der ersten Raumvariable der CCU. Alle Eingaben werden live im Browser ausgewertet; ein Seiten-Reload ist nicht nötig.
 
 **Eingabefelder:**
@@ -199,7 +203,7 @@ Vier Grunddiagramme und ein optionaler Raumvergleich veranschaulichen die Berech
 
 Die Seite zeigt die wichtigsten Einstellungen des Heizkalenders in aufbereiteter Form: Logging-Flags, Kurveneinstellungen und eine Übersicht aller Raumkonfigurationen. Die Abschnitte entsprechen 1:1 den Seiten des Windows-Installers und dienen als Nachschlagewerk, wenn man gerade nicht am passenden PC sitzt oder remote auf die CCU zugreift. Die Seite ist rein lesend. Änderungen werden über den Installer vorgenommen.
 
-![Grundeinstellungen mit Logging-Flags, Kurveneinstellungen und Raumkonfigurationen](images/grundeinstellungen.png "Heizkalender: Grundeinstellungen")
+![Ansicht der Grundeinstellungen des Heizkalenders](images/grundeinstellungen.png "Heizkalender: Grundeinstellungen")
 
 ---
 
@@ -209,7 +213,7 @@ Die Seite zeigt die wichtigsten Einstellungen des Heizkalenders in aufbereiteter
 
 Das HK-Log zeigt die auf dem USB-Stick archivierten Protokolleinträge des Heizkalenders. Die Einträge werden aus den tages- oder wochenweisen Logdateien gelesen, die `HK-SystemProtokoll sichern.hsc` auf den USB-Stick schreibt.
 
-![HK-Log mit gefilterten Einträgen der letzten Tage](images/hk-log.png "Heizkalender: HK-Log")
+![Ausschnitt aus dem HK-Log](images/hk-log.png "Heizkalender: HK-Log")
 
 > [!NOTE]
 > **Voraussetzung:** USB-Stick an der CCU angeschlossen, Logdateien vorhanden (`HK-Log_JJJJ-MM-TT.log`). Es werden Dateien der letzten 60 Tage angezeigt.
@@ -237,7 +241,7 @@ Ohne Quellenfilter werden die letzten N Zeilen der Datei angezeigt. Mit Quellenf
 
 Das Syslog zeigt die letzten Einträge aus dem Linux-Systemprotokoll der CCU (`/var/log/messages`).
 
-![Syslog mit den letzten Meldungen](images/syslog.png "Heizkalender: Syslog")
+![Ausschnitt aus dem Syslog](images/syslog.png "Heizkalender: Syslog")
 
 **Zeitstempel-Format:** `Mmm DD HH:MM:SS` (Linux-Syslog-Format, ohne Jahreszahl).
 
@@ -255,7 +259,7 @@ Die Anzeige entspricht einem `tail`: älteste Zeilen oben, neueste unten.
 
 Die Seite zeigt alle Systemvariablen des Heizkalenders mit ihrem aktuellen Wert und einer kurzen Beschreibung. Die Variablen sind nach Präfix gruppiert:
 
-![Systemvariablen-Übersicht mit gruppierten HK1-, HK2- und HKG-Raum-Variablen](images/systemvariablen.png "Heizkalender: Systemvariablen")
+![Ausschnitt aus der Systemvariablen-Übersicht](images/systemvariablen.png "Heizkalender: Systemvariablen")
 
 | Abschnitt | Präfix | Inhalt |
 | --------- | ------ | ------ |

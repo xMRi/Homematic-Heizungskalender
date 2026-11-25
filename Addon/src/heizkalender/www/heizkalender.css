@@ -383,6 +383,20 @@ body {
 .col-sl-termin details > summary::-webkit-details-marker {
   display: none;
 }
+.hk-termin-kopf-control {
+  display: inline-block;
+  margin-left: 0.8em;
+  vertical-align: middle;
+  white-space: nowrap;
+  font-weight: normal;
+  font-style: italic;
+}
+.hk-termin-kopf-control[hidden] {
+  display: none;
+}
+.col-sl-termin details[open] > summary::before {
+  content: "\25BE ";
+}
 .col-sl-termin details > summary::before {
   content: "\25B8 ";
   font-size: 0.75em;

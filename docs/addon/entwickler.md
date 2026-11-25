@@ -23,6 +23,7 @@ Addon/
     heizkalender/
       www/
         index.cgi                  Raumübersicht
+        index.js                   Gemeinsames Auf-/Zuklappen der Termindetails
         hkkurve.cgi                Heizkurvenkontrolle
         hkrechner.cgi              Vorheizzeit-Rechner
         hkrechner.js               Berechnungslogik und Canvas-Visualisierungen (clientseitig)
@@ -64,6 +65,7 @@ heizkalender-addon-<Version>.tar.gz
 ├── heizkalender/
 │   └── www/
 │       ├── index.cgi
+│       ├── index.js
 │       ├── hkkurve.cgi
 │       ├── hkrechner.cgi
 │       ├── hkrechner.js
@@ -169,9 +171,15 @@ Ablauf:
 
 1. `HKG-Raum-*` auslesen: Status, Modus, Wohlfühltemperatur, optionaler Sensorkanal.
 2. `HK2-HKG-Liste` + `HK1-R-Liste`: positionsbasiertes Mapping Variablenname zu ResID (identisch zum Vorgehen in Skript 1).
-3. `HK1-Schaltliste`: mit der ResID den besten Termin ermitteln (laufend > nächster zukünftiger > letzter vergangener).
+3. `HK1-Schaltliste`: Alle Termine der zugeordneten Ressourcen sammeln und nach Terminbeginn aufsteigend anzeigen. Keine Bevorzugung laufender oder zukünftiger Termine und kein zusätzlicher Filter für abgelaufene Einträge.
 4. `HK2-Schaltzeiten` (optional): falls vorhanden, Vorlaufzeit und Einschaltzeitpunkt je Raumvariablenname nachschlagen und in den Spalten „Vorlauf" und „Heizen ab" anzeigen. Ist die Variable nicht vorhanden, entfallen diese beiden Spalten komplett.
 5. Sensorkanal (Feld 6 der Raumvariable, optional): Ist-Temperatur und Luftfeuchtigkeit direkt aus dem HomeMatic-Gerät lesen.
+
+Bei mehreren Terminen pro Raum erzeugt das CGI ein standardmäßig geöffnetes HTML-`details`-Element. Die chronologische Reihenfolge bleibt auch beim Auf- und Zuklappen unverändert. `index.js` ermöglicht das gemeinsame Öffnen oder Schließen ausschließlich dieser Termindetails, ohne erneuten Seitenabruf. Die Checkbox „Alle aufklappen“ im Spaltenkopf „Termin“ ist im HTML mit `checked` vorbelegt. Ihr `change`-Ereignis setzt den `open`-Zustand der Termindetails gemäß `checked`. Einzelne Listen bleiben über ihr `summary` bedienbar; deren `toggle`-Ereignisse gleichen die Checkbox ab: alle offen bedeutet angehakt, alle geschlossen bedeutet nicht angehakt. Bei gemischtem Zustand werden `checked=false` und `indeterminate=true` gesetzt, sodass der nächste Klick alle Listen öffnet.
+
+Ohne JavaScript bleiben die Listen beim Laden geöffnet und einzeln bedienbar. Nur das Label `#hk-termine-control` mit der Checkbox wird erst nach erfolgreicher JavaScript-Initialisierung sichtbar; der Titel „Termin“ bleibt immer lesbar. Ohne Mehrfachtermine wird keine Checkbox ausgegeben. Die vorbereitete Termin-Kopfzelle wird in beiden Tabellenvarianten mit und ohne Vorlaufspalten verwendet. Es werden weder Einstellungen gespeichert noch Systemvariablen geschrieben.
+
+Die Temperaturinfo wird als eigener Absatz (`p.hk-hint`) vor der Tabelle ausgegeben. Der getrennte Hinweis zu Vorlauf und Heizbeginn (`div.hk-hint`) bleibt unterhalb der Tabelle, sofern `HK2-Schaltzeiten` vorhanden ist. Ohne Räume steht die Temperaturinfo vor der Leermeldung; der Vorlauf-Hinweis entfällt dann. Wetterwerte, Abrufwarnung und Datenabfragen bleiben unverändert. Es gibt weder ein separates Filter-Fieldset noch einen gemeinsamen Flex-Wrapper für Checkbox und Temperaturinfo.
 
 Schaltlisten-Zeitstempel (`JJJJ-MM-TT HH:MM:SS`) werden mit einer eigenen `parse_ts`-Prozedur in Unix-Timestamps umgewandelt, da `clock scan` in Tcl 8.2 kein ISO-Datumsformat versteht (nur US-Format `MM/DD/JJJJ HH:MM:SS`).
 

@@ -16,8 +16,8 @@
 # 1. HKG-Raum-* auslesen: Status, Modus, Wohlfuehltemperatur, opt. Sensor-Kanal.
 # 2. HK2-HKG-Liste + HK1-R-Liste: positionsbasiertes Mapping Variablenname -> ResID.
 #    Skript 1 verwendet ebenfalls dieses positionsbasierte Mapping (nicht Namensvergleich).
-# 3. HK1-Schaltliste: mit der ResID den besten Termin ermitteln
-#    (laufend > naechster zukuenftiger > letzter vergangener).
+# 3. HK1-Schaltliste: mit der ResID alle Termine ermitteln und chronologisch
+#    nach Beginn anzeigen (mehrere Termine als geoeffnete Details).
 # 4. HK2-Schaltzeiten (optional): falls vorhanden, Vorlaufzeit und Einschaltzeitpunkt
 #    je Raumvariablenname nachschlagen und in den Spalten "Vorlauf" und "Heizen ab" anzeigen.
 #    Pro Raum koennen mehrere Eintraege vorkommen (Gruppenraeume); es wird der Eintrag
@@ -467,6 +467,7 @@ puts {  <link rel="stylesheet" href="heizkalender.css">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
   <link rel="manifest" href="site.webmanifest">
+  <script src="index.js" defer></script>
 </head>
 <body>
 <div id="content">
@@ -541,6 +542,8 @@ if {[string equal $abruf_raw ""]} {
     }
 }
 
+# Temperaturzeile (Wetterhinweis): Text sammeln, Ausgabe oberhalb der Raumtabelle.
+set hk_hint_html ""
 if {![string equal $aussentemp_str ""]} {
     set at_line "Au&szlig;entemperatur (gleitender Durchschnitt): <strong>$aussentemp_str</strong>"
     if {![string equal $at_akt_str ""]} {
@@ -550,16 +553,40 @@ if {![string equal $aussentemp_str ""]} {
         append at_line " / Min. Prognose 12h: <strong>$at_min_str</strong>"
     }
     append at_line " / $abruf_text"
-    puts "  <p class=\"hk-hint\">${at_line}</p>"
+    set hk_hint_html "  <p class=\"hk-hint\">${at_line}</p>"
 } elseif {![string equal $abruf_raw ""]} {
     # Keine Temperatur, aber ein Abrufwert ist gesetzt: Diagnose trotzdem zeigen
-    puts "  <p class=\"hk-hint\">Au&szlig;entemperatur: nicht verf&uuml;gbar / $abruf_text</p>"
+    set hk_hint_html "  <p class=\"hk-hint\">Au&szlig;entemperatur: nicht verf&uuml;gbar / $abruf_text</p>"
+}
+
+# Schalter fuer Termindetails nur bei Raeumen mit mehreren Terminen.
+# Ohne wirksames JavaScript bleibt er versteckt; alle Details sind dann offen.
+set hk_multi_termine 0
+foreach r $raeume {
+    set r_rids [lookup_rids_by_varname [lindex $r 0] varname2rids]
+    if {[llength [all_entries_for_rids $r_rids sl_by_rid]] > 1} {
+        set hk_multi_termine 1
+        break
+    }
+}
+
+# Kopfzelle der Terminspalte; bei Mehrfachterminen mit Checkbox fuer alle Termindetails.
+# Das Label bleibt ohne wirksames JavaScript versteckt; der Titel bleibt sichtbar.
+set termin_th "<th class=\"col-sl-termin\">Termin"
+if {$hk_multi_termine} {
+    append termin_th "<label id=\"hk-termine-control\" class=\"hk-termin-kopf-control\" hidden><input type=\"checkbox\" id=\"hk-termine-toggle\" checked aria-controls=\"hk-termine-tabelle\"> Alle aufklappen</label>"
+}
+append termin_th "</th>"
+
+# Temperaturzeile (Wetterhinweis) einmal oberhalb der Raumtabelle bzw. Leermeldung
+if {![string equal $hk_hint_html ""]} {
+    puts $hk_hint_html
 }
 
 if {[llength $raeume] == 0} {
     puts {  <p class="hk-empty">Keine Raum-Systemvariablen (HKG-Raum-*) gefunden.</p>}
 } else {
-    puts {  <div class="hk-table-scroll"><table class="hk-table hk-schaltliste-table hk-has-header">}
+    puts {  <div class="hk-table-scroll"><table id="hk-termine-tabelle" class="hk-table hk-schaltliste-table hk-has-header">}
     if {$has_vlz} {
         puts {    <colgroup>
       <col class="col-sl-status">
@@ -572,7 +599,7 @@ if {[llength $raeume] == 0} {
       <col class="col-sl-temp">
       <col class="col-sl-modus">
     </colgroup>}
-        puts {    <tr><th>Status</th><th>Raum</th><th>Ist-Temp.</th><th>Luftfeuchte</th><th>Vorlauf</th><th>Heizen ab</th><th class="col-sl-termin">Termin</th><th>Wohlf&uuml;hltemperatur</th><th>Modus</th></tr>}
+        puts "    <tr><th>Status</th><th>Raum</th><th>Ist-Temp.</th><th>Luftfeuchte</th><th>Vorlauf</th><th>Heizen ab</th>${termin_th}<th>Wohlf&uuml;hltemperatur</th><th>Modus</th></tr>"
     } else {
         puts {    <colgroup>
       <col class="col-sl-status">
@@ -583,7 +610,7 @@ if {[llength $raeume] == 0} {
       <col class="col-sl-temp">
       <col class="col-sl-modus">
     </colgroup>}
-        puts {    <tr><th>Status</th><th>Raum</th><th>Ist-Temp.</th><th>Luftfeuchte</th><th class="col-sl-termin">Termin</th><th>Wohlf&uuml;hltemperatur</th><th>Modus</th></tr>}
+        puts "    <tr><th>Status</th><th>Raum</th><th>Ist-Temp.</th><th>Luftfeuchte</th>${termin_th}<th>Wohlf&uuml;hltemperatur</th><th>Modus</th></tr>"
     }
 
     foreach r $raeume {
@@ -650,7 +677,7 @@ if {[llength $raeume] == 0} {
             set first_termin [format_termin \
                 [format_ts [lindex [lindex $entries 0] 0]] \
                 [format_ts [lindex [lindex $entries 0] 1]]]
-            set termin_cell "<details><summary>$first_termin</summary>"
+            set termin_cell "<details class=\"hk-termin-details\" open><summary>$first_termin</summary>"
             foreach e [lrange $entries 1 end] {
                 set t [format_termin [format_ts [lindex $e 0]] [format_ts [lindex $e 1]]]
                 append termin_cell "<div>$t</div>"

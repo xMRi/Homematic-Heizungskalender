@@ -830,12 +830,12 @@ BOOL CPageSettings::OnInitDialog()
 {
 	CPageBase::OnInitDialog();
 
-	m_edGrungTemp.SetMinMax(0,30);
 	m_edGrungTemp.SetPrecision(1);
+	m_edGrungTemp.SetMinMax(0,30);
 	m_edGrungTemp.CreateSpinBtnCtrl();
 	m_edGrungTemp.SetStepValue(0.1);
-	m_edATempGrenze.SetMinMax(0,30);
 	m_edATempGrenze.SetPrecision(1);
+	m_edATempGrenze.SetMinMax(0,30);
 	m_edATempGrenze.CreateSpinBtnCtrl();
 	m_edATempGrenze.SetStepValue(0.1);
 	m_eiVorlaufzeit.SetMinMax(0, 60*23);

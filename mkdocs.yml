@@ -51,7 +51,12 @@ nav:
     - Remote-Zugriff: heizkalender/remote-zugriff.md
     - CCU einrichten: heizkalender/ccu-einrichten.md
     - Kalender einrichten: heizkalender/kalender-einrichten.md
-    - Vorheizzeit: heizkalender/heizsteuerung-vorheizzeit.md
+    - Vorheizzeit:
+      - Übersicht: heizkalender/heizsteuerung-vorheizzeit.md
+      - KI-Optimierung:
+        - Vorgehensweise: heizkalender/heizkurven_optimierung_ki.md
+        - Definition: heizkalender/heizkurven_optimierung_ki_definiton.md
+        - Eingabeformular: heizkalender/heizkurven_optimierung_ki_eingabeformular.md    
     - Planung: heizkalender/planung.md
     - Messdaten-Auswertung: heizkalender/messdaten-auswertung.md
     - Entwickler: heizkalender/entwickler.md

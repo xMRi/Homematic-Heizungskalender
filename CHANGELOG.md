@@ -13,7 +13,9 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
-## [2026-11-26]
+## [Veröffentlicht]
+
+## [2026-11-26] Release
 
 ### Geändert 
 - HeizkalenderInstallation: Version 5.2.1
@@ -124,8 +126,6 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 - Skripte: `HK-SystemProtokoll sichern.hsc`: Verfügbarkeitsprüfung des USB-Pfads verwendet jetzt `test -d` statt `mount | grep`; funktioniert auch bei Symlinks (z.B. `usb0 -> usb1`).
 - Skripte: `HK-SystemProtokoll sichern.hsc`: Fehlerprüfung nach `system.Exec` verwendet `stderr` statt `echo $?`; `echo $?` lieferte in der CCU-Umgebung keinen verwertbaren Rückgabewert.
 
-
-## [Veröffentlicht]
 
 ## [2026-11-17] Release
 

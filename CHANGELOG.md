@@ -13,6 +13,18 @@ Diese Datei **ergänzt** die Changelog-Blöcke in den Datei-Headern (`!// MRi:` 
 
 ## [Unveröffentlicht]
 
+## [2026-11-26]
+
+### Geändert 
+- HeizkalenderInstallation: Version 5.2.1
+
+### Behoben 
+- HeizkalenderInstallation: Min/Max Werte waren zum Teil nicht korrekt definiert oder wirksam.
+
+### Hinzugefügt
+
+- Heizkalender-Dokumentation: KI Optimierung der Vorheizzeiten
+
 ## [2026-11-25]
 
 ### Hinzugefügt

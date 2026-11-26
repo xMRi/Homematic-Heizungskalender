@@ -233,11 +233,11 @@ BOOL CRaumDlg::OnInitDialog()
 
 	m_edName.LimitText(64);
 	m_edName.SetDisallowedCharList(UNERLAUBTE_ZEICHEN_FUER_RAEUME);	
-	m_edTemp.SetMinMax(0,30);
 	m_edTemp.SetPrecision(1);
+	m_edTemp.SetMinMax(0,30);
 	m_edTemp.CreateSpinBtnCtrl();
-	m_edTempG.SetMinMax(0,30);
 	m_edTempG.SetPrecision(1);
+	m_edTempG.SetMinMax(0,30);
 	m_edTempG.CreateSpinBtnCtrl();
 	m_edVBegin.SetMinMax(-60*16,60*16);
 	m_edVBegin.SetStepValue(5);
@@ -248,11 +248,11 @@ BOOL CRaumDlg::OnInitDialog()
 	m_edVMin.SetMinMax(0,60*2);
 	m_edVMin.SetStepValue(5);
 	m_edVMin.CreateSpinBtnCtrl();
-	m_edFaktor.SetMinMax(0.25,3.0);
 	m_edFaktor.SetPrecision(2);
+	m_edFaktor.SetMinMax(0.25,5.0);
 	m_edFaktor.CreateSpinBtnCtrl();
 	m_edFaktor.SetStepValue(0.1);
-	
+
 	// Endgültige Daten laden
 	UpdateData(FALSE);
 	return TRUE;  

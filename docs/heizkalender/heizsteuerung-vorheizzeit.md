@@ -49,6 +49,21 @@ Für Außentemperaturen über 17,5 °C extrapoliert das Skript über den letzten
 
 _Diese Werte entsprechen der großzügigen Beispielkonfiguration (`451;370;297;196;174;154;125;103`). Bei der Installation werden sie individuell gesetzt._
 
+### Bezugstemperaturen der HK2-Kurve
+
+Die HK2-Kurve beschreibt, wie lange ein für das Gebäude typischer Raum bei einer bestimmten Außentemperatur braucht, um von einer unteren Bezugstemperatur (Grundtemperatur, GT) auf eine obere Bezugstemperatur (Wohlfühltemperatur, WT) aufzuheizen. Beide Bezugstemperaturen werden bei der Festlegung der Kurve individuell für die Installation gewählt.
+
+Die Standardannahme für die Auslegung beträgt 15 °C Grundtemperatur und 20 °C Wohlfühltemperatur. Das entspricht 5 K. Für eine Ferienwohnung kann beispielsweise eine obere Bezugstemperatur von 21 °C angesetzt werden.
+
+| Anwendungsbereich | GT | WT | Temperaturdifferenz |
+| :--- | ---: | ---: | ---: |
+| Standardannahme | 15 °C | 20 °C | 5 K |
+| Gemeindegebäude mit starker Absenkung | 10 °C | 20 °C | 10 K |
+| Ferienwohnung | 15 °C | 21 °C | 6 K |
+| Gebäude mit geringer Absenkung | 17 °C | 21 °C | 4 K |
+
+Die Stützpunkte der HK2-Kurve richten sich nach dem tatsächlichen Aufheizverhalten für den gewählten Temperaturbereich. Die über `HK2-Grundtemperatur` konfigurierte globale Grundtemperatur entspricht in der Regel der unteren Bezugstemperatur. Die obere Bezugstemperatur der Kurve hat kein eigenes Eingabefeld im Heizkalender. Die Wohlfühltemperatur wird je Raum festgelegt. Dokumentieren Sie deshalb beide Bezugstemperaturen zusammen mit den Kurvenwerten.
+
 ## Die Berechnungsformel
 
 Die tatsächliche Vorheizzeit (VLZ) setzt sich aus zwei Teilen zusammen: einem
@@ -100,6 +115,8 @@ Für den normalen Fall $T_W > T_G$ gelten $T_c = \min(T_{\text{ist}}, T_W)$ und 
 Er verschiebt den Kurvenwert nach oben oder unten, ohne den Basisoffset $V$ zu beeinflussen.
 Default ist 1,0 (kein Einfluss), erlaubter Bereich 0,20 bis 5,0.
 
+Über den Raumfaktor lassen sich außerdem bauliche und heizungstechnische Eigenschaften sowie Abweichungen der Raumtemperaturvorgaben von den Bezugstemperaturen der HK2-Kurve berücksichtigen. Die [Anpassung der Vorheizzeit an individuelle Räume](#anpassung-der-vorheizzeit-an-individuelle-raume) zeigt, wie Sie einen geeigneten Ausgangswert bestimmen.
+
 ### HK2-Kurve (lineare Interpolation)
 
 $$
@@ -132,6 +149,55 @@ Beispiel: 120 min gewünscht, Korrekturfaktor 0,65 → Offset eintragen: 120 / 0
 
 Der globale `HK2-Kurvenversatz` wirkt dabei als Gegenstück zu `HK2-VorzeitAus` (Ausschalt-Offset)
 und wird **nur bei echten Heizvorgängen** berücksichtigt, nicht bei reinem Schalten (Modus `S`).
+
+## Anpassung der Vorheizzeit an individuelle Räume
+
+Raumgröße, Dämmung, Heizleistung und die Trägheit des Heizsystems beeinflussen die benötigte Vorheizzeit. Auch die für den Raum geltende Grund- und Wohlfühltemperatur spielt eine Rolle. Für die Anpassung stehen der Raumfaktor und die feste raumspezifische Vorheizzeit zur Verfügung.
+
+### Abweichende Grund- und Wohlfühltemperaturen
+
+Für eine HK2-Kurve mit 15 °C Grundtemperatur und 20 °C Wohlfühltemperatur beträgt die Temperaturdifferenz 5 K. Bei gleicher Grundtemperatur braucht ein Flur oder WC mit 18 °C Zieltemperatur eine Aufheizung um 3 K, ein Kinderraum mit 22 °C Zieltemperatur eine Aufheizung um 7 K.
+
+Bei gleicher Außentemperatur liefert die HK2-Kurve für beide Räume denselben Ausgangswert. Wenn die aktuelle Raumtemperatur jeweils der geltenden Grundtemperatur entspricht, beträgt `faktor2HeizBedarf` in beiden Fällen 1,0. Dieser Faktor beschreibt den verbleibenden relativen Heizbedarf. Den Unterschied zwischen 3 K und 7 K können Sie bei der Einstellung des Raumfaktors berücksichtigen.
+
+### Berechnung des Raumfaktors
+
+Als erste Näherung kann der Kurvenanteil proportional zur Temperaturdifferenz angepasst werden. Bei einer Referenzdifferenz von 5 K ändert jedes zusätzliche oder entfallende Kelvin den Kurvenanteil um rund 20 % des Referenzwerts.
+
+| GT des Raums | WT des Raums | Temperaturdifferenz | Änderung des Kurvenanteils | Raumfaktor bei Basiswert 1,0 |
+| ---: | ---: | ---: | ---: | ---: |
+| 15 °C | 18 °C | 3 K | −40 % | 0,6 |
+| 15 °C | 19 °C | 4 K | −20 % | 0,8 |
+| 15 °C | 20 °C | 5 K | 0 % | 1,0 |
+| 15 °C | 21 °C | 6 K | +20 % | 1,2 |
+| 15 °C | 22 °C | 7 K | +40 % | 1,4 |
+| 12 °C | 20 °C | 8 K | +60 % | 1,6 |
+| 17 °C | 20 °C | 3 K | −40 % | 0,6 |
+| 10 °C | 20 °C | 10 K | +100 % | 2,0 |
+
+Für die Ersteinrichtung teilen Sie die Temperaturdifferenz des Raums durch die Bezugstemperaturdifferenz der HK2-Kurve.
+
+`Korrekturfaktor = (WT_Raum − GT_Raum) / (WT_Kurve − GT_Kurve)`
+
+`GT_Raum` und `WT_Raum` sind die für den Raum geltende Grund- und Wohlfühltemperatur. `GT_Kurve` und `WT_Kurve` sind die untere und obere Bezugstemperatur der HK2-Kurve. Falls für die Bezugstemperaturen bereits ein Basiswert aufgrund der baulichen oder heizungstechnischen Eigenschaften vorliegt, multiplizieren Sie ihn mit dem Korrekturfaktor.
+
+`Raumfaktor_neu = Raumfaktor_Basis × Korrekturfaktor`
+
+Ein Basiswert von 1,5 ergibt bei einer Aufheizung um 7 K und einer Referenzdifferenz von 5 K den Ausgangswert `1,5 × (7 / 5) = 2,1`.
+
+Wenn Sie bei einem bereits abgestimmten Raum nachträglich die Grund- oder Wohlfühltemperatur ändern, verwenden Sie die bisherige Temperaturdifferenz als Bezug.
+
+`Raumfaktor_neu = Raumfaktor_alt × (WT_neu − GT_neu) / (WT_alt − GT_alt)`
+
+Wird beispielsweise die Wohlfühltemperatur bei 15 °C Grundtemperatur von 20 °C auf 22 °C angehoben, ergibt ein bisheriger Raumfaktor von 1,5 den neuen Ausgangswert 2,1. Rechnen Sie jeweils mit Temperaturpaaren, bei denen die Wohlfühltemperatur über der Grundtemperatur liegt. Wenden Sie eine Korrektur für dieselbe Temperaturabweichung nur einmal an.
+
+Der zulässige Wertebereich für `faktor1HK2Kurve` beträgt **0,20 bis 5,0**. Liegt ein Rechenwert außerhalb dieses Bereichs, verwenden Sie als Ausgangswert die entsprechende Grenze und prüfen Sie den Aufheizverlauf. Die proportionale Rechnung liefert einen Ausgangswert für die Konfiguration. Wärmeverluste und Heizleistung können dazu führen, dass der geeignete Faktor von der Rechnung abweicht.
+
+### Zusammenspiel mit der festen Vorheizzeit
+
+Der Raumfaktor multipliziert ausschließlich den Kurvenwert. Die feste raumspezifische Vorheizzeit und der globale Kurvenversatz `HK2-Kurvenversatz` werden separat eingestellt. Der Heizbedarfsfaktor `faktor2HeizBedarf` skaliert bei der Berechnung sowohl deren Summe als auch den Kurvenanteil anhand der aktuellen Raumtemperatur.
+
+Wenn ein Teil der festen Vorheizzeit ursprünglich für eine bestimmte Temperaturdifferenz angesetzt wurde, können Sie diesen Teil bei geänderten Sollwerten näherungsweise proportional anpassen. Verzögerungen bei der Wärmebereitstellung oder durch die Trägheit des Heizsystems beurteilen Sie gesondert. Prüfen Sie beide Raumparameter anhand der gemessenen Aufheizzeiten, etwa mit der Heizkurvenkontrolle im Addon.
 
 ## Sonderfälle
 
@@ -218,6 +284,8 @@ Beispiel Kellerbüro: Terminende 18:00 − 30 min = 17:30
 ## Use Cases
 
 Die folgenden drei Beispiele zeigen das Zusammenspiel aller Faktoren an einem konkreten Tag.
+
+**Referenzannahme für die Use Cases.** Die folgenden drei Beispiele und ihre Gegenüberstellung verwenden 10 °C Grundtemperatur und 20 °C Wohlfühltemperatur als Bezugspaar (10 K). Auch die Beispielwerte in den Tabellen zu den Systemvariablen und zum Zwei-Geraden-Modell verwenden diese Konfiguration. Die Rechenbeispiele zur Anpassung individueller Räume verwenden dagegen die Standardannahme 15 °C und 20 °C (5 K).
 
 **Gemeinsame Rahmenbedingungen:**
 

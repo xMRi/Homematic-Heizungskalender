@@ -286,6 +286,8 @@ Dieser Beispielwert beschreibt folgende Konfiguration:
 
 Die Werte zeigen beispielhaft, wie die einzelnen Eigenschaften eines Raums in der Systemvariablen hinterlegt werden. Die tatsächliche Konfiguration richtet sich nach dem verwendeten Betriebsmodus und den jeweiligen Anforderungen des Raums.
 
+Wenn die Grund- oder Wohlfühltemperatur eines Raums von den Bezugstemperaturen der HK2-Kurve abweicht, können Sie den Raumfaktor entsprechend einstellen. Die [Berechnung des Raumfaktors](heizsteuerung-vorheizzeit.md#berechnung-des-raumfaktors) zeigt, wie Sie einen Ausgangswert ermitteln und ihn bei einer späteren Temperaturänderung anpassen.
+
 ## Raum- und Kalenderzuordnung
 
 Die Zuordnung von Kalendern zu Räumen lässt sich bequem über das Installationsprogramm `HeizkalenderInstallation.exe` konfigurieren.

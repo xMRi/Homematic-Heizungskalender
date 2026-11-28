@@ -35,6 +35,8 @@ plugins:
 markdown_extensions:
   - tables
   - admonition
+  - pymdownx.arithmatex:
+      generic: true
   - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
@@ -43,6 +45,9 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+
+extra_javascript:
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 
 nav:
   - Startseite: index.md
@@ -56,7 +61,7 @@ nav:
       - KI-Optimierung:
         - Vorgehensweise: heizkalender/heizkurven_optimierung_ki.md
         - Definition: heizkalender/heizkurven_optimierung_ki_definiton.md
-        - Eingabeformular: heizkalender/heizkurven_optimierung_ki_eingabeformular.md    
+        - Eingabeformular: heizkalender/heizkurven_optimierung_ki_eingabeformular.md
     - Planung: heizkalender/planung.md
     - Messdaten-Auswertung: heizkalender/messdaten-auswertung.md
     - Entwickler: heizkalender/entwickler.md

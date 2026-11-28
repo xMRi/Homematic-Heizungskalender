@@ -98,7 +98,7 @@ Die globalen Werte und Raumparameter werden direkt aus den im Eingabeformular ü
 | `HK2-VorzeitAus` | Globale Abschaltzeit vor Terminende in Minuten. |
 | `HK2-HKG-Liste` | Zuordnung der Raumvariablen zu den Kalenderressourcen. Semikolon trennt die Ressourcengruppen; Pluszeichen verbindet die gemeinsam geschalteten Räume einer Ressourcengruppe. Ein Raum kann mehreren Ressourcengruppen zugeordnet sein. |
 
-Die Referenz-Wohlfühltemperatur der HK2-Kurve wird separat angegeben.
+Die Referenz-Wohlfühltemperatur der HK2-Kurve wird separat angegeben. Als untere Bezugstemperatur gilt `HK2-Grundtemperatur`, sofern die Kurve für diesen Wert festgelegt wurde. Wurde die Kurve für eine andere Grundtemperatur festgelegt, verwendet die KI für die Einordnung der Kurve die separat dokumentierte Referenz-Grundtemperatur. Für die Berechnung des Heizbedarfs verwendet sie weiterhin die für den jeweiligen Raum geltende Grundtemperatur. Fehlt eine Angabe zu den Bezugstemperaturen, kennzeichnet die KI die Unsicherheit und leitet daraus keine rechnerische Korrektur des Raumfaktors ab.
 
 Die Raumvariablen haben folgenden Aufbau:
 
@@ -143,6 +143,8 @@ Die HK2-Kurve besteht aus acht Zeitwerten für folgende Außentemperaturen:
 Zwischen den Stützstellen wird linear interpoliert. Außerhalb des Stützstellenbereichs wird das jeweilige Endsegment extrapoliert.
 
 Negative Ergebnisse werden auf null begrenzt.
+
+Die Zeitwerte der HK2-Kurve beziehen sich auf zwei individuell festgelegte Raumtemperaturen: die untere Bezugstemperatur (Grundtemperatur) und die obere Bezugstemperatur (Wohlfühltemperatur). Die Standardannahme beträgt 15 °C und 20 °C. Maßgeblich für die Analyse sind die Bezugstemperaturen, für die die vorliegende Kurve festgelegt wurde.
 
 ### 3.2 Heizbedarf
 
@@ -312,6 +314,8 @@ Die individuelle Raumkurve lässt sich als Gerade auffassen:
 - Die **feste Vorheizzeit `tRaum` verschiebt die Gerade parallel** nach oben oder unten.
 
 Beide Parameter beschreiben somit unterschiedliche Eigenschaften derselben individuellen Raumkurve. Die KI soll sie bei ausreichender Datenbasis **gemeinsam anhand der Messpunkte beurteilen und bestimmen**. Eine starre Reihenfolge – zuerst die feste Vorheizzeit oder zuerst den Raumfaktor zu ändern – ist nicht vorzugeben.
+
+Der vorhandene Raumfaktor `FRaum` kann Abweichungen der Grund- oder Wohlfühltemperatur des Raums von den Bezugstemperaturen der HK2-Kurve bereits berücksichtigen. Die KI verwendet den tatsächlich konfigurierten Raumfaktor als Ausgangswert und verzichtet auf eine zusätzliche pauschale Korrektur für dieselbe Temperaturabweichung. Empfehlungen für eine Änderung stützt sie auf die Messpunkte.
 
 Die Abweichung `d` wird um den Heizbedarfsfaktor bereinigt:
 

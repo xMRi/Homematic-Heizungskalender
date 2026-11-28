@@ -70,6 +70,8 @@ Eine manuelle Aufschlüsselung oder Interpretation der Raumvariablen ist nicht e
 
 Die übrigen Angaben in **[Abschnitt B](heizkurven_optimierung_ki_eingabeformular.md#b-globale-standardwerte)** des Eingabeformulars, beispielsweise die Skriptversion, das Installationsdatum und die Referenz-Wohlfühltemperatur der HK2-Kurve, müssen manuell ergänzt werden.
 
+Tragen Sie als Referenz-Wohlfühltemperatur den Wert ein, für den die HK2-Kurve festgelegt wurde, beispielsweise 21 °C für eine Ferienwohnung. Übernehmen Sie `HK2-Grundtemperatur` aus der Testausgabe. Wurde die Kurve für eine andere Grundtemperatur festgelegt, ergänzen Sie diese als Referenz-Grundtemperatur in Abschnitt D. Ist eine Bezugstemperatur unbekannt, geben Sie das dort an. Übernehmen Sie die Raumfaktoren wie konfiguriert, da sie abweichende Raumtemperaturvorgaben bereits berücksichtigen können.
+
 In **[Abschnitt D – Ergänzende Angaben](heizkurven_optimierung_ki_eingabeformular.md#d-erganzende-angaben)** des Eingabeformulars können ergänzende Angaben zu den Räumen und den Betriebsbedingungen hinterlegt werden. Dazu gehören beispielsweise:
 
 - Fußbodenheizungen oder andere besonders träge Heizsysteme.
